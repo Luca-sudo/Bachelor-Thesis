@@ -54,7 +54,10 @@ Whenever we make a claim about the result of some computation, there are differe
  We call the first type of judgement a \emph{Bounding Judgement}, and encode it as \(\Gamma \sststile{p'}{p} e : A\), where \(\Gamma\) is a context, \(p\) and \(p'\) are non-negative rationals and \(e\) is some expression of type \(A\). The judgement can then be read as ''Given the context \(\Gamma\) and \(p\) resources, we can evaluate the expression \(e\) of type \(A\), and we have \(p'\) resources remaining''.
  \todo{Do these judgements have specific names???}
 
- The second type of judgement is an \emph{Evaluation Judgement}. We write \(e \downarrow v\) to denote that the expression \(e\) evaluates to the value \(v\). This judgement can also be decorated with resource bounds in the following way: Denote by \(e \downarrow v\)
+ The second type of judgement is an \emph{Evaluation Judgement}. While a \emph{Bounding Judgment} provides a judgement about the type of an expression along with a resource bound, an \emph{Evaluation Judgement} is an assertion about the concrete result of an expression. The prior permits eliciting resource bounds for \emph{any} expression of a specific type, whereas the latter provides concrete bounds for specific expression. 
+
+ We denote a \emph{Bounding Judgement} by writing \(e \downarrow v\), expressing that the expression \(e\) evaluates to the value \(v\). This judgement can also be decorated with resource bounds in the following way: Denote by \(e \underset{p/p'}{\downarrow} v\) that the expression \(e\) evaluates to the value \(v\), requiring \(p\) available resources beforehand and returning \(p'\) resources after evaluation.
+
 
 \section{Type System} \label{chap:type-system}
 In order to enable bounding resource consumption, we need to define a type system that permits this. More precisely, we introduce a type system featuring resource-annotated types. This is done by supplementing types with a potential \(q \in \mathbb{Q}\). 
