@@ -1,0 +1,12 @@
+\babel@toc {english}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{\numberline {1}Linear Amortized Analysis}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Amortized Analysis: The Potential Method}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Judgements}{3}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Type System}{4}{section.1.3}%
+\contentsline {chapter}{\nonumberline List of Figures}{5}{chapter*.9}%
+\contentsline {chapter}{\nonumberline List of Tables}{6}{chapter*.10}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 

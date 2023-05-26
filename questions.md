@@ -1,0 +1,2 @@
+- Wouldn't it be more ergonomic and intuitive to embed a bound prior and post resources needed into a type, since it is invariant under the context?? And not in the typing judgement?
+- Composition of judgements/evaluation steps is especially tedious.
