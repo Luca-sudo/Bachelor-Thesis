@@ -63,7 +63,7 @@ Whenever we make a claim about the result of some computation, there are differe
 In order to enable bounding resource consumption, we need to define a type system that permits this. More precisely, we introduce a type system featuring resource-annotated types. This is done by supplementing types with a potential \(q \in \mathbb{Q}\). 
 One resource-annotated type is that of a generic list \(L^q(A)\). That is, a list comprising elements of type \(A\), where \emph{every element} of the list has the assigned potential \(q\).
 
-Another resource-annotated type are functions, written \(A \xrightarrow{p/p'} B\). The meaning of the potentials \(p\) and \(p'\) is different compared to lists. The type \(A \xrightarrow{p/p'} B\) can be interpreted as a function from type A to type B, for which we need \(p\) resources in order to start the evaluation and are left with \(p'\) resources after evaluation. 
+Another resource-annotated type are functions, written \(A \xrightarrow{p/p'} B\). The meaning of the potentials \(p\) and \(p'\) is different compared to lists. The type \(A \xrightarrow{p/p'} B\) can be interpreted as a function from type A to type B, for which we need \(p\) \emph{additional} resources in order to start the evaluation and are left with \(p'\) resources after evaluation. The resources \(p\) are \emph{additional}, as the type \emph{A} may be resource-annotated itself.
 
 The type system used is given in Figure \ref{fig:type-system} below:
 
@@ -74,6 +74,30 @@ The type system used is given in Figure \ref{fig:type-system} below:
 \label{fig:type-system}
 \end{figure}
 
-For simplicity, we select unit to be the only primitive type without a resource annotation. This is mainly for notational convenience, as extending the type system by any primitive type can be easily done; we will elaborate on this point further in ... \todo{Elaborate on this point later on.}.
+Besides the aforementioned types, pairs, denoted by \(A \times B\), and sum types, denoted by \(A + B\) are available types. Practical examples for sum types with which the reader might be familiar are, among many: union in C++ and enums in rust. 
 
-The first resource-annotated type is a generic List type \(L^q(A)\), where \(q \in \mathbb{Q}^+\) is the potential assigned to each element of the list. 
+Before introducing type rules, let us build an intuition for resource-bound types, by working through a rudimentary example. Given the function \emph{addL} in figure \ref{func:add-l} below, we want to calculate an upper bound on heap-space usage. For this, we conclude that a list storing values of a primitive type \emph{A} must allocate two memory cells. One for the value itself, and one for the pointer to the next element in the list. Furthermore, storing a list of type \emph{nil} demands no memory.
+
+Equipped with this assumption, we can immediately conclude: Given a list \emph{l} of length \(n\), the function \emph{addL} requires \(2n\) memory cells. Hence, we get \(l : L^{2}(A)\). \emph{addL} requires no additional resources, besides those supplemented by the list \emph{l}. 
+
+Let us now incrementally build up a type for the function \emph{addL}. Because it is a function type, we can start with \(addL: A \xrightarrow{p/p'} B\). The input of \emph{addL} is of type \((int, L^{q}(A))\), a pair comprising an integer and a list. Updating our initial typing, we get \(addL : (int, L^{q}(A)) \xrightarrow{p/p'} B)\). Because \emph{addL} returns a list, we can further update the type \emph{B}, yielding \(addL: (int, L^{q}(A)) \xrightarrow{p/p'} L^{q'}(A)}\). Lastly, we need to infer the resource bounds \(p, p', q, q'\). We already inferred that \(q = 2\) and that \(p = p' = 0\). Thus, the only resource annotation missing is \(q'\). Since all the necessary resources are provided by the input list, the resource bound does not increase with respect to the output list. 
+
+Thus, we arrive at the following type for \emph{addL}:
+
+\[addL: (int, L^{2}(A)) \xrightarrow{0/0} L^{0}(A) \]
+
+\begin{figure}[H]
+\centering
+\begin{minted}{ocaml}
+fun addL i l = match l with | nil -> nil
+   | x::xs -> (x + i)::(addL i xs)
+end
+\end{minted}
+\caption{AddL function}
+\label{func:add-l}
+\end{figure}
+
+In order to automize the above procedure, the rules for inference need to be rigorously defined by means of \emph{type rules}. In the following section, we introduce type rules for the type system provided.
+
+\subsection{Type rules}
+\label{sec:type-rules}
