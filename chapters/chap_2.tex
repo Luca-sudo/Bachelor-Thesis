@@ -1,0 +1,103 @@
+\chapter{Linear Amortized Analysis} \label{chap:linear}
+
+\section{Amortized Analysis: The Potential Method}
+Analysing the time and space complexity of algorithms is itself a vast field. For AARA, amortized analysis using the potential method is used. To perform amortized analysis, we define a potential function \(\Phi\), which assigns to every possible state of a data structure a \emph{non-negative} integer. Using the potential assigned to a specific state, more expensive operations can be amortized by preceding, cheaper operations.
+
+To illustrate the advantage of amortized analysis over worst-case analysis, we illustrate both using sequences of inserts over a \emph{DynamicArray} as an example. When initialising a DynamicArray, we provide the size needed. Subsequent inserts to the DynamicArray will be performed instantaneously if memory is free. Whenever an insert to the array would exceed the memory allocated to it, the array doubles in size.
+This operation is costly, because we have to allocate the memory and move all previous data into the new memory location. Looking at the worst-case runtime, inserting into a dynamic array has a cost of \(\mathcal{O}(n)\). There are two important nuances: (1) Not every insert operation is equally costly and (2) The expensive inserts are rarer.
+
+In order to perform amortized analysis using the potential method, we first need to define a potential function \(\Phi\). The amortized cost is subsequently given as the sum of the actual cost of the operation and the difference in potential before and after the operation. Formally, we write \(C_{actual}(o)\) to denote the actual cost of some operation \(o\) as well as \(S_{before}\) and \(S_{after}\) for the state of the DynamicArray before and after performing operation \(o\). This yields the following formula for the amortized cost of an operation \(o\):
+
+\[C_{amortized}(o) = C_{actual}(o) + (\Phi(S_{after}) - \Phi(S_{before}))\]
+\label{eq:amortized-cost}
+
+For an arbitrary DynamicArray \(D\) of size \(N\), of which \(n\) memory cells have been used,  we define the potential function \(\Phi(D) = 2n - N\). Note that \(n \leq N\) and \(2n \geq N\), because the DynamicArray is always at least half full due to the resizing strategy explained above. 
+As alluded to earlier, a potential function needs to be non-negative for every possible state passed to it. We can immediately conclude that the above function satisfies that constraint, due to \(2n \geq N\) being an invariant. We now examine how different types of insert operations affect the potential function and subsequently the amortized cost.
+Suppose we insert into a DynamicArray, such that no doubling in size is necessary. The actual cost of the operation is constant. Because no resizing of the DynamicArray is induced, we simply increment \(n\). This yields the following potentials:
+
+\[\Phi(S_{before}) = 2n - N\]
+\[\Phi(S_{after}) = 2(n + 1) - N\]
+\todo{Label/annotate equations?}
+
+Hence, \(\Phi(S_{after}) - \Phi(S_{before}) = 2\). This yields an amortized cost of \(C_{amortized}(o) = C_{actual}(o) + 2\), where we know that \(C_{actual}(o)\) is constant. As a result, the amortized cost is again constant.
+
+Let us now assume that we insert one element into a DynamicArray, inducing a doubling in size. This results in the following potentials:
+
+\[\Phi(S_{before}) = 2n - N\]
+\[\Phi(S_{after}) = 2(n + 1) - 2N\]
+
+Note that \(n + 1 = N\), because the array needed to double in size. The potential therefore simplifies to \(\Phi(S_{after}) = 0\). This concludes that our potential function is indeed well-formed, because it will not yield negative values for any valid state.
+We know that the actual cost of resizing the array is \(\mathcal{O}(n)\), pluging this into the formula for amortized cost: \(C_{amortized}(o) = \mathcal{O}(n) + ( 0 - \mathcal{O}(n))\). Yielding constant time again, because the difference in potential allowed us to 'pay' for the cost incurred by reallocating the array.
+
+Generalizing the new won insight, allows us to claim the following: \emph{Any sequence of n insert operations takes \(\mathcal{O}(n)\) amortized time}. This follows, as the sum of \(n\) constant time operations is \(\mathcal{O}(n)\). 
+
+The formula for amortized cost \ref{eq:amortized-cost} allows us to provide an upper bound on the actual cost of an operation as well. Since the potential function is required to be non-negative, we get that \(\Phi(S) \geq 0\) for some state \(S\). Using this inequality, we can infer the following bound simply by using the new inequality:
+
+\[C_{actual}(o) \leq C_{amortized}(o)\]
+\label{ineq:actual-amortized}
+
+Because we inferred that any sequence of \(n\) insert operations has \(\mathcal{O}(n)\) amortized cost, this inequality shows that any sequence of insert operations also has at most \(\mathcal{O}(n)\) actual cost.
+
+AARA will deploy the potential method in order to provide bounds. To this end, we will define properties of the potential function in \ref{chap:potential-properties}
+\todo{Reference to chapter for potential properties.}
+
+\section{Judgements}
+ In this section we will introduce all needed definitions from type theory, that will allow us to encode a notion of resource usage in type judgements.
+ Let \emph{Bochum} be a string of characters. In type theory, writing \(Bochum: T\) is called a \emph{typing judgement}, stating that \emph{Bochum} is of type T. In this example \(T\) could be the type \emph{String}. However, \(Bochum : int\) would not be valid, for obvious reasons.
+ 
+ In the above example, we were judging the concrete \emph{value}. In most cases, we dont perform judgements over concrete values, but using the variable names assigned to them; this resembles how software is written, in that we assign variable names to values.
+ Because judgments usually only comprise variable names, we need to have a mechanism that allows associating variable names with values - this is precisely what \emph{contexts} do. A context \(\Gamma\) is a mapping from variable names to values. Putting both together, we can write the following judgement: \(\Gamma \vdash e: A\), which can be interpreted as ''Given the context \(\Gamma\), the expression \(e\) is of type \(A\)''.
+ After introducing the Type system in \ref{chap:type-system}, we will introduce typing rules. Those will provide a mechanism of deducing new information. 
+ 
+Whenever we make a claim about the result of some computation, there are different levels we have to discriminate.
+
+ We call the first type of judgement a \emph{Bounding Judgement}, and encode it as \(\Gamma \sststile{p'}{p} e : A\), where \(\Gamma\) is a context, \(p\) and \(p'\) are non-negative rationals and \(e\) is some expression of type \(A\). The judgement can then be read as ''Given the context \(\Gamma\) and \(p\) resources, we can evaluate the expression \(e\) of type \(A\), and we have \(p'\) resources remaining''.
+ \todo{Do these judgements have specific names???}
+
+ The second type of judgement is an \emph{Evaluation Judgement}. While a \emph{Bounding Judgment} provides a judgement about the type of an expression along with a resource bound, an \emph{Evaluation Judgement} is an assertion about the concrete result of an expression. The prior permits eliciting resource bounds for \emph{any} expression of a specific type, whereas the latter provides concrete bounds for specific expression. 
+
+ We denote a \emph{Bounding Judgement} by writing \(e \downarrow v\), expressing that the expression \(e\) evaluates to the value \(v\). This judgement can also be decorated with resource bounds in the following way: Denote by \(e \underset{p/p'}{\downarrow} v\) that the expression \(e\) evaluates to the value \(v\), requiring \(p\) available resources beforehand and returning \(p'\) resources after evaluation.
+
+
+\section{Type System} \label{chap:type-system}
+In order to enable bounding resource consumption, we need to define a type system that permits this. More precisely, we introduce a type system featuring resource-annotated types. This is done by supplementing types with a potential \(q \in \mathbb{Q}\). 
+One resource-annotated type is that of a generic list \(L^q(A)\). That is, a list comprising elements of type \(A\), where \emph{every element} of the list has the assigned potential \(q\).
+
+Another resource-annotated type are functions, written \(A \xrightarrow{p/p'} B\). The meaning of the potentials \(p\) and \(p'\) is different compared to lists. The type \(A \xrightarrow{p/p'} B\) can be interpreted as a function from type A to type B, for which we need \(p\) \emph{additional} resources in order to start the evaluation and are left with \(p'\) resources after evaluation. The resources \(p\) are \emph{additional}, as the type \emph{A} may be resource-annotated itself.
+
+The type system used is given in Figure \ref{fig:type-system} below:
+
+\begin{figure}[H]
+\centering
+\(A,B = Unit | A \times B | A + B | L^q(A) | A \xrightarrow{p/p'} B\)
+\caption{Resource-Annotated Type System}
+\label{fig:type-system}
+\end{figure}
+
+Besides the aforementioned types, pairs, denoted by \(A \times B\), and sum types, denoted by \(A + B\) are available types. Practical examples for sum types with which the reader might be familiar are, among many: union in C++ and enums in rust. 
+
+Before introducing type rules, let us build an intuition for resource-bound types, by working through a rudimentary example. Given the function \emph{addL} in figure \ref{func:add-l} below, we want to calculate an upper bound on heap-space usage. For this, we conclude that a list storing values of a primitive type \emph{A} must allocate two memory cells. One for the value itself, and one for the pointer to the next element in the list. Furthermore, storing a list of type \emph{nil} demands no memory.
+
+Equipped with this assumption, we can immediately conclude: Given a list \emph{l} of length \(n\), the function \emph{addL} requires \(2n\) memory cells. Hence, we get \(l : L^{2}(A)\). \emph{addL} requires no additional resources, besides those supplemented by the list \emph{l}. 
+
+Let us now incrementally build up a type for the function \emph{addL}. Because it is a function type, we can start with \(addL: A \xrightarrow{p/p'} B\). The input of \emph{addL} is of type \((int, L^{q}(A))\), a pair comprising an integer and a list. Updating our initial typing, we get \(addL : (int, L^{q}(A)) \xrightarrow{p/p'} B)\). Because \emph{addL} returns a list, we can further update the type \emph{B}, yielding \(addL: (int, L^{q}(A)) \xrightarrow{p/p'} L^{q'}(A)}\). Lastly, we need to infer the resource bounds \(p, p', q, q'\). We already inferred that \(q = 2\) and that \(p = p' = 0\). Thus, the only resource annotation missing is \(q'\). Since all the necessary resources are provided by the input list, the resource bound does not increase with respect to the output list. 
+
+Thus, we arrive at the following type for \emph{addL}:
+
+\[addL: (int, L^{2}(A)) \xrightarrow{0/0} L^{0}(A) \]
+
+\begin{figure}[H]
+\centering
+\begin{minted}{ocaml}
+fun addL i l = match l with | nil -> nil
+   | x::xs -> (x + i)::(addL i xs)
+end
+\end{minted}
+\caption{AddL function}
+\label{func:add-l}
+\end{figure}
+
+In order to automize the above procedure, the rules for inference need to be rigorously defined by means of \emph{type rules}. In the following section, we introduce type rules for the type system provided.
+
+\subsection{Type rules}
+\label{sec:type-rules}
