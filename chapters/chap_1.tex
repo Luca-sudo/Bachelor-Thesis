@@ -31,22 +31,28 @@ We know that the actual cost of resizing the array is \(\mathcal{O}(n)\), plugin
 
 Generalizing the new won insight, allows us to claim the following: \emph{Any sequence of n insert operations takes \(\mathcal{O}(n)\) amortized time}. This follows, as the sum of \(n\) constant time operations is \(\mathcal{O}(n)\). 
 
-The formula for amortized cost \ref{eq:amortized-cost} allows us to provide an upper bound on the actual cost of an operation as well. Since the potential function is required to be non-negative, we get that \(\Phi(S) \geq 0\) for some state \(S\). Using this inequality, we can infer the following bound simply by using the new inequality:
+The formula for amortized cost \ref{eq:amortized-cost} allows us to provide an upper bound on the actual cost of an operation as well. Since the potential function is required to be non-negative, we get that \(\Phi(S) \geq 0\) for some state \(S\). Using this inequality, we can infer the following bound: 
 
 \[C_{actual}(o) \leq C_{amortized}(o)\]
 \label{ineq:actual-amortized}
 
 Because we inferred that any sequence of \(n\) insert operations has \(\mathcal{O}(n)\) amortized cost, this inequality shows that any sequence of insert operations also has at most \(\mathcal{O}(n)\) actual cost.
 
-AARA will deploy the potential method in order to provide bounds. To this end, we will define properties of the potential function in \ref{chap:potential-properties}.
+AARA will deploy the potential method in order to provide bounds. In \ref{chap:potential}, we introduce a set of potential functions that are especially ergonomic for automatic resource analysis. 
 \todo{Reference to chapter for potential properties.}
 
-\section{Type System}
+\section{Big-Step operational semantics}
+Operational Semantics provide a framework for reasoning about properties of parts of a formalized language, such as safety or correctness. In the case of programming languages, operational semantics define how a program is interpreted as a sequence of computations. In order to reason about the behavior of a sequence of computational steps, we need to choose an appropriate type of operational semantics.
+There are two types of operational semantics: small-step and big-step operational semantics, both differing in the level of detail and abstraction level they offer. Small-step operational semantics provide a detailed account of atomic evaluation steps, focusing on the transitions from one step in the program to another. Big-step operational semantics on the other hand focus on relation the input to the output of expressions, providing a higher level of abstraction. Most papers on AARA use big-step operational semantics, such as \todo{Reference papers}. One reason for favoring big-step operational semantics is their higher level of abstraction, as we are most interested in the relation between input and output.
 
-A type system groups values in a computer program into different \emph{types} and defines the set of operations that are valid on each type. Most programmers were already exposed to types, some of them being: string, integers, floats. Subsequently, the operations defined on those types may differ; where we might be able to multiply two integers, it is not immediately clear what multiplying two strings means.
-Multiplying two integers yields again an integer, this behavior is encoded into type rules which comprise a set of premises, assertions that must hold prior, and a set of conclusions, which hold if all the premises are fullfilled. As such, we may encode the fact that multiplying two integers yields again an integer into a type rule.
-Leveraging the type system and type rules will allow automatic resource analysis as presented in \ref{chap:linear-potential}.
+Before we are able to define big-step operational semantics, we need to introduce a couple of concepts, namely: stack, heap and evaluation judgement. All three are necessary to provide resource bounds for the evaluation of expressions.
 
+Since expressions can contain variable names, we need a mechanism of mapping variable names to the values associated with them - this is what the stack does. A stack, denoted by V, is a mapping from variable identifiers to values: $V : VID \to Val$. As such, different stacks may map the same variable name to different values, which could drastically alter the resulting potential. To avoid ambiguity, we specify a stack V explicitly when necessary. 
+When tracking resource consumption in the form of memory, we need to know precisely how much memory is used and freed after an evaluation step. For this we need a heap, denoted by H. Any values that are kept in memory are stored on the stack. Thus, a stack H is a mapping from locations to values: $H : loc \to val$. 
 
+Having defined stacks and heaps, we can now define evaluation judgements with resource-annotations. An evaluation judgment has the following form:
+$$ V, H \turnstile e \rightsquigarrow v, H' | (p, p') $$
+With the following meaning: Given a stack V and a heap H, the expression e evaluates to the value v and the new stack H'. In order to evaluate e we need p resources beforehand, and are left with p' resources after evaluation. This yields a resource consumption $\delta = p - p'$, which can be a negative integer if resources become available after the evaluation of the expression.
 
+\todo{Type rules for operational semantics?}
 
