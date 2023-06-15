@@ -74,24 +74,5 @@ which is a multivariate linear potential, as n and m are the lengths of the resp
 
 
 
-
-\section{Judgements}
- In this section we will introduce all needed definitions from type theory, that will allow us to encode a notion of resource usage in type judgements.
- Let \emph{Bochum} be a string of characters. In type theory, writing \(Bochum: T\) is called a \emph{typing judgement}, stating that \emph{Bochum} is of type T. In this example \(T\) could be the type \emph{String}. However, \(Bochum : int\) would not be valid, for obvious reasons.
- 
- In the above example, we were judging the concrete \emph{value}. In most cases, we dont perform judgements over concrete values, but using the variable names assigned to them; this resembles how software is written, in that we assign variable names to values.
- Because judgments usually only comprise variable names, we need to have a mechanism that allows associating variable names with values - this is precisely what \emph{contexts} do. A context \(\Gamma\) is a mapping from variable names to values. Putting both together, we can write the following judgement: \(\Gamma \vdash e: A\), which can be interpreted as ''Given the context \(\Gamma\), the expression \(e\) is of type \(A\)''.
- After introducing the Type system in \ref{chap:type-system}, we will introduce typing rules. Those will provide a mechanism of deducing new information. 
- 
-Whenever we make a claim about the result of some computation, there are different levels we have to discriminate.
-
- We call the first type of judgement a \emph{Bounding Judgement}, and encode it as \(\Gamma \sststile{p'}{p} e : A\), where \(\Gamma\) is a context, \(p\) and \(p'\) are non-negative rationals and \(e\) is some expression of type \(A\). The judgement can then be read as ''Given the context \(\Gamma\) and \(p\) resources, we can evaluate the expression \(e\) of type \(A\), and we have \(p'\) resources remaining''.
- \todo{Do these judgements have specific names???}
-
- The second type of judgement is an \emph{Evaluation Judgement}. While a \emph{Bounding Judgment} provides a judgement about the type of an expression along with a resource bound, an \emph{Evaluation Judgement} is an assertion about the concrete result of an expression. The prior permits eliciting resource bounds for \emph{any} expression of a specific type, whereas the latter provides concrete bounds for specific expression. 
-
- We denote a \emph{Bounding Judgement} by writing \(e \downarrow v\), expressing that the expression \(e\) evaluates to the value \(v\). This judgement can also be decorated with resource bounds in the following way: Denote by \(e \underset{p/p'}{\downarrow} v\) that the expression \(e\) evaluates to the value \(v\), requiring \(p\) available resources beforehand and returning \(p'\) resources after evaluation.
-
-
 \subsection{Type rules}
 \label{sec:type-rules}
