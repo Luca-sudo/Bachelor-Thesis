@@ -71,6 +71,45 @@ As our type system \ref{fig:type-system} permits nesting lists, we could have an
 $$\Phi(l : L^q(L^r(A))) = q \cdot n + \displaystyle\sum_{i}^{n} \Phi(l_i : L^r(A)) = q \cdot n + n \cdot (r \cdot m + \Phi(a_i : A)) $$ 
 which is a multivariate linear potential, as n and m are the lengths of the respective lists.
 
+\subsection{Subtyping and Sharing Relation}
+The overarching goal is to automize the elucidation of amortized resource bounds. More specifically, we want to have the tightest bounds possible. In this section, we define the subtyping and sharing relation, which will enable us to elicit the most general resource-annotated type and account for multiple occurences of a resource-annotated variable.
+
+The \emph{Subtyping relation} specifies the conditions under which one (resource-annotated) type is a subtype of another (resource-annotated) type. Intuitively, a resource-annotated type $A$ is a subtype of a resource-annotated type $B$, if they have the same semantic values, i.e. $\llbracket A \rrbracket = \llbracket B \rrbracket$ andthe potential of the subtype is greater than the potential of the supertype. Defining subtyping in this way results in the most general resource-annotated typing corresponding to the tightest possible potential.
+
+We define the subtyping relation as the smallest relation that satisfies the following conditions:
+
+\begin{align*}
+   A & \subtype A && \text{for an arbitrary type A} \\
+   A \times B & \subtype C \times D && \text{iff.} A \subtype C ~ \& B \subtype D \\
+   A + B & \subtype C + D && \text{iff.} A \subtype C ~ \& B \subtype D \\
+   L^q(A) & \subtype L^r(B) && \text{iff.} A \subtype B ~ \& q \geq r \\
+\end{align*}
+
+The \emph{Sharing} relation allows us to have a consistent potential, even if a variable if referenced multiple times. Consider the function ... below as an illustrative example.
+\todo{add an example, illustrating sharing}
+
+Intuitively, the sharing relation ensures that whenever there are multiple references to a variable, the potential of the variable that is being referenced is split up into the references. This ensures that our potential function behaves as expected in those cases\dots
+
+We define the sharing relation as the smallest relation, such that the following conditions are satisfied:
+
+\begin{align*}
+   A & \shares (A, A) && \text{for an arbitrary type A} \\
+   A \times B & \shares ((A_1 \times B_1), (A_2 \times B_2)) && \text{iff.} A \shares (A_1, A_2) ~ \& B \shares (B_1, B_2) \\
+   A + B & \shares ((A_1 + B_1), (A_2 + B_2)) && \text{iff.} A \shares (A_1, A_2) ~ \& B \shares (B_1, B_2) \\
+   L^q(A) & \shares (L^r(A_1), L^m(A_2)) && \text{iff.} A \shares (A_1, A_2) ~ \& q = r + m \\
+\end{align*}
+\todo{Make the ampersands prettier}
+
+For the subtyping and sharing relation we have a corrolary that relates them to the potential function we defined earlier.
+
+\begin{lemma}
+   Let $A$ and $B$ be types, such that A \subtype B. It then holds for every a~\in~A and b \in B that: \Phi(a: A) \geq \Phi(b : B).
+\end{lemma}
+\begin{lemma}
+   Let $A, A_1, A_2$ be types, such that A \shares A_1, A_2 . It then holds for every a \in A, a_1 \in A_1, a_2 \in A_2 that: \Phi(a: A) = \Phi(a_1: A_1) + \Phi(a_2 : A_2) 
+\end{lemma}
+\todo{Prettify the Lemmata}
+
 
 
 
