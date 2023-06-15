@@ -1,10 +1,10 @@
 \chapter{Linear Amortized Analysis} \label{chap:linear}
 
-Linear Amortized Analysis concerns itself with linear potentials only, that is potential functions that are linear with respect to the input parameter. As such, \(f(n) = 3 \cdot n + 2\) is considered a linear potential and \(f(n) = 3 \cdot n^{2} + 2\) is not. 
-In chapter \ref{chap:polynomial-potential} we introduce automatic amortized analysis for polynomial potentials, which builds on the case for linear potentials.
+In this chapter, we introduce AARA for linear potentials, that is potential functions that are linear with respect to the input parameter. As such, \(f(n) = 3 \cdot n + 2\) is considered a linear potential and \(f(n) = 3 \cdot n^{2} + 2\) is not. 
+In chapter \ref{chap:polynomial-potential} we introduce AARA for polynomial potentials, which augments the case of linear potentials by introducing a specific set of polynomial functions as potentials.
 
 \section{Type System} \label{chap:type-system}
-In order to enable bounding resource consumption, we need to define a type system that permits this. More precisely, we introduce a type system featuring resource-annotated types. This is done by supplementing types with a potential \(q \in \mathbb{Q}\). 
+In order to bound resource consumption, we need to define a type system that a notion of resources. More precisely, we introduce a type system featuring resource-annotated types. This is done by supplementing types with a potential \(q \in \mathbb{Q}\). The interpretation of the annotated potential $ q \in \mathbb{Q} $ depends on the specific type.
 One resource-annotated type is that of a generic list \(L^q(A)\). That is, a list comprising elements of type \(A\), where \emph{every element} of the list has the assigned potential \(q\).
 We will see that this induces a potential of the form \(f(n) = q \cdot n\), where \(n\) is the size of the list. 
 
@@ -21,6 +21,7 @@ The type system used is given as an EBNF in Figure \ref{fig:type-system} below:
 \todo{Maybe split the type system into primitive two different grammars?}
 
 Besides the aforementioned types, pairs, denoted by \(A \times B\), and sum types, denoted by \(A + B\) are available types. Practical examples for sum types with which the reader might be familiar are, among many: union in C++ and enums in rust. 
+Suprisingly, neither pairs nor sum types have a resource-annotation attached to them. \todo{Explain why}.
 
 Before introducing type rules, let us build an intuition for resource-bound types, by working through a rudimentary example. Given the function \emph{addL} in figure \ref{func:add-l} below, we want to calculate an upper bound on heap-space usage. For this, we conclude that a list storing values of a primitive type \emph{A} must allocate two memory cells. One for the value itself, and one for the pointer to the next element in the list. Furthermore, storing a list of type \emph{nil} demands no memory.
 This choice is mainly for convenience, as it only alters the resulting amount of memory cells by a constant term.
@@ -56,6 +57,21 @@ We denote the set of types with linear potential by \(\mathcal{A}_{lin}\).
 
 Throughout this thesis we assume that any primitive types, that is types without a resource-annotation, have no effect on the resource consumption. As such their potential is zero. 
 \todo{Elaborate on why this is okay and how to move to non zero potentials}
+
+We now define the potential function for the type system in \ref{fig:type-system}:
+\begin{align*}
+   \Phi(a : A) &= 0 ~~~ & A &= Unit \\
+   \Phi(left(a): A + B) &= \Phi(a: A) \\
+   \Phi(right(b): A + B) &= \Phi(b: B) \\
+   \Phi((a, b) : A \times B) &= \Phi(a: A) + \Phi(b: B) \\
+   \Phi(l : L^q(A)) &= q \cdot n + \displaystyle\sum_{i = 1}^{n} \Phi(a_i : A) & l &= [a_1, \dots, a_n] \\
+\end{align*}
+
+As our type system \ref{fig:type-system} permits nesting lists, we could have an element $l$ of type $L^q(L^r(A))$. The potential function we defined also permits those types of values. We get: 
+$$\Phi(l : L^q(L^r(A))) = q \cdot n + \displaystyle\sum_{i}^{n} \Phi(l_i : L^r(A)) = q \cdot n + n \cdot (r \cdot m + \Phi(a_i : A)) $$ 
+which is a multivariate linear potential, as n and m are the lengths of the respective lists.
+
+
 
 
 
