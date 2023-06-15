@@ -1,12 +1,14 @@
 \chapter{Preliminaries} \label{chap:preliminaries}
 
 \section{Amortized Analysis: Potential Method}
-Analysing the time and space complexity of algorithms is itself a vast field. For AARA, amortized analysis using the potential method is used. To perform amortized analysis, we define a potential function \(\Phi\), which assigns to every possible state of a data structure a \emph{non-negative} integer. Using the potential assigned to a specific state, more expensive operations can be amortized by preceding, cheaper operations.
+Analysing the time and space complexity of algorithms is itself a vast field. There are three methods for computing amortized resourec bounds: Aggregate method, accounting method and the potential method. For AARA, potential method is used, as one can define particularly intuitive and ergonomic potential functions, which is done for linear potentials in \ref{chap:potential} and for polynomial potentials in \ref{chap:polynomial-potential}.
+To perform amortized analysis, we define a potential function \(\Phi\), which assigns to every possible state of a data structure a \emph{non-negative} integer. The \emph{amortized} cost of an operation accounts for the actual cost of the operation, as well as the difference in potential as a consequence of the operation. Using the potential assigned to a specific state, more expensive operations can be amortized by preceding, cheaper operations. As we will see, this provides a less pessimistic bound than worst-case analysis while matching empirical bounds tightly \todo{reference data from thesis}. 
 
-To illustrate the advantage of amortized analysis over worst-case analysis, we illustrate both using sequences of inserts over a \emph{DynamicArray} as an example. When initialising a DynamicArray, we provide the size needed. Subsequent inserts to the DynamicArray will be performed instantaneously if memory is free. Whenever an insert to the array would exceed the memory allocated to it, the array doubles in size.
+As a firm grasp on the potential method is essential to understanding AARA, we contrast amortized analysis and worst-case analysis, by illustrate both using sequences of inserts over a \emph{DynamicArray} as an example. 
+When initialising a DynamicArray, we provide the size needed. Subsequent inserts to the DynamicArray will be performed instantaneously if memory is free. Whenever an insert to the array would exceed the memory allocated to it, the array doubles in size.
 This operation is costly, because we have to allocate the memory and move all previous data into the new memory location. Looking at the worst-case runtime, inserting into a dynamic array has a cost of \(\mathcal{O}(n)\). There are two important nuances: (1) Not every insert operation is equally costly and (2) The expensive inserts are rarer.
 
-In order to perform amortized analysis using the potential method, we first need to define a potential function \(\Phi\). The amortized cost is subsequently given as the sum of the actual cost of the operation and the difference in potential before and after the operation. Formally, we write \(C_{actual}(o)\) to denote the actual cost of some operation \(o\) as well as \(S_{before}\) and \(S_{after}\) for the state of the DynamicArray before and after performing operation \(o\). This yields the following formula for the amortized cost of an operation \(o\):
+In order to perform amortized analysis using the potential method, we first need to define the potential function \(\Phi\). The amortized cost is subsequently given as the sum of the actual cost of the operation and the difference in potential before and after the operation. Formally, we write \(C_{actual}(o)\) to denote the actual cost of some operation \(o\) as well as \(S_{before}\) and \(S_{after}\) for the state of the DynamicArray (or any arbitrary data structure) before and after performing operation \(o\). This yields the following formula for the amortized cost of an operation \(o\):
 
 \[C_{amortized}(o) = C_{actual}(o) + (\Phi(S_{after}) - \Phi(S_{before}))\]
 \label{eq:amortized-cost}
@@ -38,8 +40,8 @@ The formula for amortized cost \ref{eq:amortized-cost} allows us to provide an u
 
 Because we inferred that any sequence of \(n\) insert operations has \(\mathcal{O}(n)\) amortized cost, this inequality shows that any sequence of insert operations also has at most \(\mathcal{O}(n)\) actual cost.
 
-AARA will deploy the potential method in order to provide bounds. In \ref{chap:potential}, we introduce a set of potential functions that are especially ergonomic for automatic resource analysis. 
-\todo{Reference to chapter for potential properties.}
+AARA will deploy the potential method in order to provide bounds. In \ref{chap:potential}, we introduce a set of potential functions that are especially ergonomic for AARA with linear potential.
+\todo{Reference to chapter for potential properties.} This forms the basis for extending AARA to polynomial potentials in \ref{chap:polynomial-potential}.
 
 \section{Big-Step operational semantics}
 Operational Semantics provide a framework for reasoning about properties of parts of a formalized language, such as safety or correctness. In the case of programming languages, operational semantics define how a program is interpreted as a sequence of computations. In order to reason about the behavior of a sequence of computational steps, we need to choose an appropriate type of operational semantics.
