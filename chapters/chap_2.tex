@@ -69,12 +69,12 @@ We now define the potential function for the type system in \ref{fig:type-system
 
 As our type system \ref{fig:type-system} permits nesting lists, we could have an element $l$ of type $L^q(L^r(A))$. The potential function we defined also permits those types of values. We get: 
 $$\Phi(l : L^q(L^r(A))) = q \cdot n + \displaystyle\sum_{i}^{n} \Phi(l_i : L^r(A)) = q \cdot n + n \cdot (r \cdot m + \Phi(a_i : A)) $$ 
-which is a multivariate linear potential, as n and m are the lengths of the respective lists.
+which is a multivariate linear potential, as n and m are the lengths of the respective lists. This illustrates that our definition of linear potential functions allows for multivariate functions.
 
 \subsection{Subtyping and Sharing Relation}
 The overarching goal is to automize the elucidation of amortized resource bounds. More specifically, we want to have the tightest bounds possible. In this section, we define the subtyping and sharing relation, which will enable us to elicit the most general resource-annotated type and account for multiple occurences of a resource-annotated variable.
 
-The \emph{Subtyping relation} specifies the conditions under which one (resource-annotated) type is a subtype of another (resource-annotated) type. Intuitively, a resource-annotated type $A$ is a subtype of a resource-annotated type $B$, if they have the same semantic values, i.e. $\llbracket A \rrbracket = \llbracket B \rrbracket$ andthe potential of the subtype is greater than the potential of the supertype. Defining subtyping in this way results in the most general resource-annotated typing corresponding to the tightest possible potential.
+The \emph{Subtyping relation} specifies the conditions under which one (resource-annotated) type is a subtype of another (resource-annotated) type. Intuitively, a resource-annotated type $A$ is a subtype of a resource-annotated type $B$, if they have the same semantic values, i.e. $\llbracket A \rrbracket = \llbracket B \rrbracket$ and the potential of the subtype is greater than the potential of the supertype. Defining subtyping in this way results in the most general resource-annotated typing corresponding to the tightest possible potential.
 
 We define the subtyping relation as the smallest relation that satisfies the following conditions:
 
@@ -103,10 +103,10 @@ We define the sharing relation as the smallest relation, such that the following
 For the subtyping and sharing relation we have a corrolary that relates them to the potential function we defined earlier.
 
 \begin{lemma}
-   \text{Let A and B be types, such that }A \subtype B.\text{ It then holds for every} a~\in~A \text{ and } b \in B \text{ that: } \Phi(a: A) \geq \Phi(b : B).
+   \text{Let A and B be types, such that }$A \subtype B.$\text{ It then holds for every} $a~\in~A$ \text{ and } $b \in B$ \text{ that: } $\Phi(a: A) \geq \Phi(b : B).$
 \end{lemma}
 \begin{lemma}
-   \text{Let } A, A_1, A_2 \text{ be types, such that }A \shares A_1, A_2 . \text{It then holds for every }a \in A, a_1 \in A_1, a_2 \in A_2\text{ that: } \Phi(a: A) = \Phi(a_1: A_1) + \Phi(a_2 : A_2) 
+   \text{Let } $A, A_1, A_2$ \text{ be types, such that }$A \shares A_1, A_2.$ \text{It then holds for every } $a \in A, a_1 \in A_1, a_2 \in A_2$ \text{ that: } $\Phi(a: A) = \Phi(a_1: A_1) + \Phi(a_2 : A_2)$ 
 \end{lemma}
 \todo{Prettify the Lemmata}
 

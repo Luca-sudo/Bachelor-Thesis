@@ -26,14 +26,23 @@
 \usepackage[style=numeric,giveninits=false,natbib=true,backend=biber,maxbibnames=99,defernumbers=true,language=autobib,date=long]{biblatex}
 \addbibresource{literature/literature.bib}
 
+\usepackage{dsfont}
+
 %%%%%% %%%%%%
 
 % Load packages ...
+
+% Custom packages
+\usepackage{amsthm}
 
 % Custom commands
 \newcommand{\shares}{\curlyveedownarrow}
 \newcommand{\subtype}{<:}
 \newcommand{\resourcefunc}[1]{\xrightarrow{#1/#1'}}
+\newcommand{\unit}{\mathds{1}}
+\newcommand{\injleft}{\text{left}}
+\newcommand{\injright}{\text{right}}
+\newcommand{\semantic}[1]{\llbracket #1 \rrbracket}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}[theorem]
