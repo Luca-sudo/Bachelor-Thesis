@@ -1,3 +1,7 @@
+# Literature
+Dissertation: https://edoc.ub.uni-muenchen.de/13955/1/Hoffmann_Jan.pdf
+
+
 # Questions and Meeting Notes
 
 ## 14.06.23
@@ -17,3 +21,12 @@
 - Registering my bachelor thesis: second supervisor and TA? Anurudh for both? Conflict? 
 - !!!! Submit bachelor registration very soon to adhere to deadlines !!!!!
 
+### Notes
+- Sum type example: Cost of raising errors vs producing values.
+- Annotate the type of resource used.
+- Define/introduce stuff like lists and trees etc.
+- What is the definition of the potential of f(a)? doesnt seem to make sense. Nothing said in dissertation...
+- Provide a type derivation for some example function, calculating the resource bound such as addL.
+- Inconsistencies/question w.r.t. linear type system? Why do we not get reimbursed for the cost of consumed inputs?
+- Michael remarks/future:
+	- Simple language with only ley and tick. Define operational semantics, type rules and proof soundness, potential. To get the hang of it. Then grow from there.
