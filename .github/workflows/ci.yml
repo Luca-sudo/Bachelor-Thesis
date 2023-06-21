@@ -28,6 +28,7 @@ jobs:
       # Runs a single command using the runners shell
       - uses: xu-cheng/latex-action@v2
         with:
+          latexmk_shell_escape: true
           root_file: thesis.tex
           
       - name: Upload PDF file
