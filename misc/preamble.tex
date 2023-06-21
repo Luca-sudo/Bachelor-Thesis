@@ -8,6 +8,7 @@
 \usepackage{lmodern}
 \usepackage{todonotes}
 \usepackage{turnstile}
+\usepackage{semantic}
 
 \usepackage{tikz} % used on frontpage
 
@@ -18,8 +19,8 @@
 %\day=4 \month=5 \year=2023
 
 % Set name and title
-\author{Insert your name here}
-\title{Insert title here}
+\author{Luca Witt}
+\title{Type Systems in Automatic Amortized Resource Analysis}
 \date{\today}
 
 % Bibliography
@@ -44,9 +45,13 @@
 \newcommand{\injright}{\text{right}}
 \newcommand{\semantic}[1]{\llbracket #1 \rrbracket}
 
+\reservestyle{\command}{\textbf}
+\command{let, in, tick}
+
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}{Definition}[section]
 
 % Corporate Design
 \usepackage{eso-pic}
