@@ -28,7 +28,6 @@ jobs:
       # Runs a single command using the runners shell
       - uses: xu-cheng/latex-action@v2
         with:
-          continue_on_error: true
           latexmk_shell_escape: true
           root_file: thesis.tex
           
