@@ -4,6 +4,9 @@ Dissertation: https://edoc.ub.uni-muenchen.de/13955/1/Hoffmann_Jan.pdf
 
 # Questions and Meeting Notes
 
+## Questions
+- Toy type systems yields problem : Can derive invalid type.
+
 ## 14.06.23
 
 ### Agenda
