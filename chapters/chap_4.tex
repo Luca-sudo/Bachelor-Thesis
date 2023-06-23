@@ -1,0 +1,148 @@
+\chapter{Rudimentary Type System}
+
+In this chapter, we define the type system, along with the associated operational semantics and type rules, for a simple system, that only counts the amount of ticks in a program. The chapter concludes with a soundness proof, showing that operational semantics and type rules line up.
+In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the calculated resource consumption and (2) types that reflect resource consumption. The first problem is solved by introducing \(\text{tick q}\) to the programming language. Where \(q\) is a rational number, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the unit type with two resource annotations, one for the resources required a priori, and another for the resources freed afterward.
+
+In the figure below is the programming language that we use:
+
+\begin{align*}
+   e := ~~~ & \text{let } \_ = e_1 \text{ in } e_2   & \text{(let)}\\
+            & \text{tick } q                       & \text{(tick)}
+\end{align*}
+
+
+\section{Operational Semantics}
+In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, let \(H\) be a heap \(e\) be an expression and \(v\) be the value produced by the expression \(e\). We then write \(H \vdash e \rightsquigarrow v, H'\) for the fact that given heap \(H\) the expression \(e\) evaluates to the value \(v\) and yields the new heap \(H'\). In order to capture resource-consumption, we augment this notation like this \(H \vdash e \rightsquigarrow v, H'~| ~(p, p')\), where \(p\) and \(p'\) are integers and \(p\) being the amount of resources needed to start evaluating the expression, and \(p'\) being the resources freed after the evaluation of expression \(e\).
+
+When composing evaluations, we need to define sound rules for the resulting resource consumption. To provide an ergonomic and sound definition, we will define the following operation:
+
+\begin{definition}
+   Let \((p, p)\) and \(q, q')\) be two resource pairs, as introduced above. We then define \((p, p') \cdot (q, q') = 
+   \begin{cases}
+      (p + q - p', q') & \mbox{if } q \geq p' \\
+      (p, q' + p' - q) & \mbox{if } p' > q
+   \end{cases}
+   \)
+\end{definition}
+
+This definition ensures that we do not "erase" required resources out of a sequence of evaluations. As an example, consider a program comprising two expressions. The first one consuming 2 resources, and the second one freeing up 3 resources. Without the case distinction above, we could "erase" the \(2\) resources that are required a priori. 
+
+Having defined the notion of evaluation, we now introduce rules for the operational semantics provided.
+First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
+
+\[
+   \inference[(let)]
+   {H_1 \vdash e_1 \rightsquigarrow v~H_1'~|~(p,p')~~,~~ H_1' \vdash e_2 \rightsquigarrow v_2~H_2'~|~(q, q')}
+   {H_1 \vdash \<let> ~ \_ = e_1 ~ \<in> ~  e_2~|~(p, p') \cdot (q, q')}
+\]
+
+Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. As a result, any resource-annotation where a priori and a posteriori resources differ by at least \(q\), is valid. This leads to the following rule:
+
+\[
+   \inference[(tick)]
+   {q_0 \geq q + q_1}
+   {H \vdash e \rightsquigarrow~|~(q_0, q_1)}
+\]
+
+In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterwards we will prove the soundness theorem, providing a correspondence between operational semantics and type rules.
+
+\section{Type Rules}
+The only resource-annotated type that we permit is the unit type, denoted by \(\unit^p_r\), where \(p\) provides a lower bound on the resources needed in order to evaluate an expression of that type, and \(r\) provides a bound on the amount of resources that are freed after evaluating an expression of that type. 
+
+Similarly to the previous section on operational semantics, we define two rules, one for \<let> expressions and one for \<tick>. Before we can introduce the rule for \<let>, however, we need to define how resource-annotations of types propagate. For this, consider the following example:
+
+\[
+   \inference[]
+   {\Gamma_1 \vdash e_1 : \unit^p_r~~,~~ \Gamma_2 \vdash e_2 : \unit^s_t}
+   {\Gamma_1 \Gamma_2 \vdash \<let> ~ \_ = e_1 ~ \<in> ~ e_2 :~?}
+\]
+
+It is not immediately clear, what type the resulting \<let> expression should have. We, therefore, define an operation on types that is closely linked to the definition ... in the previous section.
+\todo{link to definition}
+
+\begin{definition}
+   Let \(\unit^{q_0}_{q_1}\) and \(\unit^{r_0}_{r_1}\) be resource-annotated types. \\
+   We define \(\unit^{q_0}_{q_1} \ltimes \unit^{r_0}_{r_1} =  
+      \begin{cases} 
+         \unit^{q_0 + r_0 - q_1}_{r_1} & \mbox{if } r_0 \geq q_1 \\
+         \unit^{q_0}_{r_1 + q_1 - r_0} & \mbox{if } q_1 > r_0
+      \end{cases}
+    \)
+\end{definition}
+
+\todo{Add that this forms a monoid that can be extended to accomodate more than just unit as well?}
+
+The two case distinctions of the definition correspond to two, distinct, cases. In the first case, the cost of the second operation is higher than the reimbursement of the first operation - we therefore need to ''pay'' for the difference. In the second case, the reimbursement of the first operation completely accounts for the cost of the second operation. As a result, we do not have to provide additional resources, but instead additional resources are freed.
+
+Using the newly defined operation on resource-annotated types, we get the following rules:
+
+\[
+   \inference[(T:let)]
+   {\Gamma_1 \vdash e_1 : \unit^p_r~~,~~ \Gamma_2 \vdash e_2 : \unit^s_t}
+   {\Gamma_1 \Gamma_2 \vdash \<let> ~ \_ = e_1 ~ \<in> ~ e_2 :~\unit^p_r \ltimes \unit^s_t}
+\]
+
+\[
+   \inference[(T:tick)]
+   {q_0 \geq q + q_1}
+   {\Gamma \vdash \<tick> ~ q : \unit^{q_0}_{q_1}}
+\]
+
+Let us now perform an examplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
+
+\begin{align*}
+  & \<let> \_ = \<tick>~3~\<in> \\
+  & \<let> \_ = \<tick>~ -2 ~\<in> \\
+  & \<let> \_ = \<tick>~5~\<in> \\
+\end{align*}
+
+Intuitively, we have three distinct steps, the first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
+
+\[
+   \inference
+   {
+      \inference
+      {q_0 \geq 3 + q_1}
+      {\<tick> ~ 3 : \unit^{q_0}_{q_1}}
+       &
+      \inference
+      {
+         \inference
+         {t_0 \geq -2 + t_1}
+         {\<tick> -2 : \unit^{t_0}_{t_1}}
+          &
+         \inference
+         {s_0 \geq 5 + s_1}
+         {\<tick>~5 : \unit^{s_0}_{s_1}}
+      }
+      {\<let> ~ \_ = \<tick> -2~\<in>~\<let>~\_ = \<tick>~5 :~\unit^{t_0}_{t_1} \ltimes \unit^{s_0}_{s_1}}
+   }
+   {\<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~\<let> \_ = \<tick>~5 :\unit^{q_0}_{q_1} \ltimes \unit^{t_0}_{t_1} \ltimes \unit^{s_0}_{s_1}}
+\]
+
+We are now left with the task of resolving the collected, numeric constraints. A possible solution to the system of constraints the following: \(q_1 = t_0 = s_1 = 0\) , \(q_0 = 3\), \(t_1 = 2\) and \(s_0 = 5\). This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type is: \(\unit^{3}_{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0}\).
+Applying the definition of the \(\ltimes\) operator, allows us to shrink the type, which we do stepwise for sake of illustration:
+
+\begin{align*}
+   \unit^{3}_{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0} &\stackrel{(1)}{=} \unit^{3 + 0 - 0}_2 \ltimes \unit^5\\
+                                                             &\stackrel{(2)}{=} \unit^{3 + 5 - 2}_2 = \unit^6_2
+\end{align*}
+
+Where we perform the first step, because \( 0 \geq 0\), which are \(q_1\) and \(r_0\) in the definition respectively. And we perform the second steps, as \(5 \geq 2\), which is the other case distinction in our definition.
+
+This indeed furnishes a tight bound on the resources required.
+
+\section{Soundness Theorem}
+Ultimately, we want our type rules to be consistent with the operational semantics defined previously. This will allow us to reason about the type of a program, while ensuring that the resource-annotations of the resulting type line up with the concrete resource consumption of the expression.
+
+
+
+
+
+
+
+
+
+
+
+

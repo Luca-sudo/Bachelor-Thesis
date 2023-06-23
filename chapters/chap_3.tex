@@ -1,0 +1,101 @@
+\chapter{Univariate Polynomial Potential} \label{chap:univariate-polynomial}
+
+Having introduced linear potentials, this chapter will augment the constructs introduced in \ref{chap:linear} to allow univariate polynomial bounds. To achieve this, we change the potential from a rational number to a vector in $\mathbb{Q}^k$. In conjunction, we define a set of polynomial functions that use binomial coefficients as their coefficients; entries in the vector then correspond to values of the binomial coefficient of the monomial. 
+\todo{Rough introduction on additivie shift}
+
+\section{Polynomial Potential Function}
+
+To accomodate polynomial potentials, we need to change the type system from \ref{chap:linear}, by changing the potential annotation of the generic list type. Instead of \(L^q(A)\) with \(q \in \mathbb{Q}\), we write $L^{\vec{q}}(A)$ where $\vec{q} \in \mathbb{Q}^k$. 
+This yields the following type system for univariate polynomial potentials:
+
+\begin{figure}[H]
+\centering
+\(A,B = \unit | A \times B | A + B | L^{\vec{q}}(A) | A \xrightarrow{p/p'} B\)
+\caption{Type System using Polynomial Potential}
+\label{fig:polynomial-type-system}
+\end{figure}
+
+Next, we define how to interpret the potential $\vec{q}$. For this, we restrict polynomial potential functions to a specific form; that is, functions with binomial coefficients as their coefficients. We then identify entries in $\vec{q}$ as indexing the polynomial. 
+We define the potential of $L^{\vec{q}}(A)$ as :
+
+\[
+   \Phi(l: L^{\vec{q}}(A)) = \displaystyle\sum_{i = 1}^{k} q_i \cdot \binom{n}{i} + \displaystyle\sum_{j = 1}^{n} \Phi(a_i : A)
+\]
+
+Where $n$ is the length of the list, $a_i$ are elements of the list for $1 \leq i \leq n$, and $\vec{q} = (q_1, \dots, q_k)$.
+
+Let us look at a concrete example, before continuing. Let us suppose, we have a list $l$ of the type $L^{\vec{q}}(\unit)$, for $\vec{q} = (1, 2)$. Calculating the potential yields: 
+
+\[
+   \Phi(l: L^{\vec{q}}(\unit)) = \displaystyle\sum_{i = 1}^{2} q_i \cdot \binom{n}{i} + \displaystyle\sum_{j = 1}^{n} \Phi(a_i : \unit)
+\]
+
+As elements of type $\unit$ have potential zero assigned to them, the equation above simplifies to: 
+\[
+   \Phi(l: L^{\vec{q}}(\unit)) = \displaystyle\sum_{i = 1}^{2} q_i \cdot \binom{n}{i}
+\]
+
+We can now insert the values $q_1$ and $q_2$, to get:
+\begin{align*}
+   \Phi(l: L^{\vec{q}}(\unit)) & = 1 \cdot \binom{n}{1} + 2 \cdot \binom{n}{2} \\
+			      & = n + 2 \cdot \frac{n \cdot (n - 1)}{2} \\
+			      & = n + n^2 - n \\
+			      & = n^2 
+\end{align*}
+
+\subsection{Subtyping and Sharing Relation}
+
+The subtyping and sharing relation introduced in \ref{section:linear-subt&sharing} only need to be augmented with respect to lists. As we now define a potential to be an element \(\vec{q}, \vec{r} \in \mathbb{Q}^k\), we need to specify what the following inequality means: \(\vec{q} \geq \vec{r}\). With this definition in place, we are again able to capture the most general resource-annotated typing for a generic list. We define the following: 
+\[
+   \vec{q} \geq \vec{r} \iff \forall i \in I : q_i \geq r_i
+\]
+\todo{Prettify/more concise notation?}
+
+Using this definition, we will be able to prove a similar result for polynomial potentials; linking the magnitude of potentials with the subtyping relation. Before doing that, let us define the subtyping relation for polynomial resource-annotated types.
+We define the subtyping relation as the smallest relation satisfying the following conditions:
+
+\begin{align*}
+   A & \subtype A && \text{for an arbitrary type A} \\
+   A \times B & \subtype C \times D && \text{iff.} A \subtype C ~ \& B \subtype D \\
+   A + B & \subtype C + D && \text{iff.} A \subtype C ~ \& B \subtype D \\
+   L^{\vec{q}}(A) & \subtype L^{\vec{r}}(B) && \text{iff.} A \subtype B ~ \& \vec{q} \geq \vec{r} \\
+\end{align*}
+
+
+\begin{lemma}
+   \(\text{Let } A, B \text{ be resource-annotated types. If } A \subtype B \text{, then } \Phi(a : A) \geq \Phi(a : B) \text{ for all a} \in \semantic{A}.\)
+\end{lemma}
+
+\begin{proof}
+   In order to prove that the inequality holds for an arbitrary type, we simply prove it for every inductive case. 
+
+   \((A \subtype A)\): This case is trivial, as $\Phi(a: A) = \Phi(a : A)$ trivially holds.
+
+   \(A \times B \subtype C \times D)\): 
+   \begin{align*}
+      \Phi((c, d) : C \times D) &= \Phi(c : C) + \Phi(d : D)   &\text{(by definition)}\\
+				&\leq \Phi(c: A) + \Phi(d : B) &(A \subtype C \text{ and } B \subtype D)\\
+				&= \Phi((c, d) : A \times B)   &\text{(by definition)}
+   \end{align*}
+
+   \((A + B \subtype C + D)\): 
+   \begin{align*}
+      \Phi(\injleft(a) : A + B)  &= \Phi(a : A)		       & \text{(by definition)}\\
+				 &\geq \Phi(a: C)	       & (A \subtype C)\\
+				 & = \Phi(\injleft(a) : C + D) & \text{(by defintion)}\\
+				 \\
+      \Phi(\injright(b) : A + B) &= \Phi(b : B)		       & \text{(by definition)}\\
+				 &\geq \Phi(b : D)	       & (B \subtype D)\\
+				 &= \Phi(\injright(b) : C + D) & \text{(by definition)}\\
+   \end{align*}
+
+   \((L^{\vec{q}}(A) \subtype L^{\vec{r}}(B))\): 
+
+   \begin{align*}
+      \Phi(l : L^{\vec{q}}(B))&= \phi(n, \vec{q}) + \displaystyle\sum_{i = 1}^{n} \Phi(l_i : B)	   & \text{(by definition)}\\
+			      &\geq \phi(n, \vec{r}) + \displaystyle\sum_{i = 1}^{n} \Phi(l_i : B) & (\vec{q} \geq \vec{r})  \\
+			      &\geq \phi(n, \vec{r}) + \displaystyle\sum_{i = 1}^{n} \Phi(l_i : A) & (A \subtype B)	   \\
+			      &= \Phi(l : L^{\vec{r}}(A))						   & ~~
+   \end{align*}
+\end{proof}
+\todo{Prettier way of typesetting the proof?}
