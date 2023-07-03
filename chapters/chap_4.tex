@@ -12,9 +12,11 @@ In the figure below is the programming language that we use:
 
 
 \section{Operational Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, let \(H\) be a heap \(e\) be an expression and \(v\) be the value produced by the expression \(e\). We then write \(H \vdash e \rightsquigarrow v, H'\) for the fact that given heap \(H\) the expression \(e\) evaluates to the value \(v\) and yields the new heap \(H'\). In order to capture resource-consumption, we augment this notation like this \(H \vdash e \rightsquigarrow v, H'~| ~(p, p')\), where \(p\) and \(p'\) are integers and \(p\) being the amount of resources needed to start evaluating the expression, and \(p'\) being the resources freed after the evaluation of expression \(e\).
+In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, let \(H\) be a heap \(e\) be an expression and \(v\) be the value produced by the expression \(e\). We then write \(H \vDash e \evaluatesto v, H'\) for the fact that given heap \(H\) the expression \(e\) evaluates to the value \(v\) and yields the new heap \(H'\). In order to capture resource-consumption, we augment this notation like this \(H \vDash e \rightsquigarrow v, H'~| ~(p, p')\), where \(p\) and \(p'\) are integers and \(p\) being the amount of resources needed to start evaluating the expression, and \(p'\) being the resources freed after the evaluation of expression \(e\).
 
-When composing evaluations, we need to define sound rules for the resulting resource consumption. We will build up an ergonomic and sound definition step by step. Firstly, we need to understand how the resource consumption of subsequent expressions behaves. For this, there are two cases: The first operation reimburses enough resources for the second operation to be run, or the second operation consumes more resources than the first operation reimburses. Concretely, for two evaluations \( \vDash e_1 \rightsquigarrow v_1 | (p_0, p_1)\) and \( \vDash e_2 \rightsquigarrow v_2 | (q_0, q_1)\), we define the resulting cost of their composition as follows:
+Conveniently, we don't need to consider the the heap for this type system, as the resulting cost only depends on the sequence of tick instructions, and as such the cost is invariant with respect to any stack. As we will see when we augment this type system, the heap is generally required.
+
+When composing evaluations, we need to define sound rules for the resulting resource consumption. We will build up an ergonomic and sound definition step by step. Firstly, we need to understand how the resource consumption of subsequent expressions behaves. For this, there are two cases: The first operation reimburses enough resources for the second operation to be run, or the second operation consumes more resources than the first operation reimburses. Concretely, for two evaluations \( \vDash e_1 \evaluatesto v_1 | (p_0, p_1)\) and \( \vDash e_2 \rightsquigarrow v_2 | (q_0, q_1)\), we define the resulting cost of their composition as follows:
 \[
    \begin{cases}
       (p_0 + q_0 - p_1, q_1) & \mbox{if } q_0 \geq p_1 \\
@@ -43,8 +45,8 @@ First, we need a rule that allows us to combine two expression into a let expres
 
 \[
    \inference[(let)]
-   {H_1 \vdash e_1 \rightsquigarrow v~H_1'~|~(p,p')~~,~~ H_1' \vdash e_2 \rightsquigarrow v_2~H_2'~|~(q, q')}
-   {H_1 \vdash \<let> ~ \_ = e_1 ~ \<in> ~  e_2~|~(p, p') \cdot (q, q')}
+   {\vDash e_1 \evaluatesto v~H_1'~|~(p,p')~~,~~ \vDash e_2 \rightsquigarrow v_2~|~(q, q')}
+   {\vDash \<let> ~ \_ = e_1 ~ \<in> ~  e_2~|~(p, p') \cdot (q, q')}
 \]
 
 Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. As a result, any resource-annotation where a priori and a posteriori resources differ by at least \(q\), is valid. This leads to the following rule:
@@ -52,7 +54,7 @@ Similarly, we now define a rule for the \<tick> instruction. The expression \<ti
 \[
    \inference[(tick)]
    {q_0 \geq q + q_1}
-   {H \vdash \<tick> q \rightsquigarrow~|~(q_0, q_1)}
+   {H \vDash \<tick> q \evaluatesto~|~(q_0, q_1)}
 \]
 
 In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules.
@@ -151,13 +153,10 @@ This indeed furnishes a tight bound on the resources required. Especially for pr
 
 \section{Soundness Theorem}
 Ultimately, we want our type rules to be consistent with the operational semantics defined previously. This will allow us to reason about the type of a program, while ensuring that the resource-annotations of the resulting type line up with the concrete resource consumption of the expression.
-The proof of soundness comprises multiple parts. To this end, we need to introduce the notion of a \emph{well-formed} environment, as this provides a necessary congruence between a typing context \(\Gamma\) and an environment \(V\), that is needed, to prove soundness.
 
-We say that an environment \(V\) is \emph{well-formed} with respect to a typing context \(\Gamma\), if the types that are assigned to variables in \(\Gamma\) are consistent with the types that are assigned to variables in the environment \(V\). The importance of this constraint can best be understood by a counterexample, which uses types that are used in programming languages such as C++, Rust, etc. Consider a context \(\Gamma\) with only one variable, \( x : \text{int}\), and an environment \(V\) for which the variable \(x\) has the type float. It is apparent that the types int and float are not the same. We avoid this by constraining the environment to be well-formed with respect to a context.
+Let us first sketch the structure of our soundness proof:
 
-Having this definition in place, allows us to sketch the structure of a soundness proof:
-
-If \(\Gamma \vdash e : \unit^{p_0}_{p_1}\) and \(V \vDash e \rightsquigarrow  () | (q_0, q_1) \), where the environment \(V\) is well-formed with respect to \(\Gamma\), then the following hold true:
+If \(\Gamma \vdash e : \unit^{p_0}_{p_1}\) and \(\vDash e \evaluatesto  () | (q_0, q_1) \), then the following hold true:
 The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The a priori resource annotation of the type is not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, like so: 
 
 \begin{itemize}
@@ -168,7 +167,7 @@ The result \(()\) of the expression \(e\) has a type that is consistent with the
 
 The first bullet point capturing that the result of evaluating the expression \(e\) has the type that was constructed using the type rules. The second bullet point stating that the \emph{a priori} resource bound that was constructed using the type rules is an upper bound on the concrete resources required a priori. And the third point stating that the resource consumption of the constructed type also provides an upper bound on the concrete resource consumption.
 
-In the first part, I prove that the inequality \(p \geq q\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\Gamma \vdash e : \unit^{p_0}_{p_1}\) and that the expression evaluates, like so \(\vDash e \rightsquigarrow () | (q_0, q_1)\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the three bullets points above hold. 
+In the first part, I prove that the inequality \(p \geq q\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\Gamma \vdash e : \unit^{p_0}_{p_1}\) and that the expression evaluates, like so \(\vDash e \evaluatesto () | (q_0, q_1)\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the three bullets points above hold. 
 
 (tick): We make a case distinction. Let \(q \geq 0\). Then the following hold by assumption:
 \begin{align}
@@ -188,7 +187,7 @@ Furthermore, \ref{4.1} and \ref{4.4} also hold true. By definition \(p_0 \geq 0\
 Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \ref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
 \todo{Add case distinction into type rules, or explain why that holds.}
 
-(let): By assumption, we get that \(\Gamma \vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \rightsquigarrow () | (r_0, r_1) \cdot (s_0, s_1)\). We do, however, also know by assumption that the following inequalities hold for the subexpressions \(e_1, e_2\): \(p_0 \geq r_0\) and \(q_0 \geq s_0\), as well as \(p_0 - p_1 \geq r_0 - r_1\) and \(q_0 - q_1 \geq s_0 - s_1\). Our first goal is to prove that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(s_0, r_1)\). We arrive at this inequality, by first contracting the type in the first assumption, and, by secondly multiplying the resource-annotated tuples in the second assumption, concerning evaluation. 
+(let): By assumption, we get that \(\Gamma \vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \evaluatesto () | (r_0, r_1) \cdot (s_0, s_1)\). We do, however, also know by assumption that the following inequalities hold for the subexpressions \(e_1, e_2\): \(p_0 \geq r_0\) and \(q_0 \geq s_0\), as well as \(p_0 - p_1 \geq r_0 - r_1\) and \(q_0 - q_1 \geq s_0 - s_1\). Our first goal is to prove that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(s_0, r_1)\). We arrive at this inequality, by first contracting the type in the first assumption, and, by secondly multiplying the resource-annotated tuples in the second assumption, concerning evaluation. 
 Showing this inequality reduces to showing that \(\max(q_0, p_1) \geq \max(s_0, r_1)\), as \(p_0 - p_1 \geq r_0 - r_1\) by assumption. It also holds that, by assumption, \(q_0 \geq s_0\). Thus, we only need to show that \(p_1 \geq r_1\). 
 
 
