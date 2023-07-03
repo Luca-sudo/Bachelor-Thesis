@@ -17,26 +17,28 @@ In this section, we define what it means for a program to consume (or free) reso
 Conveniently, we don't need to consider the the heap for this type system, as the resulting cost only depends on the sequence of tick instructions, and as such the cost is invariant with respect to any stack. As we will see when we augment this type system, the heap is generally required.
 
 When composing evaluations, we need to define sound rules for the resulting resource consumption. We will build up an ergonomic and sound definition step by step. Firstly, we need to understand how the resource consumption of subsequent expressions behaves. For this, there are two cases: The first operation reimburses enough resources for the second operation to be run, or the second operation consumes more resources than the first operation reimburses. Concretely, for two evaluations \( \vDash e_1 \evaluatesto v_1 | (p_0, p_1)\) and \( \vDash e_2 \rightsquigarrow v_2 | (q_0, q_1)\), we define the resulting cost of their composition as follows:
-\[
+\begin{equation}
+   \label{def:multiplying-resources}
    \begin{cases}
       (p_0 + q_0 - p_1, q_1) & \mbox{if } q_0 \geq p_1 \\
-      (p_0, q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1
+      (p_0, q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1 
    \end{cases}
-\]
+\end{equation}
 
 This definition ensures that we do not "erase" required resources out of a sequence of evaluations. As an example, consider a program comprising two expressions. The first one consuming 2 resources, and the second one freeing up 3 resources. Without the case distinction above, we could "erase" the \(2\) resources that are required a priori. 
 
 The first case is relevant, if the resources required by the second operation are exceeded, which is equivalent to \(q_0 \geq p_1\). In this case, we need to increase the initial resources by the difference between the reimbursement of the first operation and the cost of second operation. For the second case, the resources that are reimbursed suffice to start the second operation. As a result, we do not need to increase the initial cost, but increase the final reimbursement. It becomes apparent, that the difference between the resource reimbursement of the first operation and the resource requirement of the second operation has a key role in determining the resulting cost. We, therefore, give this metric a distinguished name:
 
 \begin{definition}
-   Let \((p_0, p_1)\) and \(q_0, q_1)\) be two resource pairs, of subsequent operations, as introduced above. We then define the \textbf{disparity} of these two operations as \(\Delta = \max(p_1, q_0)\).
+   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two resource pairs, of subsequent operations, as introduced above. We then define the \textbf{disparity} of these two operations as \(\max(p_1, q_0)\).
 \end{definition}
 
+We can further simplify the rule for multiplying resource-annotated tuples. To this end, observe that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the resource requirements in the first case in \ref{def:multiplying-resources}, if it holds that \(q_0 \geq p_1\). Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) also precisely matches the second case, if \(q_0 < p_1\). As a result, we can provide a more compact definition for the multiplication of resource-annotated tuples:
 
 \begin{definition}
 
    Let \((p_0, p_1)\) and \((q_0, q_1)\) be two resource pairs, as introduced above. We then define 
-   \((p_0, p_1) \cdot (q_0, q_1) = (p_0 - p_1 + \Delta, q_1 - q_0 + \Delta)\)
+   \((p_0, p_1) \cdot (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\)
    
 \end{definition}
 
@@ -75,7 +77,7 @@ It is not immediately clear, what type the resulting \<let> expression should ha
 
 \begin{definition}
    Let \(\unit^{p_0}_{p_1}\) and \(\unit^{q_0}_{q_1}\) be resource-annotated types. \\
-   We define \(\unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1} = \unit^{p_0 - p_1 + \Delta}_{q_1 - q_0 + \Delta}\)
+   We define \(\unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1} = \unit^{p_0 - p_1 + \max(q_0, p_1)}_{q_1 - q_0 + \max(q_0, p_1)}\)
 \end{definition}
 
 \todo{Add that this forms a monoid that can be extended to accomodate more than just unit as well?}
@@ -138,7 +140,8 @@ Applying the definition of the \(\ltimes\) operator, allows us to shrink the typ
 
 Where we perform the first step, because \( 0 \geq 0\), which are \(q_1\) and \(r_0\) in the definition respectively. And we perform the second steps, as \(5 \geq 2\), which is the other case distinction in our definition.
 
-This indeed furnishes a tight bound on the resources required. Especially for proving the soundness theorem, which is the goal of the next section, introducing a third rule makes the proof easier. We introduce a rule that allows us to \emph{relax} the resource-bounds of a type. For illustration, consider the type \(\unit^4_0\). \emph{Relaxing} this type allows u to also derive a type like \(\unit^6_2\), where we simply incremented both the a priori and a posteriori resource by two units, respectively. When defining the type rule, we need to be cautious, as the relaxed type should not have a diminished resource consumption. As such, we \emph{do not} want to relax the type \(\unit^4_0\) into the type \(\unit^4_2\), as this would reduce the resource consumption.
+This indeed furnishes a tight bound on the resources required. 
+Sometimes, we may want to endow a type with additional apriori resources; This is especially true, if we need additional resources for a subsequent operation. To this end, we introduce a rule that allows us to \emph{relax} the resource-bounds of a type. For illustration, consider the type \(\unit^4_0\). \emph{Relaxing} this type allows us to also derive a type like \(\unit^6_2\), where we simply incremented both the a priori and a posteriori resource by two units, respectively. When defining the type rule, we need to be cautious, as the relaxed type should not have a diminished resource consumption. As such, we \emph{do not} want to relax the type \(\unit^4_0\) into the type \(\unit^4_2\), as this would reduce the resource consumption.
 
 \[
    \inference[(T:relax)]
@@ -186,22 +189,28 @@ For the second case, we assume that \(q < 0\). Then, the following hold:
 Furthermore, \ref{4.1} and \ref{4.4} also hold true. By definition \(p_0 \geq 0\) holds. Using \ref{4.6}, we get \(p_0 \geq q_0\). 
 Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \ref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
 \todo{Add case distinction into type rules, or explain why that holds.}
-
-(let): By assumption, we get that \(\Gamma \vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \evaluatesto () | (r_0, r_1) \cdot (s_0, s_1)\). We do, however, also know by assumption that the following inequalities hold for the subexpressions \(e_1, e_2\): \(p_0 \geq r_0\) and \(q_0 \geq s_0\), as well as \(p_0 - p_1 \geq r_0 - r_1\) and \(q_0 - q_1 \geq s_0 - s_1\). Our first goal is to prove that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(s_0, r_1)\). We arrive at this inequality, by first contracting the type in the first assumption, and, by secondly multiplying the resource-annotated tuples in the second assumption, concerning evaluation. 
-Showing this inequality reduces to showing that \(\max(q_0, p_1) \geq \max(s_0, r_1)\), as \(p_0 - p_1 \geq r_0 - r_1\) by assumption. It also holds that, by assumption, \(q_0 \geq s_0\). Thus, we only need to show that \(p_1 \geq r_1\). 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   
+(let): By assumption, we get that \(\Gamma \vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \evaluatesto () | (r_0, r_1) \cdot (s_0, s_1)\). As a result, the following hold true:
+\begin{align}
+   p_0         &\geq r_0 \label{4.7}\\
+   q_0         &\geq s_0 \label{4.8} \\
+   p_0 - p_1   &\geq r_0 - r_1 \label{4.9} \\
+   q_0 - q_1   &\geq s_0 - s_1 \label{4.10}
+\end{align}
+We want to show that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(r_1, s_0)\). For this, we consider two cases: first the case where \(s_0 \geq r_1\), and second the case where \(s_0 < r_1\)
+Let \(s_0 \geq r_1\). We get the following chain of inequalities:
+\begin{align*}
+   r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + s_0 \\
+                              &\stackrel{\ref{4.9}}{\leq}p_0 - p_1 + s_0\\
+                              &\stackrel{\ref{4.8}}{\leq}p_0 - p_1 + q_0\\
+                              &\stackrel{*}{\leq}p_0 - p_1 + \max(q_0, p_1)
+\end{align*}
+Where the inequality with \(*\) is justified, as \(\max(q_0, p_1) \geq q_0\) trivially holds. This concludes the first case.
+For the second case, we assume that \(s_0 < r_1\). 
+\begin{align*}
+   r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + r_1 \\
+                              &= r_0 \\
+                              &\stackrel{\ref{4.7}}{\leq} p_0\\
+                              &\stackrel{*}{\leq} p_0 - p_1 + \max(q_0, p_1)
+\end{align*}
+Similarly, we justify \(*\), because \(\max(q_0, p_1) \geq p_1\), which means that \(-p_1 + \max(q_0, p_1) \geq 0\). 
