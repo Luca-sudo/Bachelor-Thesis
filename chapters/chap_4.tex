@@ -170,10 +170,25 @@ The first bullet point capturing that the result of evaluating the expression \(
 
 In the first part, I prove that the inequality \(p \geq q\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\Gamma \vdash e : \unit^{p_0}_{p_1}\) and that the expression evaluates, like so \(\vDash e \rightsquigarrow () | (q_0, q_1)\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the three bullets points above hold. 
 
-(tick): By assumption, we get that \(\Gamma \vdash \<tick> q : \unit^{p_0}_{p_1}\), where \(p_0 \geq q + p_1\) and \(\vDash \<tick> q \rightsquigarrow () | (q_0, q_1)\), with \(q_0 \geq q + q_1\). 
-We make a case destinction. Let \(q \geq 0\). The constraint for the evaluation is then most generally solved with \(q_0 = q\) and \(q_1 = 0\). 
+(tick): We make a case distinction. Let \(q \geq 0\). Then the following hold by assumption:
+\begin{align}
+   q     &\geq 0 \label{4.1}\\
+   q_0   &= q \label{4.2}\\
+   q_1   &= 0 \label{4.3}\\
+   p_0   &\geq q + p_1 \label{4.4}
+\end{align}
+Since \(p_1 \geq 0\) by definition, we can infer from \ref{4.4} that \(p_0 \geq q\) holds. Applying this inequality to \ref{4.2}, we get that \(p_0 \geq q_0\). Which proves the first part.
+Next, we show \(p_0 - p_1 \geq q_0 - q_1\). Combining \ref{4.4} with \ref{4.2}, we get \(p_0 \geq q_0 + p_1\). Subtracting \(p_1\) from both sides, we get \(p_0 - p_1 \geq q_0\). Since \(q_1 \geq 0\) by definition as well, it especially holds that \(p_0 - p_1 \geq q_0 - q_1\). Which concludes the proof for the case of \(q \geq 0\).
+For the second case, we assume that \(q < 0\). Then, the following hold:
+\begin{align}
+   q_1   &= q \label{4.5}\\
+   q_0   &= 0 \label{4.6}
+\end{align}
+Furthermore, \ref{4.1} and \ref{4.4} also hold true. By definition \(p_0 \geq 0\) holds. Using \ref{4.6}, we get \(p_0 \geq q_0\). 
+Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \ref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
+\todo{Add case distinction into type rules, or explain why that holds.}
 
-(let): By assumption, we get that \(\Gamma \vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \rightsquigarrow () | (r_0, r_1) \cdot (s_0, s_1)\). We do, however, also know by assumption that the following inequalitites hold for the subexpressions \(e_1, e_2\): \(p_0 \geq r_0\) and \(q_0 \geq s_0\), as well as \(p_0 - p_1 \geq r_0 - r_1\) and \(q_0 - q_1 \geq s_0 - s_1\). Our first goal is to prove that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(s_0, r_1)\). We arrive at this inequality, by first contracting the type in the first assumption, and, by secondly multiplying the resource-annotated tuples in the second assumption, concerning evaluation. 
+(let): By assumption, we get that \(\Gamma \vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \rightsquigarrow () | (r_0, r_1) \cdot (s_0, s_1)\). We do, however, also know by assumption that the following inequalities hold for the subexpressions \(e_1, e_2\): \(p_0 \geq r_0\) and \(q_0 \geq s_0\), as well as \(p_0 - p_1 \geq r_0 - r_1\) and \(q_0 - q_1 \geq s_0 - s_1\). Our first goal is to prove that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(s_0, r_1)\). We arrive at this inequality, by first contracting the type in the first assumption, and, by secondly multiplying the resource-annotated tuples in the second assumption, concerning evaluation. 
 Showing this inequality reduces to showing that \(\max(q_0, p_1) \geq \max(s_0, r_1)\), as \(p_0 - p_1 \geq r_0 - r_1\) by assumption. It also holds that, by assumption, \(q_0 \geq s_0\). Thus, we only need to show that \(p_1 \geq r_1\). 
 
 
