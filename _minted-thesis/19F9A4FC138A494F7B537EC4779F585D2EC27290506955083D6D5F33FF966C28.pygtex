@@ -1,5 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
-\PYG{k}{fun} \PYG{n}{addL} \PYG{n}{i} \PYG{n}{l} \PYG{o}{=} \PYG{k}{match} \PYG{n}{l} \PYG{k}{with} \PYG{o}{|} \PYG{n}{nil} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{nil}
-   \PYG{o}{|} \PYG{n}{x}\PYG{o}{::}\PYG{n}{xs} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{n}{x} \PYG{o}{+} \PYG{n}{i}\PYG{o}{)}\PYG{o}{::}\PYG{o}{(}\PYG{n}{addL} \PYG{n}{i} \PYG{n}{xs}\PYG{o}{)}
-\PYG{k}{end}
-\end{Verbatim}
