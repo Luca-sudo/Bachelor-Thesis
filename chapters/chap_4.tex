@@ -15,12 +15,16 @@ Below, we define the programming language for this chapter.
 \end{definition}
 
 \section{Operational Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\vDash e \evaluatesto v\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\vDash e \rightsquigarrow v, H'~| ~(p, p')\), where \(p\) and \(p'\) are positive rational numbers and \(p\) being the amount of resources needed to start evaluating the expression, and \(p'\) being the resources freed after the evaluation of expression \(e\).
+In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\vDash e \evaluatesto v\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\vDash e \rightsquigarrow v ~| ~(p, p')\), where \(p\) and \(p'\) are positive rational numbers and \(p\) being the amount of resources needed to start evaluating the expression, and \(p'\) being the resources freed after the evaluation of expression \(e\).
 This yields the following definition:
 
 \begin{definition}[Evaluation Judgement]
    A judgement of the form \(\vDash e \evaluatesto v | (p, p')\) encodes that the expression e is evaluated to the value v, with p resources needed upfront, and p' resources being freed afterwards.
 \end{definition}
+
+It is important to differentiate between the resources required by an expression, and the resources \emph{consumed} by an expression. In the above definition, the expression requires \(p\) resources a priori, whereas its resource consumption amounts to \(p - p'\); That is, the resource consumption is precisely the resources needed upfront, minus the resources that are freed in the end.
+
+Initially, one may be tempted to try and simplify the resource consumption. Consider an imaginary expression, that requires \((4, 2)\) resources to evaluate. It is generally \emph{wrong} to simplify the resource consumption to \((2, 0)\), as the two resource units we just factored out might be mandatory in order to even evaluate the expression. For example, the two resource units may be required to store an intermediary result, etc. 
 
 As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need a definition of composition that is consistent with the resource-annotations provided to an expression.
 For this, we will build up an ergonomic and sound definition step by step. Firstly, we need to understand how the resource consumption of subsequent expressions behaves. For this, there are two cases: The first operation reimburses enough resources for the second operation to be executed, or the second operation consumes more resources than the first operation reimburses. Concretely, for two evaluations \( \vDash e_1 \evaluatesto v_1 | (p_0, p_1)\) and \( \vDash e_2 \rightsquigarrow v_2 | (q_0, q_1)\), we define the resulting cost of their composition as follows:
@@ -140,13 +144,17 @@ Intuitively, we have three distinct steps, the first one consuming 3 resources, 
    {\<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 :\unit^{q_0}_{q_1} \ltimes \unit^{t_0}_{t_1} \ltimes \unit^{s_0}_{s_1}}
 \]
 
-We are now left with the task of resolving the collected, numeric constraints. A possible solution to the system of constraints the following: \(q_1 = t_0 = s_1 = 0\) , \(q_0 = 3\), \(t_1 = 2\) and \(s_0 = 5\). This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type is: \(\unit^{3}_{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0}\).
+We are now left with the task of resolving the collected, numeric constraints. A possible solution to the system of constraints is the following: \(q_1 = t_0 = s_1 = 0\) , \(q_0 = 3\), \(t_1 = 2\) and \(s_0 = 5\). This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type judgement is: 
+\[
+   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \unit^{3}_{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0}
+\]
 Applying the definition of the \(\ltimes\) operator, allows us to contract the type, which we do stepwise for sake of illustration:
 
 \begin{align*}
    \unit^{3}_{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0} &= \unit^{3 + 0 - 0}_2 \ltimes \unit^5_0\\
                                                              &= \unit^{3 + 5 - 2}_2 = \unit^6_2
 \end{align*}
+\todo{Do I need to define that this is left associative?}
 
 For each step, we simply apply the definition of the \(\ltimes\) operator, already inserting the result of any \(\max\) function, for brevity. The resulting type \(\unit^6_2\) indeed furnishes a tight bound on the resources required. 
 
@@ -182,7 +190,7 @@ The first bullet point capturing that the result of evaluating the expression \(
    Let e be an expression in our programming language. If \(\vdash e : \unit^{p_0}_{p_1}\) and \(\vDash e \evaluatesto  () | (q_0, q_1) \), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
 \end{theorem}
 
-In the first part, I prove that the inequality \(p \geq q\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\vdash e : \unit^{p_0}_{p_1}\) and that the expression evaluates, like so \(\vDash e \evaluatesto () | (q_0, q_1)\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the three bullets points above hold. 
+In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\vdash e : \unit^{p_0}_{p_1}\) and that the expression evaluates, like so \(\vDash e \evaluatesto () | (q_0, q_1)\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.
 
 \begin{proof}
    (tick): We make a case distinction. Let \(q \geq 0\). Then the following hold by assumption:
