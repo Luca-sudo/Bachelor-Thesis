@@ -5,7 +5,13 @@ Dissertation: https://edoc.ub.uni-muenchen.de/13955/1/Hoffmann_Jan.pdf
 # Questions and Meeting Notes
 
 ## Questions
-- Toy type systems yields problem : Can derive invalid type.
+- Sum types
+	- How are they implemented on a low level?
+	- What would be a good notion of cost?
+	- Annotate sum type with costs or not? 
+		- If yes, how to determine that cost? How do they even do it in the paper?
+		- I dont think it makes sense
+	- Without variables, matching on sum types is not sensical (?)
 
 ## 14.06.23
 
