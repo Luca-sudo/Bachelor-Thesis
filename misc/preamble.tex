@@ -58,14 +58,6 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}{Definition}[section]
 
-% Glossary
-\usepackage[sort=none, symbols, nogroupskip]{glossaries-extra}
-
-
-%%%%%%%%%%%
-% SYMBOLS %
-%%%%%%%%%%%
-\input{misc/symbols.tex}
 
 
 % Corporate Design
@@ -133,6 +125,16 @@
 
 % Hyperlinks and menu for your document
 \usepackage[breaklinks,hyperindex,colorlinks,anchorcolor=black,citecolor=black,filecolor=black,linkcolor=black,menucolor=black,urlcolor=black,pdftex]{hyperref} % pagebackref: Add page number to the references where they can be found
+
+% Glossary
+\usepackage[sort=none,symbols,nogroupskip]{glossaries-extra}
+
+
+%%%%%%%%%%%
+% SYMBOLS %
+%%%%%%%%%%%
+\input{misc/symbols.tex}
+
 % DO NOT LOAD ANY OF YOUR PACKAGES BEYOND THIS PACKAGE
 
 \makeatletter
