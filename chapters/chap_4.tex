@@ -6,6 +6,7 @@ In order to elicit resource bounds for programs, we need two things: (1) A const
 Below, we define the programming language for this chapter.
 
 \begin{definition}[Programming Language]
+   \label{def:prog-lang-4}
 
 \begin{align*}
    e := ~~~ & \<let>~\_ = e_1 \text{ in } e_2   & \text{(let)}\\
@@ -15,11 +16,18 @@ Below, we define the programming language for this chapter.
 \end{definition}
 
 \section{Operational Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\vDash e \evaluatesto v\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\vDash e \rightsquigarrow v ~| ~(p, p')\), where \(p\) and \(p'\) are positive rational numbers and \(p\) being the amount of resources needed to start evaluating the expression, and \(p'\) being the resources freed after the evaluation of expression \(e\).
-This yields the following definition:
+In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\vDash e \evaluatesto{}{} v\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\vDash e \evaluatesto{p_0}{p_1} v\), where \(p_0\) and \(p_1\) are positive rational numbers, \(p_0\) being the amount of resources needed to start evaluating the expression, and \(p_1\) being the resources freed after the evaluation of expression \(e\).
+This yields the following definitions:
 
-\begin{definition}[Evaluation Judgement]
-   A judgement of the form \(\vDash e \evaluatesto v | (p, p')\) encodes that the expression e is evaluated to the value v, with p resources needed upfront, and p' resources being freed afterwards.
+\begin{definition}[Resource pair]
+   \label{def:resource-pair}
+   We define a \emph{resource pair} as a tuple \((p_0, p_1) \in \mathbb{Q}^{+} \times \mathbb{Q}^{+}\). Where \(p_0\) is the a priori resources needed, and \(p_1\) is the a posteriori resources reimbursed at the end.
+\end{definition}
+\todo{Unclear/handwaved?}
+
+\begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
+   Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1)\) be a \nameref{def:resource-pair}.
+   A judgement of the form \(\vDash e \evaluatesto{p_0}{p_1} v\) encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
 \end{definition}
 
 It is important to differentiate between the resources required by an expression, and the resources \emph{consumed} by an expression. In the above definition, the expression requires \(p\) resources a priori, whereas its resource consumption amounts to \(p - p'\); That is, the resource consumption is precisely the resources needed upfront, minus the resources that are freed in the end.
@@ -27,19 +35,26 @@ It is important to differentiate between the resources required by an expression
 Initially, one may be tempted to try and simplify the resource consumption. Consider an imaginary expression, that requires \((4, 2)\) resources to evaluate. It is generally \emph{wrong} to simplify the resource consumption to \((2, 0)\), as the two resource units we just factored out might be mandatory in order to even evaluate the expression. For example, the two resource units may be required to store an intermediary result, etc. 
 
 As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need a definition of composition that is consistent with the resource-annotations provided to an expression.
-For this, we will build up an ergonomic and sound definition step by step. Firstly, we need to understand how the resource consumption of subsequent expressions behaves. For this, there are two cases: The first operation reimburses enough resources for the second operation to be executed, or the second operation consumes more resources than the first operation reimburses. Concretely, for two evaluations \( \vDash e_1 \evaluatesto v_1 | (p_0, p_1)\) and \( \vDash e_2 \rightsquigarrow v_2 | (q_0, q_1)\), we define the resulting cost of their composition as follows:
-\begin{equation}
+For this, we will build up an ergonomic and sound definition step by step. Firstly, we need to understand how the resource consumption of subsequent expressions behaves. For this, there are two cases: The first operation reimburses enough resources for the second operation to be executed, or the second operation consumes more resources than the first operation reimburses. 
+
+Concretely, this yields the following definition for the cost of subsequent expressions:
+
+ we define the resulting cost of their composition as follows:
+\begin{definition}[Cost of subsequent expressions]
    \label{def:multiplying-resources}
-   \begin{cases}
-      (p_0 + q_0 - p_1, q_1) & \mbox{if } q_0 \geq p_1 \\
-      (p_0, q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1 
-   \end{cases}
-\end{equation}
+   Let \(e_1\) and \(e_2\) be two evaluations, such that \( \vDash e_1 \evaluatesto{p_0}{p_1} v_1\) and \( \vDash e_2 \evaluatesto{q_0}{q_1} v_2\). The resulting resource pair of their composition is determined by:
+   \[
+      \begin{cases}
+         (p_0 + q_0 - p_1, q_1) & \mbox{if } q_0 \geq p_1 \\
+         (p_0, q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1 
+      \end{cases}
+   \]
+\end{definition}
 
 The first case is relevant, if the resources required by the second operation are exceeded, which is equivalent to \(q_0 \geq p_1\). In this case, we need to increase the initial resources by the difference between the reimbursement of the first operation and the cost of second operation. For the second case, the resources that are reimbursed suffice to start the second operation. As a result, we do not need to increase the initial cost, but increase the final reimbursement. It becomes apparent, that the difference between the resource reimbursement of the first operation and the resource requirement of the second operation has a key role in determining the resulting cost. We, therefore, give this metric a distinguished name:
 
 \begin{definition}[Resource disparity] \label{def:resource-disparity}
-   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two resource pairs, of subsequent operations, as introduced above. We then define the \textbf{disparity} of these two operations as \(\max(p_1, q_0)\).
+   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, of subsequent operations, as introduced above. We then define the \textbf{disparity} of these two operations as \(\max(p_1, q_0)\).
 \end{definition}
 
 We can further simplify the rule for multiplying resource-annotated tuples. To this end, observe that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the resource requirements in the first case in \ref{def:multiplying-resources}, if it holds that \(q_0 \geq p_1\). Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) also precisely matches the second case, if \(q_0 < p_1\). As a result, we can provide a more compact definition for the multiplication of resource-annotated tuples, using the newly introduced \emph{resource disparity}:
@@ -47,19 +62,21 @@ We can further simplify the rule for multiplying resource-annotated tuples. To t
 \begin{definition}[Multiplying resource pairs]
    \label{def:resource-pairs}
 
-   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two resource pairs, as introduced above. We then define:
+   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, as introduced above. We then define:
    \[(p_0, p_1) \cdot (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]
    
 \end{definition}
+\todo{Show that this is actually a monoid?}
 
 Having this definition in place, allows us to compose evaluations together, and yield the resource consumption of their subsequent execution. We will now define rules for the evaluation of programming language constructs, in the form of operational semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
 First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
 
 \[
    \inference[(let)]
-   {\vDash e_1 \evaluatesto ()~|~(p,p')~~,~~ \vDash e_2 \rightsquigarrow ()~|~(q, q')}
-   {\vDash \<let> ~ \_ = e_1 ~ \<in> ~  e_2~ \evaluatesto ()|~(p, p') \cdot (q, q')}
+   {\vDash e_1 \evaluatesto{p_0}{p_1} ()~~,~~ \vDash e_2 \evaluatesto{q_0}{q_1} ()}
+   {\vDash \<let> ~ \_ = e_1 ~ \<in> ~  e_2~ \evaluatesto ()|~(p_0, p_1) \cdot (q_0, q_1)}
 \]
+\todo{Problem with the notation. How to nicely depict multiplication?}
 
 Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. As a result, any resource-annotation where a priori and a posteriori resources differ by at least \(q\), is valid. This leads to the following rule:
 
@@ -72,14 +89,23 @@ Similarly, we now define a rule for the \<tick> instruction. The expression \<ti
 In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules.
 
 \section{Type Rules}
-The type system in this chapter only constructs values of type \textbf{unit}. Therefore, the only resource-annotated type that we permit is the unit type, denoted by \(\unit^{p_0}_{p_1}\), where \(p_0\) provides an upper bound on the resources needed in order to evaluate an expression of that type, and \(p_1\) provides an upper bound on the amount of resources that are freed after evaluating an expression of that type. This yields the following type system:
+The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.
+
+For now, our programming language only constructs values of type \(\unit\). As a result, our type system only comprises the unit type. Contrary to that, the \nameref{def:evaluation-judgement} features resource-annotations. To embed the resource-pair into the type signature of an expression, we define the following notation:
+
+\begin{definition}[Resource-annotated types]\label{def:ra-type}
+   Let \(A\) be a type, and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then write \(A^{p_0}_{p_1}\) to denote a tuple \((A, (p_0, p_1))\).
+\end{definition}
+\todo{weirdly written?}
+
+For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The above definition, however, will be valid even once we extend our type system with types besides unit. Below is a figure containing the type system of our language:
 
 \begin{figure}[h] \label{fig:type-system}
-   \[A := \unit^{p_0}_{p_1} \]
+   \[A := \unit \]
    \caption{Type system with resource-annotated unit type.}
 \end{figure}
 
-Similarly to the previous section on operational semantics, we define two rules, one for \<let> expressions and one for \<tick>. Before we can introduce the rule for \<let>, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \ref{def:resource-pairs}. For this, consider the following example:
+Similarly to the previous section on operational semantics, we define two rules, one for \<let> expressions and one for \<tick>. Before we can introduce the rule for \<let>, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \cref{def:resource-pairs}. For this, consider the following example:
 
 \[
    \inference[]
@@ -87,8 +113,7 @@ Similarly to the previous section on operational semantics, we define two rules,
    {\vdash \<let> ~ \_ = e_1 ~ \<in> ~ e_2 :~?}
 \]
 
-It is not immediately clear, what type the resulting \<let> expression should have. We, therefore, define an operation on types that is closely linked to the definition \ref{def:resource-pairs} in the previous section.
-\todo{link to definition}
+It is not immediately clear, what type the resulting \<let> expression should have. We, therefore, define an operation on types that is closely linked to \cref{def:resource-pairs} in the previous section.
 
 \begin{definition}
    \label{def:type-product}
@@ -96,7 +121,7 @@ It is not immediately clear, what type the resulting \<let> expression should ha
    \[\unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1} = \unit^{p_0 - p_1 + \max(q_0, p_1)}_{q_1 - q_0 + \max(q_0, p_1)}\]
 \end{definition}
 
-Similarly to the composition of resource-annotations in the previous section on operational semantics, we could initially define the product of resource-annotated types using a case distinction similar to the previous section. Here, however, we skip this step and directly define the product using the resource-disparity (\ref{def:resource-disparity}).
+Similarly to the composition of resource-annotations in the previous section on operational semantics, we could initially define the product of resource-annotated types using a case distinction similar to the previous section. Here, however, we skip this step and directly define the product using the \nameref{def:resource-disparity}.
 
 Using the newly defined operation on resource-annotated types, we get the following rules:
 
@@ -169,6 +194,7 @@ Sometimes, we may want to endow a type with additional a priori resources; This 
    q_0 - p_0 \geq q_1 - p_1}
    {\vdash () : \unit^{q_0}_{q_1}}
 \]
+\todo{Scrap this? Introduce relax once needed?}
 
 
 \section{Soundness Theorem}
@@ -178,7 +204,7 @@ Let us first sketch the structure of our soundness proof:
 
 If \(\vdash e : \unit^{p_0}_{p_1}\) and \(\vDash e \evaluatesto  () | (q_0, q_1) \), then the following hold true:
 The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The a priori resource annotation of the type is not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, like so: 
-\todo{Add what p0 etc are}
+\todo{add why we use rationals}
 \todo{Split up type and resource-pairs}
 \todo{Simple nested list example and infer type}
 \todo{Make the derivation of subexpression assumptions  more explicit in proof. How did I get there}
@@ -192,7 +218,7 @@ The result \(()\) of the expression \(e\) has a type that is consistent with the
 The first bullet point capturing that the result of evaluating the expression \(e\) has the type that was constructed using the type rules. The second bullet point stating that the \emph{a priori} resource bound that was constructed using the type rules is an upper bound on the concrete resources required a priori. And the third point stating that the resource consumption of the constructed type also provides an upper bound on the concrete resource consumption.
 
 \begin{theorem}[Soundness Theorem]
-   Let e be an expression in our programming language. If \(\vdash e : \unit^{p_0}_{p_1}\) and \(\vDash e \evaluatesto  () | (q_0, q_1) \), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
+   Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\vdash e : \unit^{p_0}_{p_1}\) and \(\vDash e \evaluatesto  () | (q_0, q_1) \), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
 \end{theorem}
 
 In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\vdash e : \unit^{p_0}_{p_1}\) and that the expression evaluates, like so \(\vDash e \evaluatesto () | (q_0, q_1)\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.

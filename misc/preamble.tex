@@ -47,7 +47,8 @@
 \newcommand{\injleft}{\text{left}}
 \newcommand{\injright}{\text{right}}
 \newcommand{\semantic}[1]{\llbracket #1 \rrbracket}
-\newcommand{\evaluatesto}{\rightsquigarrow}
+\newcommand{\evaluatesto}[2]{\mathrel{\stackon[1pt]{$\rightsquigarrow$}{\scriptscriptstyle #1 \ #2}}}
+\newcommand{\voidenvironment}{\emptyset}
 
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
@@ -126,6 +127,8 @@
 % Hyperlinks and menu for your document
 \usepackage[breaklinks,hyperindex,colorlinks,anchorcolor=black,citecolor=black,filecolor=black,linkcolor=black,menucolor=black,urlcolor=black,pdftex]{hyperref} % pagebackref: Add page number to the references where they can be found
 \usepackage{cleveref}
+\usepackage{nameref}
+\usepackage{stackengine}
 
 % Glossary
 \usepackage[sort=none,symbols,nogroupskip]{glossaries-extra}
