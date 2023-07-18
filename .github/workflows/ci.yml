@@ -30,9 +30,15 @@ jobs:
         with:
           latexmk_shell_escape: true
           root_file: thesis.tex
-          
-      - name: Upload PDF file
-        uses: actions/upload-artifact@v3
+      
+      - name: Prepare upload
+        run: mkdir artifacts && cp thesis.pdf artifacts/
+        
+      - name: Upload PDF
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
-          name: PDF
-          path: thesis.pdf
+          publish_branch: build
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: artifacts/
+          force_orphan: true
