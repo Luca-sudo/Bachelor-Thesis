@@ -1,3 +1,7 @@
+# Bachelor Thesis 
+[![CI](../../actions/workflows/ci.yml/badge.svg?branch=main)](../../actions/workflows/ci.yml)  
+Download: [thesis.pdf](https://raw.githubusercontent.com/Luca-sudo/bachelor-thesis/build/thesis.pdf)
+
 # Literature
 Dissertation: https://edoc.ub.uni-muenchen.de/13955/1/Hoffmann_Jan.pdf
 
