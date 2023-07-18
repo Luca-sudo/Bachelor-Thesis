@@ -213,7 +213,7 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
       q_0   &= 0 \label{4.6}
    \end{align}
    Furthermore, \ref{4.1} and \ref{4.4} also hold true. By definition \(p_0 \geq 0\) holds. Using \ref{4.6}, we get \(p_0 \geq q_0\). 
-   Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \ref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
+   Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \cref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
    \todo{Add case distinction into type rules, or explain why that holds.}
       
    (let): By assumption, we get that \(\vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \evaluatesto () | (r_0, r_1) \cdot (s_0, s_1)\). As a result, the following hold true:
