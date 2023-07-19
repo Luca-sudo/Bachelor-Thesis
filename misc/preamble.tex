@@ -50,6 +50,22 @@
 \newcommand{\evaluatesto}[2]{\mathrel{\stackon[1pt]{$\rightsquigarrow$}{\scriptscriptstyle #1 \ #2}}}
 \newcommand{\voidenvironment}{\emptyset}
 
+
+% Command for the evaluation judgement. Takes the environment, expression, cost pair and final value.
+\newcommand{\evals}[5]{#1 \vDash #2 \mathrel{\stackon[1pt]{\(\rightsquigarrow\)}{\(\scriptscriptstyle #4 \ #5\)}} #3}
+
+% Resource annotated type. Arguments: type, prior resources, resources freed.
+\newcommand{\ratype}[3]{#1 ^{#2}_{#3}}
+
+% Typing judgement. Arguments: Context, expression, type.
+\newcommand{\typing}[3]{#1 \vdash #2 : #3}
+
+% Programming language constructs as defined in the respective chapters.
+\newcommand{\letexp}[3]{\mathbf{let}~#1 = #2~\mathbf{in}~#3}
+\newcommand{\tick}[1]{\mathbf{tick}~#1}
+\newcommand{\true}{\mathbf{true}}
+\newcommand{\false}{\mathbf{false}}
+
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
 
@@ -133,11 +149,29 @@
 % Glossary
 \usepackage[sort=none,symbols,nogroupskip]{glossaries-extra}
 
+% Symbols. To be used by glossaries package.
+\glsxtrnewsymbol
+  [description={Unit Type}]
+  {unit}
+  {\(\unit\)}
+\glsxtrnewsymbol
+  [description={Resource-Annotated Type}]
+  {ratype}
+  {\(\ratype{A}{p_0}{p_1}\)}
+\glsxtrnewsymbol
+  [description={The Unit Value}]
+  {unitval}
+  {\(()\)}
+\glsxtrnewsymbol
+  [description={Evaluation Judgement}]
+  {evaljudgement}
+  {\(\vDash\)}
+\glsxtrnewsymbol[description={Evaluation}]{evaluation}{\(\evals{E}{e}{v}{p_{0}}{p_{1}}\)}
+\glsxtrnewsymbol[description={Typing Judgement}]{typejudgement}{\(\vdash\)}
+\glsxtrnewsymbol[description={Type Product}]{typeproduct}{\(\ltimes\)}
+\glsxtrnewsymbol[description={Environment}]{environment}{\(E\)}
+\glsxtrnewsymbol[description={Get the value of a variable}]{value from environment}{\(E(x)\)}
 
-%%%%%%%%%%%
-% SYMBOLS %
-%%%%%%%%%%%
-\input{misc/symbols.tex}
 
 % DO NOT LOAD ANY OF YOUR PACKAGES BEYOND THIS PACKAGE
 

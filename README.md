@@ -17,6 +17,13 @@ Dissertation: https://edoc.ub.uni-muenchen.de/13955/1/Hoffmann_Jan.pdf
 		- I dont think it makes sense
 	- Without variables, matching on sum types is not sensical (?)
 
+
+# TODOs/work
+- Need mechanism to map variables in second subexpression of let
+- Split up T:tick
+- Split up T:let as well?
+- Evaluation notation falls short for sequential cost. How to improve?
+
 ## 14.06.23
 
 ### Agenda

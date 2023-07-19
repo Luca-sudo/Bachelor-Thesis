@@ -37,7 +37,7 @@ Both notation conventions allows us to provide a compact and readable definition
 \[
    \inference[(E:var)]
    {x \in E}
-   {E \vDash x \evaluatesto{}{} E(x)}
+   {\evals{E}{x}{E(x)}{}{}} 
 \]
 \todo{what cost makes sense?}
 
@@ -46,6 +46,6 @@ Let us now augment the rules \(\<let>\) and \(\<tick>\) with environments, if ne
 \[
    \inference[(E:tick)]   
    {q_0 \geq q + q_1}
-   {\voidenvironment \vDash \<tick> ~q \evaluatesto{q_0}{q_1} ()}
+   {\evals{E}{\tick{k}}{()}{q_0}{q_1}}
    \label{rule:e-let-2}
 \]

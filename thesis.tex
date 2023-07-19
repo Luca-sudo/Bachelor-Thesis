@@ -19,7 +19,6 @@ BCOR=1cm, % Bindekorrektur: Change this accordingly, also read the KomaScript Gu
 
 \input{misc/preamble}
 
-
 %% here your document starts
 \begin{document}
 
@@ -30,7 +29,6 @@ BCOR=1cm, % Bindekorrektur: Change this accordingly, also read the KomaScript Gu
 %% title page --- made out of expressions defined above
 \input{frontpage}
 
-\printunsrtglossary[type=symbols,style=long]
 
 \input{chapters/chap_0}
 
@@ -43,12 +41,13 @@ BCOR=1cm, % Bindekorrektur: Change this accordingly, also read the KomaScript Gu
 %% subsections \subsections{...} and so on...
 %%
 
+\printunsrtglossary[type=symbols]
+
 \input{chapters/chap_1}
 \input{chapters/chap_2}
 \input{chapters/chap_3}
 \input{chapters/chap_4}
 \input{chapters/chap_5}
-\input{chapters/chap_6}
 
 %% include appendix
 

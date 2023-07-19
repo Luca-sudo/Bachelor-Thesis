@@ -9,14 +9,14 @@ Below, we define the programming language for this chapter.
    \label{def:prog-lang-4}
 
 \begin{align*}
-   e := ~~~ & \<let>~\_ = e_1 \text{ in } e_2   & \text{(let)}\\
-            & \<tick>~q                       & \text{(tick)}
+   e := ~~~ & \letexp{\_}{e_1}{e_2}             & \text{(let)}\\
+            & \tick{q}                         & \text{(tick)}
 \end{align*}
 
 \end{definition}
 
 \section{Operational Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\vDash e \evaluatesto{}{} v\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\vDash e \evaluatesto{p_0}{p_1} v\), where \(p_0\) and \(p_1\) are positive rational numbers, \(p_0\) being the amount of resources needed to start evaluating the expression, and \(p_1\) being the resources freed after the evaluation of expression \(e\).
+In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \(p_0\) and \(p_1\) are positive rational numbers, \(p_0\) being the amount of resources needed to start evaluating the expression, and \(p_1\) being the resources freed after the evaluation of expression \(e\).
 This yields the following definitions:
 
 \begin{definition}[Resource pair]
@@ -27,7 +27,7 @@ This yields the following definitions:
 
 \begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
    Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1)\) be a \nameref{def:resource-pair}.
-   A judgement of the form \(\vDash e \evaluatesto{p_0}{p_1} v\) encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
+   A judgement of the form \(\evals{}{e}{v}{p_0}{p_1}\) encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
 \end{definition}
 
 It is important to differentiate between the resources required by an expression, and the resources \emph{consumed} by an expression. In the above definition, the expression requires \(p\) resources a priori, whereas its resource consumption amounts to \(p - p'\); That is, the resource consumption is precisely the resources needed upfront, minus the resources that are freed in the end.
@@ -42,11 +42,11 @@ Concretely, this yields the following definition for the cost of subsequent expr
  we define the resulting cost of their composition as follows:
 \begin{definition}[Cost of subsequent expressions]
    \label{def:multiplying-resources}
-   Let \(e_1\) and \(e_2\) be two evaluations, such that \( \vDash e_1 \evaluatesto{p_0}{p_1} v_1\) and \( \vDash e_2 \evaluatesto{q_0}{q_1} v_2\). The resulting resource pair of their composition is determined by:
+   Let \(e_1\) and \(e_2\) be two evaluations, such that \(\evals{}{e_1}{v_1}{p_0}{p_1}\) and \( \evals{}{e_2}{v_2}{q_0}{q_1}\). The resulting resource pair of their composition is determined by:
    \[
       \begin{cases}
-         (p_0 + q_0 - p_1, q_1) & \mbox{if } q_0 \geq p_1 \\
-         (p_0, q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1 
+         (p_0 + q_0 - p_1,  q_1) & \mbox{if } q_0 \geq p_1 \\
+         (p_0,q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1 
       \end{cases}
    \]
 \end{definition}
@@ -73,17 +73,23 @@ First, we need a rule that allows us to combine two expression into a let expres
 
 \[
    \inference[(let)]
-   {\vDash e_1 \evaluatesto{p_0}{p_1} ()~~,~~ \vDash e_2 \evaluatesto{q_0}{q_1} ()}
-   {\vDash \<let> ~ \_ = e_1 ~ \<in> ~  e_2~ \evaluatesto ()|~(p_0, p_1) \cdot (q_0, q_1)}
+   {\evals{}{e_1}{()}{p_0}{p_1} ~~,~~ \evals{}{e_2}{()}{q_0}{q_1}}
+   {\evals{}{\letexp{}{e_1}{e_1}}{()}{p_0 - p_1}{q_1 - q_0}}
 \]
-\todo{Problem with the notation. How to nicely depict multiplication?}
+\todo{Introduce rule as split case? See below.}
 
-Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. As a result, any resource-annotation where a priori and a posteriori resources differ by at least \(q\), is valid. This leads to the following rule:
+Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. These two cases translate directly into two inference rules, provided below:
 
 \[
-   \inference[(tick)]
-   {q_0 \geq q + q_1}
-   {\vDash \<tick>~q \evaluatesto~()|~(q_0, q_1)}
+   \inference[\((E:tick_{+})\)]
+   {q \geq 0}
+   {\evals{}{\tick{q}}{()}{q}{}}
+\]
+
+\[
+   \inference[\((E:tick_{-})\)]
+   {q < 0}
+   {\evals{}{\tick{q}}{()}{}{-q}}
 \]
 
 In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules.
@@ -105,20 +111,20 @@ For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The a
    \caption{Type system with resource-annotated unit type.}
 \end{figure}
 
-Similarly to the previous section on operational semantics, we define two rules, one for \<let> expressions and one for \<tick>. Before we can introduce the rule for \<let>, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \cref{def:resource-pairs}. For this, consider the following example:
+Similarly to the previous section on operational semantics, we define two rules, one for \textbf{let} expressions and one for \textbf{tick}. Before we can introduce the rule for \textbf{let}, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \cref{def:resource-pairs}. For this, consider the following example:
 
 \[
    \inference[]
-   {\vdash e_1 : \unit^{p_0}_{p_1}~~,~~ \vdash e_2 : \unit^{q_0}_{q_1}}
-   {\vdash \<let> ~ \_ = e_1 ~ \<in> ~ e_2 :~?}
+   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}}, \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
+   {\typing{}{\letexp{\_}{e_1}{e_2}}{?}}
 \]
 
-It is not immediately clear, what type the resulting \<let> expression should have. We, therefore, define an operation on types that is closely linked to \cref{def:resource-pairs} in the previous section.
+It is not immediately clear, what type the resulting \textbf{let} expression should have. We, therefore, define an operation on types that is closely linked to \cref{def:resource-pairs} in the previous section.
 
 \begin{definition}
    \label{def:type-product}
-   Let \(\unit^{p_0}_{p_1}\) and \(\unit^{q_0}_{q_1}\) be resource-annotated types, then: \\
-   \[\unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1} = \unit^{p_0 - p_1 + \max(q_0, p_1)}_{q_1 - q_0 + \max(q_0, p_1)}\]
+   Let \(\ratype{\unit}{p_0}{p_1}\) and \(\unit^{q_0}_{q_1}\) be resource-annotated types, then: \\
+   \[\ratype{\unit}{p_0}{p_1} \ltimes \ratype{\unit}{q_0}{q_1} = \ratype{\unit}{p_0 - p_1 + \max(q_0, p_1)}{q_1 - q_0 + \max(q_0, p_1)}\]
 \end{definition}
 
 Similarly to the composition of resource-annotations in the previous section on operational semantics, we could initially define the product of resource-annotated types using a case distinction similar to the previous section. Here, however, we skip this step and directly define the product using the \nameref{def:resource-disparity}.
@@ -127,14 +133,14 @@ Using the newly defined operation on resource-annotated types, we get the follow
 
 \[
    \inference[(T:let)]
-   {\vdash e_1 : \unit^{p_0}_{p_1}~~,~~ \vdash e_2 : \unit^{q_0}_{q_1}}
-   {\vdash \<let> ~ \_ = e_1 ~ \<in> ~ e_2 :~\unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}}
+   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
+   {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0}{p_1} \ltimes \ratype{\unit}{q_0}{q_1}}}
 \]
 
 \[
    \inference[(T:tick)]
-   {q_0 \geq q + q_1}
-   {\vdash \<tick> ~ q : \unit^{q_0}_{q_1}}
+   {q_0 \geq k + q_1}
+   {\typing{}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
 \]
 
 Let us now perform an exemplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
@@ -152,31 +158,31 @@ Intuitively, we have three distinct steps, the first one consuming 3 resources, 
    {
       \inference
       {q_0 \geq 3 + q_1}
-      {\<tick> ~ 3 : \unit^{q_0}_{q_1}}
+      {\<tick> ~ 3 : \ratype{\unit}{q_0}{q_1}}
        &
       \inference
       {
          \inference
          {t_0 \geq -2 + t_1}
-         {\<tick> -2 : \unit^{t_0}_{t_1}}
+         {\<tick> -2 : \ratype{\unit}{t_0}{t_1}}
           &
          \inference
          {s_0 \geq 5 + s_1}
-         {\<tick>~5 : \unit^{s_0}_{s_1}}
+         {\<tick>~5 : \ratype{\unit}{s_0}{s_1}}
       }
-      {\<let> ~ \_ = \<tick> -2~\<in>~ \<tick>~5 :~\unit^{t_0}_{t_1} \ltimes \unit^{s_0}_{s_1}}
+      {\<let> ~ \_ = \<tick> -2~\<in>~ \<tick>~5 :~\ratype{\unit}{t_0}{t_1} \ltimes \unit^{s_0}_{s_1}}
    }
-   {\<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 :\unit^{q_0}_{q_1} \ltimes \unit^{t_0}_{t_1} \ltimes \unit^{s_0}_{s_1}}
+   {\<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 :\ratype{\unit}{q_0}{q_1} \ltimes \unit^{t_0}_{t_1} \ltimes \unit^{s_0}_{s_1}}
 \]
 
 We are now left with the task of resolving the collected, numeric constraints. A possible solution to the system of constraints is the following: \(q_1 = t_0 = s_1 = 0\) , \(q_0 = 3\), \(t_1 = 2\) and \(s_0 = 5\). This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type judgement is: 
 \[
-   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \unit^{3}_{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0}
+   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{3}{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0}
 \]
 Applying the definition of the \(\ltimes\) operator, allows us to contract the type, which we do stepwise for sake of illustration:
 
 \begin{align*}
-   \unit^{3}_{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0} &= \unit^{3 + 0 - 0}_2 \ltimes \unit^5_0\\
+   \ratype{\unit}{3}{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0} &= \unit^{3 + 0 - 0}_2 \ltimes \unit^5_0\\
                                                              &= \unit^{3 + 5 - 2}_2 = \unit^6_2
 \end{align*}
 \todo{Do I need to define that this is left associative?}
@@ -187,12 +193,12 @@ Sometimes, we may want to endow a type with additional a priori resources; This 
 
 \[
    \inference[(T:relax)]
-   {\vdash () : \unit^{p_0}_{p_1}
+   {\vdash () : \ratype{\unit}{p_0}{p_1}
       & 
    q_0 \geq p_0
       &
    q_0 - p_0 \geq q_1 - p_1}
-   {\vdash () : \unit^{q_0}_{q_1}}
+   {\vdash () : \ratype{\unit}{q_0}{q_1}}
 \]
 \todo{Scrap this? Introduce relax once needed?}
 
@@ -202,7 +208,7 @@ Ultimately, we want our type rules to be consistent with the operational semanti
 
 Let us first sketch the structure of our soundness proof:
 
-If \(\vdash e : \unit^{p_0}_{p_1}\) and \(\vDash e \evaluatesto  () | (q_0, q_1) \), then the following hold true:
+If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
 The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The a priori resource annotation of the type is not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, like so: 
 \todo{add why we use rationals}
 \todo{Split up type and resource-pairs}
@@ -218,10 +224,10 @@ The result \(()\) of the expression \(e\) has a type that is consistent with the
 The first bullet point capturing that the result of evaluating the expression \(e\) has the type that was constructed using the type rules. The second bullet point stating that the \emph{a priori} resource bound that was constructed using the type rules is an upper bound on the concrete resources required a priori. And the third point stating that the resource consumption of the constructed type also provides an upper bound on the concrete resource consumption.
 
 \begin{theorem}[Soundness Theorem]
-   Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\vdash e : \unit^{p_0}_{p_1}\) and \(\vDash e \evaluatesto  () | (q_0, q_1) \), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
+   Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
 \end{theorem}
 
-In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\vdash e : \unit^{p_0}_{p_1}\) and that the expression evaluates, like so \(\vDash e \evaluatesto () | (q_0, q_1)\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.
+In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and that the expression evaluates, like so \(\evals{}{e}{()}{q_0}{q_1}\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.
 
 \begin{proof}
    (tick): We make a case distinction. Let \(q \geq 0\). Then the following hold by assumption:
@@ -242,7 +248,7 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
    Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \cref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
    \todo{Add case distinction into type rules, or explain why that holds.}
       
-   (let): By assumption, we get that \(\vdash \<let> \_ = e_1 \<in> e_2 : \unit^{p_0}_{p_1} \ltimes \unit^{q_0}_{q_1}\), and similarly \(\vDash \<let> \_ = e_1 \<in> e_2 \evaluatesto () | (r_0, r_1) \cdot (s_0, s_1)\). As a result, the following hold true:
+   (let): By assumption, we get that \(\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0}{p_1} \ltimes \ratype{\unit}{q_0}{q_1}}\), and similarly \(\evals{}{\letexp{\_}{e_1}{e_2}}{()}{r_0 - r_1 + \max(s_0, r_1)}{s_1 - s_0 + \max(s_0, r_1)}\). As a result, the following hold true:
    \begin{align}
       p_0         &\geq r_0 \label{4.7}\\
       q_0         &\geq s_0 \label{4.8} \\
