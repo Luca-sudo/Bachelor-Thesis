@@ -27,17 +27,6 @@ We begin this section by introducing environments, which provide a necessary lin
    We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function from variable names (\Var) to values (\Vals). 
 \end{definition}
 
-\begin{definition}\label{def:in-environment}
-   Given an \nameref{def:environment} \(E\) and a variable name \(x\), we define \(\contains{E}{x}\) as follows:
-   \[
-      \contains{E}{x} = 
-      \begin{cases*}
-	 \false & \mbox{,if E(x) is undefined}\\
-	 \true & \mbox{,else} 
-      \end{cases*}
-   \]
-\end{definition}
-
 \begin{definition}\label{def:environment-getter}	
    Let \(E\) be an \nameref{def:environment} and \(x\) be a variable name, we then write \(E(x)\) for the value of \(x\) in the environment \(E\):
 
@@ -50,10 +39,20 @@ We begin this section by introducing environments, which provide a necessary lin
    \]
 \end{definition}
 
+\begin{definition}\label{def:in-environment}
+   Given an \nameref{def:environment} \(E\) and a variable name \(x\), we define \(\contains{E}{x}\) as follows:
+   \[
+      \contains{E}{x} = 
+      \begin{cases*}
+	 \false & \mbox{,if E(x) is undefined}\\
+	 \true & \mbox{,else} 
+      \end{cases*}
+   \]
+\end{definition}
 
 Here, we define a partial function \(f\) as a function either maps a value \(x\) to a value in the codomain or returns \textbf{undefined} otherwise. Defining environments using partial functions precisely captures the notion of an environment, while providing us with the needed flexibility; Once new variables are instantiated, we are able to define their value in the environment pointwise:
 
-\begin{definition}\label{def:environment-extend}	
+\begin{definition}\label{def:environment-augment}	
    Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(b\) be the value assigned to \(a\). We write \(E[x \mapsto y]\) for the environment \(E\), where \(a\) is additionally mapped onto \(b\):
 
    \[
@@ -68,7 +67,7 @@ Here, we define a partial function \(f\) as a function either maps a value \(x\)
 
 As we now evaluate expressions with respect to an \nameref{def:environment}, we need to update \cref{def:evaluation-judgement} to accommodate environments:
 
-\begin{definition}[Evaluation Judgement with Environments]
+\begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
    Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then write the following for the evaluation judgement that incorporates an environment:
 
    \[
@@ -121,8 +120,53 @@ The last rule missing is (E:let). Here, we need to carefully weave the value tha
    \end{aligned}
 \]
 
+\section{Type Rules}\label{sec:type-rules-5}
+
+In this section, we will first motivate the new type system, introduce \nameref{def:context}s and define the necessary type rules.With respect to the type system, we are required to introduce two new types: \bool~and \typeint. This yields the following type system:
+
+\begin{figure}[H]
+   \[A := \unit~|~\text{\bool}~|~\text{\typeint}\]
+   \caption{Type system with booleans and integers added.}
+   \label{fig:type-system-5}
+\end{figure}
+
+As as result of extending the type system, \cref{def:type-product} becomes ill-defined; It is not clear what the result of \(\ratype{\mbox{\typeint}}{p_0}{p_1} \ltimes \ratype{\textrm{\bool}}{q_0}{q_1}\) would be. As this type signature describes a sequence of two operations, where the first operation yields a value of \typeint, which is consumed by the second operation yielding a value of type \bool as the final result. This motivates the following, updated, definition:
+
+\begin{definition}
+   Let \(A\) and \(B\) be types from \cref{fig:type-system-5}, with the respective resource pairs \((p_0, p_1)\) and \((q_0, q_1)\). We then define \(\ratype{A}{p_0}{p_1} \ltimes \ratype{B}{q_0}{q_1} = \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}\).
+\end{definition}
+
+Next, we introduce \nameref{def:context}s. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
+
+\begin{definition}[Context]\label{def:context}
+   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\Types}\) as a partial function from variable names to types.
+\end{definition}
+
+We know define some notations that are tightly linked to the ones introduced in \cref{def:in-environment}, \cref{def:environment-getter} and \cref{def:environment-augment}:
 
 
+\begin{definition}\label{def:context-getter}
+   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, then \(\Gamma(x)\) returns either the type of \(x\) or undefined.
+\end{definition}
 
+\begin{definition}\label{def:in-context}
+   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, we define \(\contains{\Gamma}{x}\) as follows:
+   \[
+      x \in \Gamma =
+      \begin{cases}
+	 \false	     & \text{,if } \Gamma(x) \text{ is undefined}\\
+	 \true	     & \text{,else}
+      \end{cases}
+   \]
+\end{definition}
 
+\begin{definition}\label{def:context-augment}
+   Let \(\Gamma\) be a context, \(A\) be a type and let \(x : A\) be a variable. We can embed the variable \(x\) with its associated type \(A\) by writing \(\Gamma ; x:A\).
+\end{definition}
 
+\begin{definition}[Typing Judgement with contexts]\label{def:type-judgement-context}
+   Let \(\Gamma\) be a \nameref{def:context}, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
+   \[
+      \typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}
+   \]
+\end{definition}

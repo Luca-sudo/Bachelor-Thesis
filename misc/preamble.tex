@@ -80,6 +80,15 @@
 % Does an environment contain a variable?
 \newcommand{\contains}[2]{#2 \in #1}
 
+% Symbol for type int
+\newcommand{\typeint}{Int}
+
+% Symbol for type bool
+\newcommand{\bool}{Bool}
+
+% Symbol for the set of Types.
+\newcommand{\Types}{Type}
+
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
 
@@ -190,6 +199,8 @@
 \glsxtrnewsymbol[description={Partial Function}]{partialfunction}{\(\partialto\)}
 \glsxtrnewsymbol[description={Map x to y in Environment E}]{envaugment}{\(\envaugment{E}{x}{y}\)}
 \glsxtrnewsymbol[description={x is defined in Environment E}]{def in env}{\(\contains{E}{x}\)}
+\glsxtrnewsymbol[description={Type Bool}]{int}{\bool}
+\glsxtrnewsymbol[description={Type Int}]{bool}{\typeint}
 
 
 % DO NOT LOAD ANY OF YOUR PACKAGES BEYOND THIS PACKAGE
