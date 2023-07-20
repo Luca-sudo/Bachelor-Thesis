@@ -170,3 +170,74 @@ We know define some notations that are tightly linked to the ones introduced in 
       \typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}
    \]
 \end{definition}
+
+This comprises most definitions that are needed to define the necessary type rules. We will introduce further notations, once they become necessary, clearly motivating their use and definition. Let us start by introducing the rule (T:var), which allows us to add a variable and its associated type into a context.
+
+\[
+   \inference[(T:var)]
+   {}
+   {\typing{\Gamma; x: A}{x}{A}}
+\]
+
+Next, we introduce two rules, one for boolean constants and one for integer constands. The rule (T:bool) assigns a type \bool~to any occurence of \(\true\) or \(\false\), and, similarly, the rule (T:int) assigns a type \typeint to any occurence of integer constants.
+
+\[
+   \inference[(T:bool)]
+   {b \in \{\true, \false\}}
+   {\typing{\emptycontext}{b}{\text{\bool}}}%
+   \qquad
+   \inference[(T:int)]
+   {n \in \mathbb{Z}}
+   {\typing{\emptycontext}{n}{\text{\typeint}}}
+\]
+
+Most significantly, we used the \emph{empty context}, written as \(\emptycontext\). This is the context that contains no information. We do this for two reasons: Firstly, the rule is more declarative as a result, because the typing is \emph{invariant} with respect to the context - an integer is always an integer. Secondly, this is precisely the smallest context for which the rule holds true; As such, the empty context forms the most general case for these rules to hold. Now, we are even able to type constant integers or booleans with an arbitrarily large \nameref{def:context} by applying the (T:var) rule, such that the contexts match. 
+
+Defining the type rule for the \(\tick{}\) is straightforward, we add a context \(\Gamma\) to the rule from the previous chapter \cref{def:tr-tick-4}:
+
+\[
+   \inference[(T:tick)]
+   {q_0 \geq k + q_1}
+   {\typing{\emptycontext}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
+\]
+
+For the let expression, we provide a definition that differs from the one provided in \cref{def:tr-let-4}. For this, we make the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
+
+\[
+   \inference[(T:relax)]
+   {}
+   {}
+\]
+
+As the subexpressions of the let expression might have different contexts, we need to account for that as well. To permit a consistent formulation of the type rule, we need to add an assumption: the two contexts need to be \emph{disjoint}. This will allow us to avoid any typing inconsistencies that could arise from mismatched types between the two contexts. 
+For this, a variable \(x\) could be present in both contexts \(\Gamma_1\) and \(\Gamma_2\), with differnt types assigned to the variable:
+
+\[
+   \typing{\Gamma_1}{x}{A} \qquad \typing{\Gamma_2}{x}{B}
+\]
+
+This is prevented, by demanding that the contexts are \emph{disjoint}:
+
+\[
+   \inference[(T:let)]
+   {\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}} \qquad \typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}} \qquad \Gamma_1 \cap \Gamma_2 = \emptyset}
+   {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
+\]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

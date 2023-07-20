@@ -131,12 +131,14 @@ Similarly to the composition of resource-annotations in the previous section on 
 Using the newly defined operation on resource-annotated types, we get the following rules:
 
 \[
+   \label{def:tr-let-4}
    \inference[(T:let)]
    {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
    {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0}{p_1} \ltimes \ratype{\unit}{q_0}{q_1}}}
 \]
 
 \[
+   \label{def:tr-tick-4}
    \inference[(T:tick)]
    {q_0 \geq k + q_1}
    {\typing{}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
