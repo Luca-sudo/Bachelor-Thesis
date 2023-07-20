@@ -59,7 +59,7 @@ The first case is relevant, if the resources required by the second operation ar
 We can further simplify the rule for multiplying resource-annotated tuples. To this end, observe that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the resource requirements in the first case in \ref{def:multiplying-resources}, if it holds that \(q_0 \geq p_1\). Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) also precisely matches the second case, if \(q_0 < p_1\). As a result, we can provide a more compact definition for the multiplication of resource-annotated tuples, using the newly introduced \emph{resource disparity}:
 
 \begin{definition}[Multiplying resource pairs]
-   \label{def:resource-pairs}
+   \label{def:multiplying-pairs}
 
    Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, as introduced above. We then define:
    \[(p_0, p_1) \cdot (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]

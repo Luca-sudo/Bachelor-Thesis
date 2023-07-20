@@ -50,7 +50,6 @@
 \newcommand{\evaluatesto}[2]{\mathrel{\stackon[1pt]{$\rightsquigarrow$}{\scriptscriptstyle #1 \ #2}}}
 \newcommand{\voidenvironment}{\emptyset}
 
-
 % Command for the evaluation judgement. Takes the environment, expression, cost pair and final value.
 \newcommand{\evals}[5]{#1 \vDash #2 \mathrel{\stackon[1pt]{\(\rightsquigarrow\)}{\(\scriptscriptstyle #4 \ #5\)}} #3}
 
@@ -65,6 +64,21 @@
 \newcommand{\tick}[1]{\mathbf{tick}~#1}
 \newcommand{\true}{\mathbf{true}}
 \newcommand{\false}{\mathbf{false}}
+
+% The set of all variable names.
+\newcommand{\Var}{Var}
+
+% The set of all values.
+\newcommand{\Vals}{Vals}
+
+% Partial function
+\newcommand{\partialto}{\rightharpoonup}
+
+% Add variable to environment
+\newcommand{\envaugment}[3]{#1[#2 \mapsto #3]}
+
+% Does an environment contain a variable?
+\newcommand{\contains}[2]{#2 \in #1}
 
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
@@ -171,6 +185,11 @@
 \glsxtrnewsymbol[description={Type Product}]{typeproduct}{\(\ltimes\)}
 \glsxtrnewsymbol[description={Environment}]{environment}{\(E\)}
 \glsxtrnewsymbol[description={Get the value of a variable}]{value from environment}{\(E(x)\)}
+\glsxtrnewsymbol[description={Set of Variable Names}]{var}{\(\Var\)}
+\glsxtrnewsymbol[description={Set of Values}]{vals}{\(\Vals\)}
+\glsxtrnewsymbol[description={Partial Function}]{partialfunction}{\(\partialto\)}
+\glsxtrnewsymbol[description={Map x to y in Environment E}]{envaugment}{\(\envaugment{E}{x}{y}\)}
+\glsxtrnewsymbol[description={x is defined in Environment E}]{def in env}{\(\contains{E}{x}\)}
 
 
 % DO NOT LOAD ANY OF YOUR PACKAGES BEYOND THIS PACKAGE
