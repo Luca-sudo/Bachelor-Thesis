@@ -1,51 +1,22 @@
 \chapter{Adding Variables}
 
-Up until now, we are not able to assign values to variables, which is ubiquitous in programming and the lack of variables proves a constraint when writing programs. In this chapter, we will augment the programming language of the previous chapter(\cref{def:prog-lang-4}), to allow creation and assignment of variables. Before this, we will explain how variables are stored on a computer in order to motivate the concepts and definitions needed for this chapter. The remaining part of this chapter is similar to the previous chapter, we introduce the typing and evaluation rules, concluding the chapter with a proof of soundness for our augmented programming language.
+Before continuing, let us examine the limitations of the \nameref{def:prog-lang-4} from the previous chapter. We are not able to declare variables, control flow, or constants. All of those features will be implemented in this chapter. In order to declare and use variables in our programming language, we need to provide a definition of an environment, which comprises the concrete values of variables. As we will see, introducing variables will demand cautious reformulation of most evaluation rules to account for environments.
 
-\subsection{Storing variables on a computer}
+Similarly to environments, we will introduce contexts for the type rules. While an environment maps variables to concrete values, a context will map variables to types. This will also require carefully embellishing previous type rules, to provide rules that are rigorous with respect to contexts. We define the syntax of the augmented programming language below:
 
-Whenever we create a variable, it is simply a named container with some value inside. Some languages require that you specify the type of value that is stored inside(such as Rust), others do not(example!!!). Either way, we are able to reference the value by the variable name throughout the code. For this, data may be stored in either the stack or the heap. 
 
-The heap and stack have vastly different uses. Data that is allocated on the stack has a fixed size; It cannot change the memory allocated to it. On the heap, memory may be allocated dynamically. The readers with experience writing in C may have used the \textbf{malloc} command, which allocates memory on the heap. Both orchestrate together to provide programmers with the flexibility of declaring variables with static or dynamic size. 
-\todo{write more stuff here?}
+\begin{definition}[Programming Language]
+   \label{def:prog-lang-5}
 
-\section{Evaluation Semantics}
+\begin{align*}
+   e := ~~~ & \letexp{x}{e_1}{e_2}		& \text{(let)}\\
+            & \tick{k}				& \text{(tick)}\\
+	    & x					& \text{(var)}\\
+	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
+	    & q					& \text{(const rational)}
+\end{align*}
 
-Before defining a new rule for the creation of variables, we need to introduce the notion of an \emph{environment}. Since an arbitrary expression may, or may not, contain variables, we need to provide the environment for evaluation rules. We would not know what value is referenced by a variable with the name \textbf{a}; Is it an integer, a list, etc.? We only know if we have an environment to check against. Let us, therefore, provide the following definitions:
-
-\begin{definition}[Heap]\label{def:heap}
-	We define a heap \(H: Loc \to Val\) to be a finite partial mapping from locations to values.
 \end{definition}
 
-\begin{definition}[Stack]\label{def:stack}
-	We define a stack \(S: Var \to Val\) to be a finite partial mapping from variable names to values.
-\end{definition}
 
-\begin{definition}[Environment]\label{def:environment}
-   Let \(S\) be a \nameref{def:stack} and \(H\) be a \nameref{def:heap}. We define an (evaluation) environment \(E = (S, H)\).
-\end{definition}
 
-\begin{definition}[Empty Environment]\label{def:empty-environment}
-   We denote by \(\voidenvironment\) the \emph{empty} \nameref{def:environment}; That is, the environment with an empty stack and heap.
-\end{definition}
-\todo{does that even make sense?}
-
-Having those definitions in place, we may want to access the value of a specific variable, or change the heap of an environment. For this, we will define a couple of ergonomic notations, which will make the definition of rules and reasoning about programs more compact. Whenever we have a variable name, we may be interested in the value of that variable. For this, let \(E\) be an \nameref{def:environment} and \(x\) be a variable name, then \(E(x)\) is the value of \(x\) in the environment \(E\). Similarly, we write \(x \in E\) to denote that the variable name \(x\) is declared in the environment \(E\). 
-
-Both notation conventions allows us to provide a compact and readable definition of the rule \((E:var)\):
-
-\[
-   \inference[(E:var)]
-   {x \in E}
-   {\evals{E}{x}{E(x)}{}{}} 
-\]
-\todo{what cost makes sense?}
-
-Let us now augment the rules \(\<let>\) and \(\<tick>\) with environments, if needed. For this, it becomes apparent that the evaluation of the \(\<tick>\) expression is invariant under the environment, as such an evaluation will always consume (or free) \(q\) resources. As a result, we include the \nameref{def:empty-environment} to encode this fact.
-
-\[
-   \inference[(E:tick)]   
-   {q_0 \geq q + q_1}
-   {\evals{E}{\tick{k}}{()}{q_0}{q_1}}
-   \label{rule:e-let-2}
-\]
