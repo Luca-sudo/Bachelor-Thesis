@@ -239,6 +239,19 @@ Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is n
 \end{theorem}
 
 \begin{proof}
+
+(tick): The proof given in \cref{thm:soundness-4} for the tick expression still holds.
+
+(bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\), which shows that both inequalities are satisfied. It furthermore follows that the type of the resulting value \(b\) is of type \bool~, and such, consistent with the typing derived from the type rule.
+
+(int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows that the desired inequalities hold, and similarly, the type of \(n\) is \typeint~, which is consistent.
+
+(let): By assumption, we get that \(\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0 - r_1 + \max(r_1, s_0)}{s_1 - s_0 + \max(r_1, s_0)}\) with \(\evals{E}{e_1}{v_1}{r_0}{r_1}\) and \(\evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{s_0}{s_1}\) for the evaluation, and similarly, \(\typing{\Gamma_1;\Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}\) with \(\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}}\) and \(\typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}}\) for the typing: \\  
+We want to show that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\). For the subterm \(- r_1 + \max(r_1, s_0)\) we know that it is at most zero (if \(r_1 \geq s_0\) and negative otherwise. This allows us to infer that, as \(p_0 \geq r_0\) by assumption, it especially holds that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\), as desired.  \\
+Next, we want to show \(p_0 - q_1 \geq r_0 - r_1 + \max(r_1, s_0) - s_1 + s_0 - \max(r_1, s_0)\). The max expression cancel each other out, which shows that we only have to prove \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\). As we assume soundness for both subexpressions, the following two inequalities hold: \(p_0 - m \geq r_0 - r_1\) and \(m - q_1 \geq s_0 - s_1\). Applying both inequalities immediately proves the desired inequality: \(p_0 - m + m - q_1 \geq r_0 - r_1 + s_0 - s_1\) which is equivalent to \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\).\\
+As the resource-annotations are sound, it especially holds that \(v : \ratype{B}{p_0}{q_1}\).
+
+
 \end{proof}
 
 
