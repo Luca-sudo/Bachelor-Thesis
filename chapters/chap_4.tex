@@ -91,7 +91,7 @@ Similarly, we now define a rule for the \<tick> instruction. The expression \<ti
    {\evals{}{\tick{q}}{()}{}{-q}}
 \]
 
-In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules.
+In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules. 
 
 \section{Type Rules}
 The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.

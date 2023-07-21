@@ -120,6 +120,7 @@ The last rule missing is (E:let). Here, we need to carefully weave the value tha
    \end{aligned}
 \]
 
+
 \section{Type Rules}\label{sec:type-rules-5}
 
 In this section, we will first motivate the new type system, introduce \nameref{def:context}s and define the necessary type rules.With respect to the type system, we are required to introduce two new types: \bool~and \typeint. This yields the following type system:
@@ -246,10 +247,48 @@ Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is n
 
 (int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows that the desired inequalities hold, and similarly, the type of \(n\) is \typeint~, which is consistent.
 
-(let): By assumption, we get that \(\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0 - r_1 + \max(r_1, s_0)}{s_1 - s_0 + \max(r_1, s_0)}\) with \(\evals{E}{e_1}{v_1}{r_0}{r_1}\) and \(\evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{s_0}{s_1}\) for the evaluation, and similarly, \(\typing{\Gamma_1;\Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}\) with \(\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}}\) and \(\typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}}\) for the typing: \\  
+(let): Here, the let expression is a special case. Where any other language construct corresponded to exactly one type rule, the let expression may actually be typed by two different rules, (T:let) or (T:relax). As such, we need to prove that for the application of both type rules, soundness holds.  
+
+For (T:let):\\
+By assumption, we get that \(\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0 - r_1 + \max(r_1, s_0)}{s_1 - s_0 + \max(r_1, s_0)}\) with \(\evals{E}{e_1}{v_1}{r_0}{r_1}\) and \(\evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{s_0}{s_1}\) for the evaluation, and similarly, \(\typing{\Gamma_1;\Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}\) with \(\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}}\) and \(\typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}}\) for the typing: \\  
 We want to show that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\). For the subterm \(- r_1 + \max(r_1, s_0)\) we know that it is at most zero (if \(r_1 \geq s_0\) and negative otherwise. This allows us to infer that, as \(p_0 \geq r_0\) by assumption, it especially holds that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\), as desired.  \\
 Next, we want to show \(p_0 - q_1 \geq r_0 - r_1 + \max(r_1, s_0) - s_1 + s_0 - \max(r_1, s_0)\). The max expression cancel each other out, which shows that we only have to prove \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\). As we assume soundness for both subexpressions, the following two inequalities hold: \(p_0 - m \geq r_0 - r_1\) and \(m - q_1 \geq s_0 - s_1\). Applying both inequalities immediately proves the desired inequality: \(p_0 - m + m - q_1 \geq r_0 - r_1 + s_0 - s_1\) which is equivalent to \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\).\\
 As the resource-annotations are sound, it especially holds that \(v : \ratype{B}{p_0}{q_1}\).
+
+For (T:relax):
+By assumption, the following to hold true: \(\evals{E}{e}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}\) and are assumed to be sound. As a result, the following hold true: 
+
+\begin{equation}\label{eq:relax-base}
+   p_0 \geq r_0 \text{ and } p_0 - p_1 \geq r_0 - r_1
+\end{equation}
+
+This requires another proof via induction, as we could have an arbitrarily long chain of (T:relax) applications. Let us start proving soundness for the base case, that is a single application of the (T:relax) rule.\\
+Applying (T:relax) will yield the typing \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), together with \(q_0 \geq p_0\) and \(q_0 - q_1 \geq p_0 - p_1\). Using the two inequalities in \cref{eq:relax-base} we can directly infer the desired inequalities \(q_0 \geq r_0\) and \(q_0 - q_1 \geq r_0 - r_1\).
+
+Let us continue by proving the induction step. For this, our induction hypothesis assumes that for any fixed number of subsequent applications of (T:relax), soundness is preserved. The proof is similar to the one for the base case.\\
+ The induction hypothesis ensures that for \(q_0\) and \(q_1\), \(q_0 \geq r_0\) and \(q_0 - q_1 \geq p_0 - p_1\) hold. Let the next application of (T:relax) yield the following typing: \(\typing{\Gamma}{e}{\ratype{A}{m_0}{m_1}}\). The application of (T:relax) then assumes that \(m_0 \geq q_0\) and \(m_0 - m_1 \geq q_0 - q_1\). These inequalities directly proof soundness.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \end{proof}
