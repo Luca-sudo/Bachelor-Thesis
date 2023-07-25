@@ -5,7 +5,7 @@ In order to elicit resource bounds for programs, we need two things: (1) A const
 
 Below, we define the programming language for this chapter.
 
-\begin{definition}[Programming Language]
+\begin{definition}[let-tick language]
    \label{def:prog-lang-4}
 
 \begin{align*}
@@ -23,7 +23,7 @@ This yields the following definitions:
    \label{def:resource-pair}
    We define a \emph{resource pair} as a tuple, where \(p_0\) is the a priori resources needed, and \(p_1\) is the a posteriori resources reimbursed at the end.
    \[
-      (p_0, p_1) \in \mathbb{Q}^{+} \times \mathbb{Q}^{+}
+      (p_0, p_1) \in \mathbb{N} \times \mathbb{N}
    \]
 \end{definition}
 
@@ -192,20 +192,7 @@ This completes our type derivation, as inserting the calculated resource-annotat
    \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{6}{0}
 \]
 
-The resulting type \(\ratype{\unit}{6}{0}\) indeed furnishes a tight bound on the resources required.
-
-Sometimes, we may want to endow a type with additional a priori resources; This is especially true, if we need additional resources for a subsequent operation. To this end, we introduce a rule that allows us to \emph{relax} the resource-bounds of a type. For illustration, consider the type \(\unit^4_0\). \emph{Relaxing} this type allows us to also derive a type like \(\unit^6_2\), where we simply incremented both the a priori and a posteriori resource by two units, respectively. When defining the type rule, we need to be cautious, as the relaxed type should not have a diminished resource consumption. As such, we \emph{do not} want to relax the type \(\unit^4_0\) into the type \(\unit^4_2\), as this would reduce the resource consumption.
-
-\[
-   \inference[(T:relax)]
-   {\vdash () : \ratype{\unit}{p_0}{p_1}
-      & 
-   q_0 \geq p_0
-      &
-   q_0 - p_0 \geq q_1 - p_1}
-   {\vdash () : \ratype{\unit}{q_0}{q_1}}
-\]
-\todo{Scrap this? Introduce relax once needed?}
+The resulting type \(\ratype{\unit}{6}{0}\) indeed furnishes a tight bound on the resources required. Having a solid grasp of how the type rules orchestrate together, having exercised a simple example, we now prove soundness for the \emph{let-tick} programming language.
 
 
 \section{Soundness Theorem}
@@ -215,11 +202,6 @@ Let us first sketch the structure of our soundness proof:
 
 If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
 The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The a priori resource annotation of the type is not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, like so: 
-\todo{add why we use rationals}
-\todo{Split up type and resource-pairs}
-\todo{Simple nested list example and infer type}
-\todo{Make the derivation of subexpression assumptions  more explicit in proof. How did I get there}
-\todo{Introduce variables next}
 
 \begin{itemize}
    \item \(p_0 \geq q_0\)     
