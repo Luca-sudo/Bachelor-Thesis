@@ -21,13 +21,18 @@ This yields the following definitions:
 
 \begin{definition}[Resource pair]
    \label{def:resource-pair}
-   We define a \emph{resource pair} as a tuple \((p_0, p_1) \in \mathbb{Q}^{+} \times \mathbb{Q}^{+}\). Where \(p_0\) is the a priori resources needed, and \(p_1\) is the a posteriori resources reimbursed at the end.
+   We define a \emph{resource pair} as a tuple, where \(p_0\) is the a priori resources needed, and \(p_1\) is the a posteriori resources reimbursed at the end.
+   \[
+      (p_0, p_1) \in \mathbb{Q}^{+} \times \mathbb{Q}^{+}
+   \]
 \end{definition}
-\todo{Unclear/handwaved?}
 
 \begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
    Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1)\) be a \nameref{def:resource-pair}.
-   A judgement of the form \(\evals{}{e}{v}{p_0}{p_1}\) encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
+   The \emph{evaluation judgement} encodes A judgement of the form  encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
+   \[
+      \evals{}{e}{v}{p_0}{p_1}
+   \]
 \end{definition}
 
 It is important to differentiate between the resources required by an expression, and the resources \emph{consumed} by an expression. In the above definition, the expression requires \(p\) resources a priori, whereas its resource consumption amounts to \(p - p'\); That is, the resource consumption is precisely the resources needed upfront, minus the resources that are freed in the end.
@@ -99,7 +104,10 @@ The evaluation judgement in the previous section defined our \emph{ground truth}
 For now, our programming language only constructs values of type \(\unit\). As a result, our type system only comprises the unit type. Contrary to that, the \nameref{def:evaluation-judgement} features resource-annotations. To embed the resource-pair into the type signature of an expression, we define the following notation:
 
 \begin{definition}[Resource-annotated types]\label{def:ra-type}
-   Let \(A\) be a type, and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then write \(A^{p_0}_{p_1}\) to denote a tuple \((A, (p_0, p_1))\).
+   Let \(A\) be a type, and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. The resource-annotated type then refers to a tuple comprising the type and the resource-pair.
+
+   \[A^{p_0}_{p_1} = (A, (p_0, p_1))\] 
+
 \end{definition}
 \todo{weirdly written?}
 
@@ -118,23 +126,15 @@ Similarly to the previous section on operational semantics, we define two rules,
    {\typing{}{\letexp{\_}{e_1}{e_2}}{?}}
 \]
 
-It is not immediately clear, what type the resulting \textbf{let} expression should have. We, therefore, define an operation on types that is closely linked to \cref{def:resource-pairs} in the previous section.
-
-\begin{definition}
-   \label{def:type-product}
-   Let \(\ratype{\unit}{p_0}{p_1}\) and \(\unit^{q_0}_{q_1}\) be resource-annotated types, then: \\
-   \[\ratype{\unit}{p_0}{p_1} \ltimes \ratype{\unit}{q_0}{q_1} = \ratype{\unit}{p_0 - p_1 + \max(q_0, p_1)}{q_1 - q_0 + \max(q_0, p_1)}\]
-\end{definition}
-
 Similarly to the composition of resource-annotations in the previous section on operational semantics, we could initially define the product of resource-annotated types using a case distinction similar to the previous section. Here, however, we skip this step and directly define the product using the \nameref{def:resource-disparity}.
 
-Using the newly defined operation on resource-annotated types, we get the following rules:
+This yields the following rules:
 
 \[
    \label{def:tr-let-4}
    \inference[(T:let)]
    {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
-   {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0}{p_1} \ltimes \ratype{\unit}{q_0}{q_1}}}
+   {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}}}
 \]
 
 \[
@@ -146,11 +146,9 @@ Using the newly defined operation on resource-annotated types, we get the follow
 
 Let us now perform an exemplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
 
-\begin{align*}
-  & \<let> \_ = \<tick>~3~\<in> \\
-  & \<let> \_ = \<tick>~ -2 ~\<in> \\
-  & \<tick>~5 \\
-\end{align*}
+\[
+   \letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}
+\]
 
 Intuitively, we have three distinct steps, the first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
 
@@ -159,36 +157,42 @@ Intuitively, we have three distinct steps, the first one consuming 3 resources, 
    {
       \inference
       {q_0 \geq 3 + q_1}
-      {\<tick> ~ 3 : \ratype{\unit}{q_0}{q_1}}
+      {\typing{}{\tick{3}}{\ratype{\unit}{q_0}{q_1}}}
        &
       \inference
       {
          \inference
          {t_0 \geq -2 + t_1}
-         {\<tick> -2 : \ratype{\unit}{t_0}{t_1}}
+         {\typing{}{\tick{-2}}{\ratype{\unit}{t_0}{t_1}}}
           &
          \inference
          {s_0 \geq 5 + s_1}
-         {\<tick>~5 : \ratype{\unit}{s_0}{s_1}}
+         {\typing{}{\tick{5}}{\ratype{\unit}{s_0}{s_1}}}
       }
-      {\<let> ~ \_ = \<tick> -2~\<in>~ \<tick>~5 :~\ratype{\unit}{t_0}{t_1} \ltimes \unit^{s_0}_{s_1}}
+      {\typing{}{\letexp{\_}{\tick{-2}}{\tick{5}}}{\ratype{\unit}{r_0}{r_1}}}
    }
-   {\<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 :\ratype{\unit}{q_0}{q_1} \ltimes \unit^{t_0}_{t_1} \ltimes \unit^{s_0}_{s_1}}
+   {\typing{}{\letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}}{\ratype{\unit}{p_0}{p_1}}}
 \]
-
-We are now left with the task of resolving the collected, numeric constraints. A possible solution to the system of constraints is the following: \(q_1 = t_0 = s_1 = 0\) , \(q_0 = 3\), \(t_1 = 2\) and \(s_0 = 5\). This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type judgement is: 
-\[
-   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{3}{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0}
-\]
-Applying the definition of the \(\ltimes\) operator, allows us to contract the type, which we do stepwise for sake of illustration:
 
 \begin{align*}
-   \ratype{\unit}{3}{0} \ltimes \unit^{0}_{2} \ltimes \unit^{5}_{0} &= \unit^{3 + 0 - 0}_2 \ltimes \unit^5_0\\
-                                                             &= \unit^{3 + 5 - 2}_2 = \unit^6_2
+   \text{Where }  & r_0 = t_0 - t_1 + \max(t_1, s_0) \\
+                  & r_1 = s_1 - s_0 + \max(t_1, s_0) \\
+                  & p_0 = q_0 - q_1 + \max(q_1, r_0) \\
+                  & p_1 = r_1 - r_1 + \max(q_1, r_0) \\
 \end{align*}
-\todo{Do I need to define that this is left associative?}
 
-For each step, we simply apply the definition of the \(\ltimes\) operator, already inserting the result of any \(\max\) function, for brevity. The resulting type \(\unit^6_2\) indeed furnishes a tight bound on the resources required. 
+We are now left with the task of resolving the collected, numeric constraints. As a result of applying the (T:tick) rule for the three instances of \(\tick{}\) expressions, we get the following values: \(q_0 = 3, t_1 = 2, s_0 = 5, q_1 = t_0 = s_1 = 0\). Using these values, we are able to compute the intermediary values \(r_0, r_1, p_0, p_1\), resulting in:
+
+\[
+   p_0 = 6 \qquad p_1 = 0
+\]
+
+This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type judgement is: 
+\[
+   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{6}{0}
+\]
+
+The resulting type \(\ratype{\unit}{6}{0}\) indeed furnishes a tight bound on the resources required.
 
 Sometimes, we may want to endow a type with additional a priori resources; This is especially true, if we need additional resources for a subsequent operation. To this end, we introduce a rule that allows us to \emph{relax} the resource-bounds of a type. For illustration, consider the type \(\unit^4_0\). \emph{Relaxing} this type allows us to also derive a type like \(\unit^6_2\), where we simply incremented both the a priori and a posteriori resource by two units, respectively. When defining the type rule, we need to be cautious, as the relaxed type should not have a diminished resource consumption. As such, we \emph{do not} want to relax the type \(\unit^4_0\) into the type \(\unit^4_2\), as this would reduce the resource consumption.
 
