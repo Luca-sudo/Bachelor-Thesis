@@ -1,41 +1,33 @@
-\chapter{Adding Sum Types}
+\chapter{Introducing Lists}
+# Short refresher on lists
+# How cost for lists differ from current stuff
+# What we introduce in this chapter
+   # Lists: constructor and matching
+   # Functions: Abstraction and application
 
-In the previous chapter we constructed a programming language that allows tracking resource consumption. It forms the kernel for any augmentations we will add to the core language, as done in this chapter. Here we will embellish the language by introducing sum types, along with all sensical constructs associated - such as construction, destruction and matching. For the readers without knowledge of sum types, I will quickly introduce the necessary constructs and intuition behind sum types, hinting at their usefulness for writing programs. 
+\section{Evaluation Semantics}
+# E:Nil
+# E:Cons 
+# E:MatchNil
+# E:MatchCons
+# E:App
 
-Intuitively, sum types are a "container" which can contain exactly one of two types. For this, consider the fairly rudimentary example below, a function that divides two numbers:
+\section{Type Rules}
+# Introduce Potential Function
+   # Explain the role of potential
+   # Explain why we only assign potential to lists
 
-\todo{Show example function}
+# T:Nil
+# T:Cons
+# T:MatchList
+# T:App
 
-Obviously, divind a float by another float yields again a value of type float. But what happens if we want to divide a number by zero? The division will return an error and, in the worst case, break our code. To avoid this, we can handle the case of dividing by zero in the code \textbf{and} make this explicit by changing the return type. For this, the function will return either a float, or a \emph{DivideByZero} type. We define the function like so:
+\subsection{Example Type Derivation}
+# Define function map
+# Invoke map with a specific function f
 
-\todo{Define newer function}
+# Example with nested Lists?
 
-As such, we wrap values in either the \emph{left} or \emph{right} constructors, to indicate that we use a sum constructor. As a result, we can pattern match on that structure to provide control flow. 
+\section{Soundness}
 
-\todo{What are sum types}
-\todo{Necessary constructs for working with sum types}
-\todo{Introducing the language with sum types}
-\todo{Evaluation rules}
-
-First, we provide a rule for introducing, or "wrapping", values in sum type constructors. The rules have the following form, respectively:
-
-\[
-   \inference[(SumLeft)]
-   {\vDash e \evaluatesto ()~|~(p,p')}
-   {\vDash left(e) \evaluatesto ?? | ??}
-\]
-
-\[
-   \inference[(SumRight)]
-   {\vDash e \evaluatesto ()~|~(p,p')}
-   {\vDash right(e) \evaluatesto ?? | ??}
-\]
-
-\todo{Type rules}
-
-We now provide the type rules for introducing sum types and deconstructing them.
-\todo{Soundness}
-
-\(\vDash e \mathrel{\stackon[1pt]{$\rightsquigarrow$}{$\scriptscriptstyle (p_0,q_1) \cdot (q_0, q_1)$}}() \)
-
-\( \vDash e \mathrel{\stackunder[2pt]{\stackon[4pt]{$\rightsquigarrow$}{$\scriptscriptstyle p_0 - p_1 + \max(q_0, p_1)$}}{$\scriptscriptstyle q_1 - q_0 + \max{q_0, p_1)$}} () \)
+# Explain how potential alters the soundness proof.

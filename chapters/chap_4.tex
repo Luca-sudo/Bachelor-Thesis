@@ -195,7 +195,7 @@ This completes our type derivation, as inserting the calculated resource-annotat
 The resulting type \(\ratype{\unit}{6}{0}\) indeed furnishes a tight bound on the resources required. Having a solid grasp of how the type rules orchestrate together, having exercised a simple example, we now prove soundness for the \emph{let-tick} programming language.
 
 
-\section{Soundness Theorem}
+\section{Soundness}
 Ultimately, we want our type rules to be consistent with the operational semantics defined previously. This will allow us to reason about the type of a program, while ensuring that the resource-annotations of the resulting type line up with the concrete resource consumption of the expression.
 
 Let us first sketch the structure of our soundness proof:
@@ -210,7 +210,7 @@ The result \(()\) of the expression \(e\) has a type that is consistent with the
 
 The first bullet point capturing that the result of evaluating the expression \(e\) has the type that was constructed using the type rules. The second bullet point stating that the \emph{a priori} resource bound that was constructed using the type rules is an upper bound on the concrete resources required a priori. And the third point stating that the resource consumption of the constructed type also provides an upper bound on the concrete resource consumption.
 
-\begin{theorem}[Soundness Theorem]
+\begin{theorem}[Soundness of typing for let-tick language]
    Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
 \end{theorem}
 

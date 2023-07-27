@@ -131,9 +131,12 @@ In this section, we will first motivate the new type system, introduce \nameref{
    \label{fig:type-system-5}
 \end{figure}
 
-As as result of extending the type system, \cref{def:type-product} becomes ill-defined; It is not clear what the result of \(\ratype{\mbox{\typeint}}{p_0}{p_1} \ltimes \ratype{\textrm{\bool}}{q_0}{q_1}\) would be. As this type signature describes a sequence of two operations, where the first operation yields a value of \typeint, which is consumed by the second operation yielding a value of type \bool as the final result. This motivates the following, updated, definition:
+In the previous chapter, the programming language at hand only produced values of a singular type \textbf{unit}. For this programming language, we introduced two new types which forces us to reconsider the type we assign to \emph{sequential expressions}. For this, we note two facts: (1) The resource-consumption assigned to a sequential operation is invariant of the type the operation returns. (2) The result of the first expression is consumed by the second expression, and, therefore, the result of the sequential evaluation is defined by the return type of the second expression. This motivates the following, updated definition:
 
 \begin{definition}
+   Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{fig:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
+   \[
+      e_1;e_2 : \ratype{B}{p_0 - p_1 + \max(p_1, q_0
    Let \(A\) and \(B\) be types from \cref{fig:type-system-5}, with the respective resource pairs \((p_0, p_1)\) and \((q_0, q_1)\). We then define \(\ratype{A}{p_0}{p_1} \ltimes \ratype{B}{q_0}{q_1} = \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}\).
 \end{definition}
 
@@ -227,11 +230,11 @@ This is prevented, by demanding that the contexts are \emph{disjoint}. While thi
 \]
 
 
-\section{Soundness Theorem}
+\section{Soundness}
 
 Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is necessary to formulate the soundness theorem as to account for environments and contexts. This yields the following statement:
 
-\begin{theorem}[Soundness Theorem]\label{thm:soundness-5}
+\begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
    Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A\) be a type, along with two \nameref{def:resource-pair}s \((p_0, p_1), (q_0, q_1)\) and an expression \(e\) that evaluates to the value \(v\). The Soundness Theorem states:
 
    \begin{center}
@@ -267,30 +270,6 @@ Applying (T:relax) will yield the typing \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_
 
 Let us continue by proving the induction step. For this, our induction hypothesis assumes that for any fixed number of subsequent applications of (T:relax), soundness is preserved. The proof is similar to the one for the base case.\\
  The induction hypothesis ensures that for \(q_0\) and \(q_1\), \(q_0 \geq r_0\) and \(q_0 - q_1 \geq p_0 - p_1\) hold. Let the next application of (T:relax) yield the following typing: \(\typing{\Gamma}{e}{\ratype{A}{m_0}{m_1}}\). The application of (T:relax) then assumes that \(m_0 \geq q_0\) and \(m_0 - m_1 \geq q_0 - q_1\). These inequalities directly proof soundness.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \end{proof}
 
 
