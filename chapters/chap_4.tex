@@ -235,7 +235,7 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
    Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \cref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
    \todo{Add case distinction into type rules, or explain why that holds.}
       
-   (let): By assumption, we get that \(\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0}{p_1} \ltimes \ratype{\unit}{q_0}{q_1}}\), and similarly \(\evals{}{\letexp{\_}{e_1}{e_2}}{()}{r_0 - r_1 + \max(s_0, r_1)}{s_1 - s_0 + \max(s_0, r_1)}\). As a result, the following hold true:
+   (let): By assumption, we get that \(\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 \max(p_1, q_0)}{q_1 - q_0 \max(p_1, q_0)}}\), and similarly \(\evals{}{\letexp{\_}{e_1}{e_2}}{()}{r_0 - r_1 + \max(s_0, r_1)}{s_1 - s_0 + \max(s_0, r_1)}\). As a result, the following hold true:
    \begin{align}
       p_0         &\geq r_0 \label{4.7}\\
       q_0         &\geq s_0 \label{4.8} \\

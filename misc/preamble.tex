@@ -92,6 +92,15 @@
 % The empty context.
 \newcommand{\emptycontext}{\emptyset}
 
+% List type.
+\newcommand{\ralist}[2]{L^{#1}(#2)}
+
+% List constructor.
+\newcommand{\cons}[2]{\textbf{cons}(#1, #2)}
+
+% List nil.
+\newcommand{\listnil}{\textbf{nil}}
+
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
 
@@ -207,6 +216,10 @@
 \glsxtrnewsymbol[description={Type Context}]{context}{\(\Gamma\)}
 \glsxtrnewsymbol[description={Disjoint Contexts}]{disjoint contexts}{\(\Gamma_1 \cap \Gamma_2 = \emptyset\)}
 \glsxtrnewsymbol[description={Union of Contexts}]{context union}{\(\Gamma_1;\Gamma_2\)}
+\glsxtrnewsymbol[description={Sequential Evaluation of Expressions}]{seqeval}{\(e_1;e_2\)}
+\glsxtrnewsymbol[description={List Type}]{listtype}{\(\ralist{q}{A}\)}
+\glsxtrnewsymbol[description={List Constructor}]{cons}{\cons{x}{xs}}
+\glsxtrnewsymbol[description={Nil Constructor}]{nil}{\listnil}
 
 
 % DO NOT LOAD ANY OF YOUR PACKAGES BEYOND THIS PACKAGE

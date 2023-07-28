@@ -136,8 +136,8 @@ In the previous chapter, the programming language at hand only produced values o
 \begin{definition}
    Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{fig:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
    \[
-      e_1;e_2 : \ratype{B}{p_0 - p_1 + \max(p_1, q_0
-   Let \(A\) and \(B\) be types from \cref{fig:type-system-5}, with the respective resource pairs \((p_0, p_1)\) and \((q_0, q_1)\). We then define \(\ratype{A}{p_0}{p_1} \ltimes \ratype{B}{q_0}{q_1} = \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}\).
+      e_1;e_2 : \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}
+   \]
 \end{definition}
 
 Next, we introduce \nameref{def:context}s. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:

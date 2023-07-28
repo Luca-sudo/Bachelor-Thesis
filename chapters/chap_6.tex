@@ -1,40 +1,100 @@
 \chapter{Introducing Lists}
-# Short refresher on lists
-# How cost for lists differ from current stuff
-# What we introduce in this chapter
-   # Lists: constructor and matching
-   # Functions: Abstraction and application
-# Define programming language
+\begin{itemize}
+   \item Short refresher on lists
+   \item How cost for lists differ from current stuff
+   \item What we introduce in this chapter
+      \begin{itemize}
+         \item Lists: constructor and matching
+         \item Functions: abstraction and application
+         \item Type signature refresher
+         \item Potential function for cost of lists
+      \end{itemize}
+   \item Define the prog lang
+\end{itemize}
+
+In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumptions respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce functions and a refresher on type signatures.
+
+We introduce list construction and matching, as well as function application:
+
+
+\begin{definition}[list-tick language]
+   \label{def:prog-lang-5}
+
+\begin{align*}
+   e := ~~~ & \letexp{x}{e_1}{e_2}		& \text{(let)}\\
+            & \tick{k}				& \text{(tick)}\\
+	    & x					& \text{(var)}\\
+	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
+	    & q					& \text{(const integer)}\\
+            & \cons{x}{xs} ~~| ~~ \listnil      & \text{(list constructor)}\\
+            & f x                               & \text{(function application)}\\
+\end{align*}
+
+\end{definition}
 
 
 \section{Evaluation Semantics}
-# E:Nil
-# E:Cons 
-# E:MatchNil
-# E:MatchCons
-# E:App
-   # How do we reference function code properly?
+\begin{itemize}
+   \item E:Nil
+   \item E:Cons
+   \item E:MatchNil
+   \item E:MatchCons
+   \item E:App
+      \begin{itemize}
+         \item How do we reference function code properly?
+      \end{itemize}
+\end{itemize}
 
 \section{Type Rules}
-# Introduce Potential Function
-   # Explain the role of potential
-   # Explain why we only assign potential to lists
-
-# Define Type System
-
-# T:Nil
-# T:Cons
-# T:MatchList
-# T:App
-   # Mechanism to determine type of function?
-   # Especially w.r.t. resource-annotation
+\begin{itemize}
+   \item Introduce potential function
+      \begin{itemize}
+         \item Explain the role of potential
+         \item explain why we only assign potential to lists
+      \end{itemize}
+   \item Define type system
+   \item T:Nil
+   \item T:Cons
+   \item T:MatchList
+      \begin{itemize}
+         \item Explain why the constraints exist
+      \end{itemize}
+   \item T:App
+      \begin{itemize}
+         \item Mechanism to determine type of function? w.r.t resource-annotation?
+      \end{itemize}
+   \item T:Share???
+\end{itemize}
 
 \subsection{Example Type Derivation}
-# Define function map
-# Invoke map with a specific function f
+\begin{itemize}
+   \item Define function map
+   \item Provide a type derivation
+\end{itemize}
 
-# Example with nested Lists?
+\begin{minted}{ocaml}
+   def map f l = match l with 
+      | nil -> nil
+      | cons(x, xs) -> cons(f x, map f xs).
+\end{minted}
+
+\begin{itemize}
+   \item Provide type derivation for map
+   \item Example with nested lists?
+      \begin{itemize}
+         \item Need to define share for that?
+      \end{itemize}
+\end{itemize}
 
 \section{Soundness}
+\begin{itemize}
+   \item Explain how introduction of potential alters soundness proof.
+\end{itemize}
 
-# Explain how potential alters the soundness proof.
+\section{Questions}
+
+\begin{itemize}
+   \item Suppose we have a function \emph{map}, with the signature \((A \to B) \to L(A) \to L(B)\). Where and how to attribute cost?
+   \item Should we introduce the share rule? Would constraint us to a linear system?
+\end{itemize}
+
