@@ -101,6 +101,9 @@
 % List nil.
 \newcommand{\listnil}{\textbf{nil}}
 
+% Pattern match on lists.
+\newcommand{\listmatch}[3]{\textbf{match } #1~\textbf{with}~|~\listnil \to #2~|~\cons{x}{xs} \to #3}
+
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
 

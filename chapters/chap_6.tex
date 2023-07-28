@@ -12,13 +12,13 @@
    \item Define the prog lang
 \end{itemize}
 
-In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumptions respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce functions and a refresher on type signatures.
+In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce functions and a provide refresher on type signatures.
 
 We introduce list construction and matching, as well as function application:
 
 
 \begin{definition}[list-tick language]
-   \label{def:prog-lang-5}
+   \label{def:prog-lang-6}
 
 \begin{align*}
    e := ~~~ & \letexp{x}{e_1}{e_2}		& \text{(let)}\\
@@ -27,13 +27,48 @@ We introduce list construction and matching, as well as function application:
 	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
 	    & q					& \text{(const integer)}\\
             & \cons{x}{xs} ~~| ~~ \listnil      & \text{(list constructor)}\\
+            & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
             & f x                               & \text{(function application)}\\
 \end{align*}
-
 \end{definition}
 
+For the reader not familiar with constructing lists using \cons{x}{xs}, we provide a small example to illustrate the use. Let us start by creating a list with integers from one to five. Conceptually, this list can be split up into the \emph{head}, one in this case, and its \emph{tail}, which is the sub list from two to five. Writing this out we get:
+\[
+   \cons{1}{\cons{2}{\cons{3}{\cons{4}{\cons{5}{\listnil}}}}}
+\]
 
 \section{Evaluation Semantics}
+
+We start by introducing two rules for the construction of lists, corresponding to the two constructors of our programming language. In this thesis, construction of both empty and non-empty lists has no associated cost. As a result the cost of operations on lists is purely dictated by the actions performed on the list. 
+
+\[
+   \inference[(E:Nil)]
+   {}
+   {\evals{E}{\listnil}{null}{}{}}
+   \qquad
+   \inference[(E:Cons)]
+   {\contains{E}{x, xs} \qquad l = (E(x), E(xs))}
+   {\evals{E}{\cons{x}{xs}}{l}{}{}}
+\]
+\todo{Need to introduce null somewhere}
+
+In order to implement functions that work recursively on a list, we need pattern matching on lists. Whenever a match statement involving a list is invoked, there are two cases: (1) The list passed to it is a null value. (2) The list passed to it contains values. We define an evaluation rule for each of these cases, respectively:
+
+\[
+   \inference[(E:MatchNil)]
+   {E(l) = Null \qquad \evals{E}{e_1}{v}{q_0}{q_1}}
+   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
+\]
+
+\[
+   \inference[(E:MatchCons)]
+   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{}{}}
+   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
+\]
+
+
+
+
 \begin{itemize}
    \item E:Nil
    \item E:Cons
