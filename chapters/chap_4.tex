@@ -1,8 +1,22 @@
-\chapter{Rudimentary Type System}
+\chapter{LetTick Language}
+
+\APm{previous chapter: Introduce ``Resources'' in a previous chapter.}
+
+\AP{
+Structure:
+\begin{enumerate}
+   \item i. Syntax, ii. Simple type system
+   \item i. evaluation semantics (resource-aware)
+   \item i. resource-aware type system
+         ii. inference rules
+   \item soundness
+\end{enumerate}
+}
 
 In this chapter, we define the type system, along with the associated operational semantics and type rules, for a simple system, that only counts the amount of ticks in a program. The chapter concludes with a soundness proof, showing that the relation between operational semantics is consistent - the resource bounds assigned to types provide a true upper bound on the concrete resource consumption of evaluating an expression.
 In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the calculated resource consumption and (2) types that reflect resource consumption. The first problem is solved by introducing the instruction \(\<tick>~q\) to the programming language. Where \(q\) is a rational number, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the unit type with two resource annotations, one for the resources required a priori, and another for the resources freed afterward.
 
+\section{Language Syntax and Type System}
 Below, we define the programming language for this chapter.
 
 \begin{definition}[let-tick language]
@@ -13,9 +27,11 @@ Below, we define the programming language for this chapter.
             & \tick{q}                         & \text{(tick)}
 \end{align*}
 
+\APm{Add the basic type system here (without resource annotations)}
+
 \end{definition}
 
-\section{Operational Semantics}
+\section{Big-step Operation Semantics}
 In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \(p_0\) and \(p_1\) are positive rational numbers, \(p_0\) being the amount of resources needed to start evaluating the expression, and \(p_1\) being the resources freed after the evaluation of expression \(e\).
 This yields the following definitions:
 

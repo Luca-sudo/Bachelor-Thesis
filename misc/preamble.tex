@@ -108,11 +108,11 @@
 \command{let, in, tick}
 
 \theoremstyle{definition}
-\newtheorem{theorem}{Theorem}
+\newtheorem{theorem}{Theorem}[chapter]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{definition}{Definition}[section]
-
+\newtheorem{definition}{Definition}[theorem]
+\numberwithin{theorem}{chapter}
 
 
 % Corporate Design
@@ -236,3 +236,8 @@
    pdfkeywords={OpenID Connect, add more}, % CHANGE HERE
  }
 }
+
+\definecolor{pairedTwoDarkBlue}{HTML}{1f78b4}
+\definecolor{pairedSixDarkRed}{HTML}{e31a1c}
+\newcommand{\APm}[1]{\todo[backgroundcolor=blue!10]{\textbf{AP:} #1}}
+\newcommand{\AP}[1]{\textbf{\color{pairedSixDarkRed} #1}}
