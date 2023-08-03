@@ -8,6 +8,21 @@ Dissertation: https://edoc.ub.uni-muenchen.de/13955/1/Hoffmann_Jan.pdf
 
 # Questions and Meeting Notes
 
+## 1st August
+- Clearer distinction between types and resource-annotations.
+- Make sure that RA gets attached to final type to avoid nested RAs
+- Make distinction clear that COntext maps variable to Simple type (not RA)
+- Chapter 4 merge paragraph into proof
+- Define relaxation for resource pairs
+	- Introduce Notation
+	- Introduce partial ordering
+- Soundness
+	- Make some stuff more readable
+	- Understand role of relax better
+	- Rewrite soundness statement
+
+- Move annotations from above inequality symbol to the sight. Using \tag.
+
 ## Questions
 - Sum types
 	- How are they implemented on a low level?

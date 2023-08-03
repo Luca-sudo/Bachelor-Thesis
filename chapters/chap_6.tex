@@ -1,135 +1,304 @@
-\chapter{Introducing Lists}
-\begin{itemize}
-   \item Short refresher on lists
-   \item How cost for lists differ from current stuff
-   \item What we introduce in this chapter
-      \begin{itemize}
-         \item Lists: constructor and matching
-         \item Functions: abstraction and application
-         \item Type signature refresher
-         \item Potential function for cost of lists
-      \end{itemize}
-   \item Define the prog lang
-\end{itemize}
+\chapter{Adding Variables}
 
-In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce functions and a provide refresher on type signatures.
+Before continuing, let us examine the limitations of the \nameref{def:prog-lang-4} from the previous chapter. We are not able to declare variables, control flow, or constants. All of those features will be implemented in this chapter. In order to declare and use variables in our programming language, we need to provide a definition of an environment, which comprises the concrete values of variables. As we will see, introducing variables will demand cautious reformulation of most evaluation rules to account for environments.
 
-We introduce list construction and matching, as well as function application:
+Similarly to environments, we will introduce contexts for the type rules. While an environment maps variables to concrete values, a context will map variables to types. This will also require carefully embellishing previous type rules, to provide rules that are rigorous with respect to contexts. We define the syntax of the augmented programming language below:
 
 
-\begin{definition}[list-tick language]
-   \label{def:prog-lang-6}
+\begin{definition}[var-tick language]
+   \label{def:prog-lang-5}
 
 \begin{align*}
    e := ~~~ & \letexp{x}{e_1}{e_2}		& \text{(let)}\\
             & \tick{k}				& \text{(tick)}\\
 	    & x					& \text{(var)}\\
 	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
-	    & q					& \text{(const integer)}\\
-            & \cons{x}{xs} ~~| ~~ \listnil      & \text{(list constructor)}\\
-            & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
-            & f x                               & \text{(function application)}\\
+	    & q					& \text{(const rational)}\\
 \end{align*}
+
 \end{definition}
 
-For the reader not familiar with constructing lists using \cons{x}{xs}, we provide a small example to illustrate the use. Let us start by creating a list with integers from one to five. Conceptually, this list can be split up into the \emph{head}, one in this case, and its \emph{tail}, which is the sub list from two to five. Writing this out we get:
-\[
-   \cons{1}{\cons{2}{\cons{3}{\cons{4}{\cons{5}{\listnil}}}}}
-\]
 
 \section{Evaluation Semantics}
 
-We start by introducing two rules for the construction of lists, corresponding to the two constructors of our programming language. In this thesis, construction of both empty and non-empty lists has no associated cost. As a result the cost of operations on lists is purely dictated by the actions performed on the list. 
+We begin this section by introducing environments, which provide a necessary link between variable names and values. For this, we define an \nameref{def:environment}, which is a mapping from variable names to values. Along with this, we introduce two notations related to environments, one for retrieving the value of the variable and another notation that allows us to check if an environmant contains a specific variable name; This will be needed to ensure that rules featuring variables are correctly defined.
+
+\begin{definition}[Environment]\label{def:environment}
+   We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function from variable names (\Var) to values (\Vals). 
+\end{definition}
+
+\begin{definition}\label{def:environment-getter}	
+   Let \(E\) be an \nameref{def:environment} and \(x\) be a variable name, we then write \(E(x)\) for the value of \(x\) in the environment \(E\):
+
+   \[
+      E(x) =
+      \begin{cases}
+	 E(x)		    & \mbox{,if } \contains{E}{x} \\
+	 \textbf{undefined} &\mbox{,else}
+      \end{cases}
+   \]
+\end{definition}
+
+\begin{definition}\label{def:in-environment}
+   Given an \nameref{def:environment} \(E\) and a variable name \(x\), we define \(\contains{E}{x}\) as follows:
+   \[
+      \contains{E}{x} = 
+      \begin{cases*}
+	 \false & \mbox{,if E(x) is undefined}\\
+	 \true & \mbox{,else} 
+      \end{cases*}
+   \]
+\end{definition}
+
+Here, we define a partial function \(f\) as a function either maps a value \(x\) to a value in the codomain or returns \textbf{undefined} otherwise. Defining environments using partial functions precisely captures the notion of an environment, while providing us with the needed flexibility; Once new variables are instantiated, we are able to define their value in the environment pointwise:
+
+\begin{definition}\label{def:environment-augment}	
+   Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(b\) be the value assigned to \(a\). We write \(E[x \mapsto y]\) for the environment \(E\), where \(a\) is additionally mapped onto \(b\):
+
+   \[
+      \envaugment{E}{a}{b} = 
+      \begin{cases}
+	 E(x)  & \mbox{,if } x \neq a\\
+	 b     & \mbox{,else } 
+      \end{cases}
+   \]
+
+\end{definition}
+
+As we now evaluate expressions with respect to an \nameref{def:environment}, we need to update \cref{def:evaluation-judgement} to accommodate environments:
+
+\begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
+   Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then write the following for the evaluation judgement that incorporates an environment:
+
+   \[
+      \evals{E}{e}{v}{p_0}{p_1}
+   \]
+	
+\end{definition}
+
+Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. We start with the rule \((E:var)\), which provides an explicit handle for resolving variable names to their values. We want to highlight that (E:var) has no cost associated with it. This can simply be changed by adjusting the a priori resources for the rule:
 
 \[
-   \inference[(E:Nil)]
+   \inference[(E:var)]
+   {\contains{E}{x}}
+   {\evals{E}{x}{E(x)}{}{}}
+\]
+
+Next, we define one rule (E:bool) that unifies the evaluation of both boolean constants. Again, we decide to associate no cost to the evaluation of boolean values, though for a different reason this time. We want the programmer to have the highest degree of jurisdiction, as a result, we want \(\tick\) to be the prominent means of administering cost. The same line of thought holds for the creation of numeric constants.
+
+\[
+   \inference[(E:bool)]{b \in \{\true, \false\}}{\evals{E}{b}{b}{}{}}%
+   \quad\quad\quad
+   \inference[(E:int)]{n \in \mathbb{Z}}{\evals{E}{n}{n}{}{}}
+\]
+
+Next, we introduce environments into the evaluation rule for \(\tick{}\). It is worth noting that the evaluation of a \(\tick{}\) expression is \emph{invariant} under the environment, as it does not rely on any state.
+
+\[
+   \inference[(E:tick)]
    {}
-   {\evals{E}{\listnil}{null}{}{}}
+   {\evals{E}{\tick{q}}{()}{a}{b}}%
+   \qquad 
+   \begin{aligned}
+      \text{where }  &a = \max(q, 0)\\
+      \text{and }    &b = \max(0, -q) 
+   \end{aligned}
+\]
+
+Given an expression \(\tick{k}\), there are two mutually exclusive cases: \(k\) is positive, or it is negative. In the former case, \(a\) reduces to \(k\) and \(b\) to zero. In the latter case, \(a\) is zero and \(b\) reduces to \(-q\), which is again a positive number - as desired. Splitting this evaluation rule up into two distinct rules for positive and negative \(k\) is equally valid.
+
+The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. Note that the values of \(a\) and \(b\) are closely linked to \cref{def:multiplying-pairs}, corresponding to the first and second entry of the tuple, respectively.
+
+\[
+   \inference[(E:let)]
+   {\evals{E}{e_1}{v_1}{p_0}{p_1} \qquad \evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{q_0}{q_1}}
+   {\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{a}{b}}%
    \qquad
-   \inference[(E:Cons)]
-   {\contains{E}{x, xs} \qquad l = (E(x), E(xs))}
-   {\evals{E}{\cons{x}{xs}}{l}{}{}}
+   \begin{aligned}
+      \text{where }  &a = p_0 - p_1 + \max(p_1, q_0)\\
+      \text{and }    &b = q_1 - q_0 + \max(p_1, q_0) 
+   \end{aligned}
 \]
-\todo{Need to introduce null somewhere}
 
-In order to implement functions that work recursively on a list, we need pattern matching on lists. Whenever a match statement involving a list is invoked, there are two cases: (1) The list passed to it is a null value. (2) The list passed to it contains values. We define an evaluation rule for each of these cases, respectively:
+
+\section{Type Rules}\label{sec:type-rules-5}
+
+In this section, we will first motivate the new type system, introduce \nameref{def:context}s and define the necessary type rules.With respect to the type system, we are required to introduce two new types: \bool~and \typeint. This yields the following type system:
+
+\begin{figure}[H]
+   \[A := \unit~|~\text{\bool}~|~\text{\typeint}\]
+   \caption{Type system with booleans and integers added.}
+   \label{fig:type-system-5}
+\end{figure}
+
+In the previous chapter, the programming language at hand only produced values of a singular type \textbf{unit}. For this programming language, we introduced two new types which forces us to reconsider the type we assign to \emph{sequential expressions}. For this, we note two facts: (1) The resource-consumption assigned to a sequential operation is invariant of the type the operation returns. (2) The result of the first expression is consumed by the second expression, and, therefore, the result of the sequential evaluation is defined by the return type of the second expression. This motivates the following, updated definition:
+
+\begin{definition}
+   Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{fig:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
+   \[
+      e_1;e_2 : \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}
+   \]
+\end{definition}
+
+Next, we introduce \nameref{def:context}s. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
+
+\begin{definition}[Context]\label{def:context}
+   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\Types}\) as a partial function from variable names to types.
+\end{definition}
+
+We know define some notations that are tightly linked to the ones introduced in \cref{def:in-environment}, \cref{def:environment-getter} and \cref{def:environment-augment}:
+
+
+\begin{definition}\label{def:context-getter}
+   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, then \(\Gamma(x)\) returns either the type of \(x\) or undefined.
+\end{definition}
+
+\begin{definition}\label{def:in-context}
+   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, we define \(\contains{\Gamma}{x}\) as follows:
+   \[
+      x \in \Gamma =
+      \begin{cases}
+	 \false	     & \text{,if } \Gamma(x) \text{ is undefined}\\
+	 \true	     & \text{,else}
+      \end{cases}
+   \]
+\end{definition}
+
+\begin{definition}\label{def:context-augment}
+   Let \(\Gamma\) be a context, \(A\) be a type and let \(x : A\) be a variable. We can embed the variable \(x\) with its associated type \(A\) by writing \(\Gamma ; x:A\).
+\end{definition}
+
+\begin{definition}[Typing Judgement with contexts]\label{def:type-judgement-context}
+   Let \(\Gamma\) be a \nameref{def:context}, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
+   \[
+      \typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}
+   \]
+\end{definition}
+
+This comprises most definitions that are needed to define the necessary type rules. We will introduce further notations, once they become necessary, clearly motivating their use and definition. Let us start by introducing the rule (T:var), which allows us to add a variable and its associated type into a context.
 
 \[
-   \inference[(E:MatchNil)]
-   {E(l) = Null \qquad \evals{E}{e_1}{v}{q_0}{q_1}}
-   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
+   \inference[(T:var)]
+   {}
+   {\typing{\Gamma; x: A}{x}{A}}
 \]
+
+Next, we introduce two rules, one for boolean constants and one for integer constands. The rule (T:bool) assigns a type \bool~to any occurence of \(\true\) or \(\false\), and, similarly, the rule (T:int) assigns a type \typeint to any occurence of integer constants.
 
 \[
-   \inference[(E:MatchCons)]
-   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{}{}}
-   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
+   \inference[(T:bool)]
+   {b \in \{\true, \false\}}
+   {\typing{\emptycontext}{b}{\text{\bool}}}%
+   \qquad
+   \inference[(T:int)]
+   {n \in \mathbb{Z}}
+   {\typing{\emptycontext}{n}{\text{\typeint}}}
 \]
 
+Most significantly, we used the \emph{empty context}, written as \(\emptycontext\). This is the context that contains no information. We do this for two reasons: Firstly, the rule is more declarative as a result, because the typing is \emph{invariant} with respect to the context - an integer is always an integer. Secondly, this is precisely the smallest context for which the rule holds true; As such, the empty context forms the most general case for these rules to hold. Now, we are even able to type constant integers or booleans with an arbitrarily large \nameref{def:context} by applying the (T:var) rule, such that the contexts match. 
 
+Defining the type rule for the \(\tick{}\) is straightforward, we add a context \(\Gamma\) to the rule from the previous chapter \cref{def:tr-tick-4}:
 
+\[
+   \inference[(T:tick)]
+   {q_0 \geq k + q_1}
+   {\typing{\emptycontext}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
+\]
 
-\begin{itemize}
-   \item E:Nil
-   \item E:Cons
-   \item E:MatchNil
-   \item E:MatchCons
-   \item E:App
-      \begin{itemize}
-         \item How do we reference function code properly?
-      \end{itemize}
-\end{itemize}
+For the let expression, we provide a definition that differs from the one provided in \cref{def:tr-let-4}. For this, we make the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
+We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the \nameref{def:resource-consumption}. We avoid this by enforcing that the relaxed resource-consumption is \emph{at least} as large as the resource-consumption prior.
 
-\section{Type Rules}
-\begin{itemize}
-   \item Introduce potential function
-      \begin{itemize}
-         \item Explain the role of potential
-         \item explain why we only assign potential to lists
-      \end{itemize}
-   \item Define type system
-   \item T:Nil
-   \item T:Cons
-   \item T:MatchList
-      \begin{itemize}
-         \item Explain why the constraints exist
-      \end{itemize}
-   \item T:App
-      \begin{itemize}
-         \item Mechanism to determine type of function? w.r.t resource-annotation?
-      \end{itemize}
-   \item T:Share???
-\end{itemize}
+\[
+   \inference[(T:relax)]
+   {\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}} \qquad q_0 \geq p_0 \qquad q_0 - q_1 \geq p_0 - p_1}
+   {\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}}
+\]
 
-\subsection{Example Type Derivation}
-\begin{itemize}
-   \item Define function map
-   \item Provide a type derivation
-\end{itemize}
+As the subexpressions of the let expression might have different contexts, we need to account for that as well. To permit a consistent formulation of the type rule, we need to add an assumption: the two contexts need to be \emph{disjoint}. This will allow us to avoid any typing inconsistencies that could arise from mismatched types between the two contexts. 
+For this, a variable \(x\) could be present in both contexts \(\Gamma_1\) and \(\Gamma_2\), with differnt types assigned to the variable:
 
-\begin{minted}{ocaml}
-   def map f l = match l with 
-      | nil -> nil
-      | cons(x, xs) -> cons(f x, map f xs).
-\end{minted}
+\[
+   \typing{\Gamma_1}{x}{A} \qquad \typing{\Gamma_2}{x}{B}
+\]
 
-\begin{itemize}
-   \item Provide type derivation for map
-   \item Example with nested lists?
-      \begin{itemize}
-         \item Need to define share for that?
-      \end{itemize}
-\end{itemize}
+This is prevented, by demanding that the contexts are \emph{disjoint}. While this makes the rule less flexible, we avoid cases where the application of (T:let) would yield a possibly ill-typed judgement; If the variable \(x\) is present in both contexts, altering the type of that variable may construe the resulting typing of the expression.
+
+\[
+   \inference[(T:let)]
+   {\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}} \qquad \typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}} \qquad \Gamma_1 \cap \Gamma_2 = \emptyset}
+   {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
+\]
+
 
 \section{Soundness}
-\begin{itemize}
-   \item Explain how introduction of potential alters soundness proof.
-\end{itemize}
 
-\section{Questions}
+Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is necessary to formulate the soundness theorem as to account for environments and contexts. This yields the following statement:
 
-\begin{itemize}
-   \item Suppose we have a function \emph{map}, with the signature \((A \to B) \to L(A) \to L(B)\). Where and how to attribute cost?
-   \item Should we introduce the share rule? Would constraint us to a linear system?
-\end{itemize}
+\begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
+   Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A\) be a type, along with two \nameref{def:resource-pair}s \((p_0, p_1), (q_0, q_1)\) and an expression \(e\) that evaluates to the value \(v\). The Soundness Theorem states:
+
+   \begin{center}
+   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{q_0}{q_1}\), \(q_0 \geq p_0\) and \(q_0 - q_1 \geq p_0 - p_1\).
+   \end{center}
+\end{theorem}
+
+\begin{proof}
+
+(tick): The proof given in \cref{thm:soundness-4} for the tick expression still holds.
+
+(bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\), which shows that both inequalities are satisfied. It furthermore follows that the type of the resulting value \(b\) is of type \bool~, and such, consistent with the typing derived from the type rule.
+
+(int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows that the desired inequalities hold, and similarly, the type of \(n\) is \typeint~, which is consistent.
+
+(let): Here, the let expression is a special case. Where any other language construct corresponded to exactly one type rule, the let expression may actually be typed by two different rules, (T:let) or (T:relax). As such, we need to prove that for the application of both type rules, soundness holds.  
+
+For (T:let):\\
+By assumption, we get that \(\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0 - r_1 + \max(r_1, s_0)}{s_1 - s_0 + \max(r_1, s_0)}\) with \(\evals{E}{e_1}{v_1}{r_0}{r_1}\) and \(\evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{s_0}{s_1}\) for the evaluation, and similarly, \(\typing{\Gamma_1;\Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}\) with \(\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}}\) and \(\typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}}\) for the typing: \\  
+We want to show that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\). For the subterm \(- r_1 + \max(r_1, s_0)\) we know that it is at most zero (if \(r_1 \geq s_0\) and negative otherwise. This allows us to infer that, as \(p_0 \geq r_0\) by assumption, it especially holds that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\), as desired.  \\
+Next, we want to show \(p_0 - q_1 \geq r_0 - r_1 + \max(r_1, s_0) - s_1 + s_0 - \max(r_1, s_0)\). The max expression cancel each other out, which shows that we only have to prove \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\). As we assume soundness for both subexpressions, the following two inequalities hold: \(p_0 - m \geq r_0 - r_1\) and \(m - q_1 \geq s_0 - s_1\). Applying both inequalities immediately proves the desired inequality: \(p_0 - m + m - q_1 \geq r_0 - r_1 + s_0 - s_1\) which is equivalent to \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\).\\
+As the resource-annotations are sound, it especially holds that \(v : \ratype{B}{p_0}{q_1}\).
+
+For (T:relax):
+By assumption, the following to hold true: \(\evals{E}{e}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}\) and are assumed to be sound. As a result, the following hold true: 
+
+\begin{equation}\label{eq:relax-base}
+   p_0 \geq r_0 \text{ and } p_0 - p_1 \geq r_0 - r_1
+\end{equation}
+
+This requires another proof via induction, as we could have an arbitrarily long chain of (T:relax) applications. Let us start proving soundness for the base case, that is a single application of the (T:relax) rule.\\
+Applying (T:relax) will yield the typing \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), together with \(q_0 \geq p_0\) and \(q_0 - q_1 \geq p_0 - p_1\). Using the two inequalities in \cref{eq:relax-base} we can directly infer the desired inequalities \(q_0 \geq r_0\) and \(q_0 - q_1 \geq r_0 - r_1\).
+
+Let us continue by proving the induction step. For this, our induction hypothesis assumes that for any fixed number of subsequent applications of (T:relax), soundness is preserved. The proof is similar to the one for the base case.\\
+ The induction hypothesis ensures that for \(q_0\) and \(q_1\), \(q_0 \geq r_0\) and \(q_0 - q_1 \geq p_0 - p_1\) hold. Let the next application of (T:relax) yield the following typing: \(\typing{\Gamma}{e}{\ratype{A}{m_0}{m_1}}\). The application of (T:relax) then assumes that \(m_0 \geq q_0\) and \(m_0 - m_1 \geq q_0 - q_1\). These inequalities directly proof soundness.
+\end{proof}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

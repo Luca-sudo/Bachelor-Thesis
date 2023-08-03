@@ -1,278 +1,111 @@
-\chapter{LetTick Language}
+\chapter{Resources}
 
-\APm{previous chapter: Introduce ``Resources'' in a previous chapter.}
+\begin{itemize}
+   \item What are resources?
+   \item Resource pairs
+      \begin{itemize}
+         \item Definition
+         \item Multiplication \(\sim\) sequencing
+         \begin{itemize}
+            \item Example
+            \item Monoid
+         \end{itemize}
+      \item How and why we want to compare resource pairs
+         \begin{itemize}
+            \item Motivate relaxation
+            \item Partial ordering
+            \item Relaxation
+            \item Example
+         \end{itemize}
+      \end{itemize}
+\end{itemize}
 
-\AP{
-Structure:
-\begin{enumerate}
-   \item i. Syntax, ii. Simple type system
-   \item i. evaluation semantics (resource-aware)
-   \item i. resource-aware type system
-         ii. inference rules
-   \item soundness
-\end{enumerate}
-}
+Throughout this thesis, we introduce programming language constructs, in order to elicit resource consumption for programs. It is, therefore, important to mention that resources can be an arbitrary cost metric, including but not limited to: memory consumption, runtime, energy consumption. While the details of the respective type of resource are nuanced, the resource consumption generally comprises two parts: Resources consumed to start evaluating, and possibly, resources freed after evaluation.
 
-In this chapter, we define the type system, along with the associated operational semantics and type rules, for a simple system, that only counts the amount of ticks in a program. The chapter concludes with a soundness proof, showing that the relation between operational semantics is consistent - the resource bounds assigned to types provide a true upper bound on the concrete resource consumption of evaluating an expression.
-In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the calculated resource consumption and (2) types that reflect resource consumption. The first problem is solved by introducing the instruction \(\<tick>~q\) to the programming language. Where \(q\) is a rational number, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the unit type with two resource annotations, one for the resources required a priori, and another for the resources freed afterward.
+We will associate resource consumption with resource pairs. We will then define multiplication on resource-pairs, which is intimately linked to sequential evaluation, as well as a partial ordering. The partial ordering will lead to the definition of \emph{relaxation} and allow us to compare the resource consumption of evaluations. 
 
-\section{Language Syntax and Type System}
-Below, we define the programming language for this chapter.
+\section{Resource Pairs}
 
-\begin{definition}[let-tick language]
-   \label{def:prog-lang-4}
+We start by defining resource pairs. These pairs will fundamentally encode the cost of evaluating an expression. Most importantly, a resource pair only comprises \emph{positive} integers. 
 
-\begin{align*}
-   e := ~~~ & \letexp{\_}{e_1}{e_2}             & \text{(let)}\\
-            & \tick{q}                         & \text{(tick)}
-\end{align*}
-
-\APm{Add the basic type system here (without resource annotations)}
-
+\begin{definition}[Resources]
+   We denote by \(\mathcal{R}\) the set of resource pairs, which we identify like so:
+   \[
+      \resource = \mathbb{N} \times \mathbb{N}
+   \]
 \end{definition}
-
-\section{Big-step Operation Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \(p_0\) and \(p_1\) are positive rational numbers, \(p_0\) being the amount of resources needed to start evaluating the expression, and \(p_1\) being the resources freed after the evaluation of expression \(e\).
-This yields the following definitions:
 
 \begin{definition}[Resource pair]
    \label{def:resource-pair}
    We define a \emph{resource pair} as a tuple, where \(p_0\) is the a priori resources needed, and \(p_1\) is the a posteriori resources reimbursed at the end.
    \[
-      (p_0, p_1) \in \mathbb{N} \times \mathbb{N}
+      (p_0, p_1) \in \resource
    \]
 \end{definition}
 
-\begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
-   Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1)\) be a \nameref{def:resource-pair}.
-   The \emph{evaluation judgement} encodes A judgement of the form  encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
-   \[
-      \evals{}{e}{v}{p_0}{p_1}
-   \]
-\end{definition}
+When reasoning about a resource pair \((p_0, p_1)\), we say that \(p_0\) are the \emph{initial} resources, and \(p_1\) are the \emph{residual} resources. 
 
-It is important to differentiate between the resources required by an expression, and the resources \emph{consumed} by an expression. In the above definition, the expression requires \(p\) resources a priori, whereas its resource consumption amounts to \(p - p'\); That is, the resource consumption is precisely the resources needed upfront, minus the resources that are freed in the end.
+\begin{example}
+   A \nameref{def:resource-pair} with 4 initial and 2 residual resources is denoted by \((4, 2)\). 
+   
+\end{example}
 
-Initially, one may be tempted to try and simplify the resource consumption. Consider an imaginary expression, that requires \((4, 2)\) resources to evaluate. It is generally \emph{wrong} to simplify the resource consumption to \((2, 0)\), as the two resource units we just factored out might be mandatory in order to even evaluate the expression. For example, the two resource units may be required to store an intermediary result, etc. 
+As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need to define the resource cost of subsequent evaluations. 
+For this, there are two cases: The first operation has enough residual resources for the second operation to be executed, or the second operation requires more initial resources than residual resources of the first operation. In the latter case we need to increase the initial resources of the composed evaluation.
 
-As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need a definition of composition that is consistent with the resource-annotations provided to an expression.
-For this, we will build up an ergonomic and sound definition step by step. Firstly, we need to understand how the resource consumption of subsequent expressions behaves. For this, there are two cases: The first operation reimburses enough resources for the second operation to be executed, or the second operation consumes more resources than the first operation reimburses. 
+This yields two cases for the resulting resource pair:
+\[
+   \begin{cases}
+      (p_0 + q_0 - p_1,  q_1) & \mbox{if } q_0 \geq p_1 \\
+      (p_0,q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1 
+   \end{cases}
+\]
 
-Concretely, this yields the following definition for the cost of subsequent expressions:
-
-\begin{definition}[Cost of subsequent expressions]
-   \label{def:multiplying-resources}
-   Let \(e_1\) and \(e_2\) be two evaluations, such that \(\evals{}{e_1}{v_1}{p_0}{p_1}\) and \( \evals{}{e_2}{v_2}{q_0}{q_1}\). The resulting resource pair of their composition is determined by:
-   \[
-      \begin{cases}
-         (p_0 + q_0 - p_1,  q_1) & \mbox{if } q_0 \geq p_1 \\
-         (p_0,q_1 + p_1 - q_0) & \mbox{if } q_0 <    p_1 
-      \end{cases}
-   \]
-\end{definition}
-
-The first case is relevant, if the resources required by the second operation are exceeded, which is equivalent to \(q_0 \geq p_1\). In this case, we need to increase the initial resources by the difference between the reimbursement of the first operation and the cost of second operation. For the second case, the resources that are reimbursed suffice to start the second operation. As a result, we do not need to increase the initial cost, but increase the final reimbursement. It becomes apparent, that the difference between the resource reimbursement of the first operation and the resource requirement of the second operation has a key role in determining the resulting cost. We, therefore, give this metric a distinguished name:
-
-\begin{definition}[Resource disparity] \label{def:resource-disparity}
-   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, of subsequent operations, as introduced above. We then define the \textbf{disparity} of these two operations as \(\max(p_1, q_0)\).
-\end{definition}
-
-We can further simplify the rule for multiplying resource-annotated tuples. To this end, observe that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the resource requirements in the first case in \ref{def:multiplying-resources}, if it holds that \(q_0 \geq p_1\). Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) also precisely matches the second case, if \(q_0 < p_1\). As a result, we can provide a more compact definition for the multiplication of resource-annotated tuples, using the newly introduced \emph{resource disparity}:
+We can, however, simplify the multiplication of resource-pairs by merging the two cases. Consider that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the initial resources for both cases. Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) precisely matches the residual resources for both cases. 
+This yields the following definition:
 
 \begin{definition}[Multiplying resource pairs]
    \label{def:multiplying-pairs}
-
    Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, as introduced above. We then define:
    \[(p_0, p_1) \cdot (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]
-   
 \end{definition}
-\todo{Show that this is actually a monoid?}
 
-Having this definition in place, allows us to compose evaluations together, and yield the resource consumption of their subsequent execution. We will now define rules for the evaluation of programming language constructs, in the form of operational semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
-First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
+\begin{example}
+   For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \cdot (5, 0) = (7,0)\).
+\end{example}
 
-\[
-   \inference[(let)]
-   {\evals{}{e_1}{()}{p_0}{p_1} ~~,~~ \evals{}{e_2}{()}{q_0}{q_1}}
-   {\evals{}{\letexp{}{e_1}{e_1}}{()}{p_0 - p_1}{q_1 - q_0}}
-\]
-\todo{Introduce rule as split case? See below.}
+We remark that the multiplication on resource pairs forms a monoid.
+\todo{Add Proof to appendix? Or proof in lean?}
 
-Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. These two cases translate directly into two inference rules, provided below:
+\section{Comparing Resource Consumption}
 
-\[
-   \inference[\((E:tick_{+})\)]
-   {q \geq 0}
-   {\evals{}{\tick{q}}{()}{q}{}}
-\]
+Whenever we define a programming language, along with evaluation semantics and type rules, we want to proof soundness of that language with respect to evaluation semantics and type rules. With respect to resource consumption, soundness assures that the inferred resource consumption is never less than the concrete cost of evaluation. In order to reasons more precisely and concisely about the resource consumption, we define a partial ordering on the set of resources, which leads to the definition of \emph{relaxation}.
 
-\[
-   \inference[\((E:tick_{-})\)]
-   {q < 0}
-   {\evals{}{\tick{q}}{()}{}{-q}}
-\]
+Intuitively, one resource pair is "smaller" than another resource pair, if the initial resources and the resource consumption are smaller:
 
-In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules. 
+\begin{definition}[Partial ordering on resource pairs]
+   Let \((p_0, p_1), (q_0, q_1) \in \resource\). We define the relation \relaxation ~as follows:
 
-\section{Type Rules}
-The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.
-
-For now, our programming language only constructs values of type \(\unit\). As a result, our type system only comprises the unit type. Contrary to that, the \nameref{def:evaluation-judgement} features resource-annotations. To embed the resource-pair into the type signature of an expression, we define the following notation:
-
-\begin{definition}[Resource-annotated types]\label{def:ra-type}
-   Let \(A\) be a type, and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. The resource-annotated type then refers to a tuple comprising the type and the resource-pair.
-
-   \[A^{p_0}_{p_1} = (A, (p_0, p_1))\] 
-
+   \[
+      (p_0, p_1) \succcurlyeq (q_0, q_1) :\iff p_0 \geq q_0 \wedge p_0 - p_1 \geq q_0 - q_1
+   \]
 \end{definition}
-\todo{weirdly written?}
 
-For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The above definition, however, will be valid even once we extend our type system with types besides unit. Below is a figure containing the type system of our language:
+We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\).
 
-\begin{figure}[h] \label{fig:type-system}
-   \[A := \unit \]
-   \caption{Type system with resource-annotated unit type.}
-\end{figure}
+\begin{example}
+   \((4, 2) \relaxation (3, 2)\), as \(4 \geq 3\) and \(4 - 2 \geq 3 - 2\).
+\end{example}
 
-Similarly to the previous section on operational semantics, we define two rules, one for \textbf{let} expressions and one for \textbf{tick}. Before we can introduce the rule for \textbf{let}, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \cref{def:resource-pairs}. For this, consider the following example:
+\begin{example}
+   \((4,2) \notrelaxation (5, 4)\), as \(4 \centernot \geq 5\).
+\end{example}
 
-\[
-   \inference[]
-   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}}, \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
-   {\typing{}{\letexp{\_}{e_1}{e_2}}{?}}
-\]
+\begin{example}
+   \((5, 4) \notrelaxation (2, 0)\), as \(5 - 4 \centernot \geq 2 - 0\).
+\end{example}
 
-Similarly to the composition of resource-annotations in the previous section on operational semantics, we could initially define the product of resource-annotated types using a case distinction similar to the previous section. Here, however, we skip this step and directly define the product using the \nameref{def:resource-disparity}.
+This relation defines a partial ordering on the set of resource pairs.
+\todo{Proof partial ordering}
 
-This yields the following rules:
-
-\[
-   \label{def:tr-let-4}
-   \inference[(T:let)]
-   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
-   {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}}}
-\]
-
-\[
-   \label{def:tr-tick-4}
-   \inference[(T:tick)]
-   {q_0 \geq k + q_1}
-   {\typing{}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
-\]
-
-Let us now perform an exemplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
-
-\[
-   \letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}
-\]
-
-Intuitively, we have three distinct steps, the first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
-
-\[
-   \inference
-   {
-      \inference
-      {q_0 \geq 3 + q_1}
-      {\typing{}{\tick{3}}{\ratype{\unit}{q_0}{q_1}}}
-       &
-      \inference
-      {
-         \inference
-         {t_0 \geq -2 + t_1}
-         {\typing{}{\tick{-2}}{\ratype{\unit}{t_0}{t_1}}}
-          &
-         \inference
-         {s_0 \geq 5 + s_1}
-         {\typing{}{\tick{5}}{\ratype{\unit}{s_0}{s_1}}}
-      }
-      {\typing{}{\letexp{\_}{\tick{-2}}{\tick{5}}}{\ratype{\unit}{r_0}{r_1}}}
-   }
-   {\typing{}{\letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}}{\ratype{\unit}{p_0}{p_1}}}
-\]
-
-\begin{align*}
-   \text{Where }  & r_0 = t_0 - t_1 + \max(t_1, s_0) \\
-                  & r_1 = s_1 - s_0 + \max(t_1, s_0) \\
-                  & p_0 = q_0 - q_1 + \max(q_1, r_0) \\
-                  & p_1 = r_1 - r_1 + \max(q_1, r_0) \\
-\end{align*}
-
-We are now left with the task of resolving the collected, numeric constraints. As a result of applying the (T:tick) rule for the three instances of \(\tick{}\) expressions, we get the following values: \(q_0 = 3, t_1 = 2, s_0 = 5, q_1 = t_0 = s_1 = 0\). Using these values, we are able to compute the intermediary values \(r_0, r_1, p_0, p_1\), resulting in:
-
-\[
-   p_0 = 6 \qquad p_1 = 0
-\]
-
-This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type judgement is: 
-\[
-   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{6}{0}
-\]
-
-The resulting type \(\ratype{\unit}{6}{0}\) indeed furnishes a tight bound on the resources required. Having a solid grasp of how the type rules orchestrate together, having exercised a simple example, we now prove soundness for the \emph{let-tick} programming language.
-
-
-\section{Soundness}
-Ultimately, we want our type rules to be consistent with the operational semantics defined previously. This will allow us to reason about the type of a program, while ensuring that the resource-annotations of the resulting type line up with the concrete resource consumption of the expression.
-
-Let us first sketch the structure of our soundness proof:
-
-If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
-The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The a priori resource annotation of the type is not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, like so: 
-
-\begin{itemize}
-   \item \(p_0 \geq q_0\)     
-   \item \(p_0 - p_1 \geq q_0 - q_1\)
-\end{itemize}
-
-The first bullet point capturing that the result of evaluating the expression \(e\) has the type that was constructed using the type rules. The second bullet point stating that the \emph{a priori} resource bound that was constructed using the type rules is an upper bound on the concrete resources required a priori. And the third point stating that the resource consumption of the constructed type also provides an upper bound on the concrete resource consumption.
-
-\begin{theorem}[Soundness of typing for let-tick language]
-   Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
-\end{theorem}
-
-In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and that the expression evaluates, like so \(\evals{}{e}{()}{q_0}{q_1}\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.
-
-\begin{proof}
-   (tick): We make a case distinction. Let \(q \geq 0\). Then the following hold by assumption:
-   \begin{align}
-      q     &\geq 0 \label{4.1}\\
-      q_0   &= q \label{4.2}\\
-      q_1   &= 0 \label{4.3}\\
-      p_0   &\geq q + p_1 \label{4.4}
-   \end{align}
-   Since \(p_1 \geq 0\) by definition, we can infer from \ref{4.4} that \(p_0 \geq q\) holds. Applying this inequality to \ref{4.2}, we get that \(p_0 \geq q_0\). Which proves the first part.
-   Next, we show \(p_0 - p_1 \geq q_0 - q_1\). Combining \ref{4.4} with \ref{4.2}, we get \(p_0 \geq q_0 + p_1\). Subtracting \(p_1\) from both sides, we get \(p_0 - p_1 \geq q_0\). Since \(q_1 \geq 0\) by definition as well, it especially holds that \(p_0 - p_1 \geq q_0 - q_1\). Which concludes the proof for the case of \(q \geq 0\).
-   For the second case, we assume that \(q < 0\). Then, the following hold:
-   \begin{align}
-      q_1   &= q \label{4.5}\\
-      q_0   &= 0 \label{4.6}
-   \end{align}
-   Furthermore, \ref{4.1} and \ref{4.4} also hold true. By definition \(p_0 \geq 0\) holds. Using \ref{4.6}, we get \(p_0 \geq q_0\). 
-   Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \cref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
-   \todo{Add case distinction into type rules, or explain why that holds.}
-      
-   (let): By assumption, we get that \(\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 \max(p_1, q_0)}{q_1 - q_0 \max(p_1, q_0)}}\), and similarly \(\evals{}{\letexp{\_}{e_1}{e_2}}{()}{r_0 - r_1 + \max(s_0, r_1)}{s_1 - s_0 + \max(s_0, r_1)}\). As a result, the following hold true:
-   \begin{align}
-      p_0         &\geq r_0 \label{4.7}\\
-      q_0         &\geq s_0 \label{4.8} \\
-      p_0 - p_1   &\geq r_0 - r_1 \label{4.9} \\
-      q_0 - q_1   &\geq s_0 - s_1 \label{4.10}
-   \end{align}
-   We want to show that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(r_1, s_0)\). For this, we consider two cases: first the case where \(s_0 \geq r_1\), and second the case where \(s_0 < r_1\)
-   Let \(s_0 \geq r_1\). We get the following chain of inequalities:
-   \begin{align*}
-      r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + s_0 \\
-                                 &\stackrel{\ref{4.9}}{\leq}p_0 - p_1 + s_0\\
-                                 &\stackrel{\ref{4.8}}{\leq}p_0 - p_1 + q_0\\
-                                 &\stackrel{*}{\leq}p_0 - p_1 + \max(q_0, p_1)
-   \end{align*}
-   Where the inequality with \(*\) is justified, as \(\max(q_0, p_1) \geq q_0\) trivially holds. This concludes the first case.
-   For the second case, we assume that \(s_0 < r_1\). 
-   \begin{align*}
-      r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + r_1 \\
-                                 &= r_0 \\
-                                 &\stackrel{\ref{4.7}}{\leq} p_0\\
-                                 &\stackrel{*}{\leq} p_0 - p_1 + \max(q_0, p_1)
-   \end{align*}
-   Similarly, we justify \(*\), because \(\max(q_0, p_1) \geq p_1\), which means that \(-p_1 + \max(q_0, p_1) \geq 0\). 
-\end{proof}
+Having thoroughly introduced resources, we now define resource-annotated types, which are tuples of a type and an associated \nameref{def:resource-pair}. Most importantly

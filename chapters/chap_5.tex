@@ -1,304 +1,244 @@
-\chapter{Adding Variables}
+\chapter{LetTick Language}
 
-Before continuing, let us examine the limitations of the \nameref{def:prog-lang-4} from the previous chapter. We are not able to declare variables, control flow, or constants. All of those features will be implemented in this chapter. In order to declare and use variables in our programming language, we need to provide a definition of an environment, which comprises the concrete values of variables. As we will see, introducing variables will demand cautious reformulation of most evaluation rules to account for environments.
+\APm{previous chapter: Introduce ``Resources'' in a previous chapter.}
 
-Similarly to environments, we will introduce contexts for the type rules. While an environment maps variables to concrete values, a context will map variables to types. This will also require carefully embellishing previous type rules, to provide rules that are rigorous with respect to contexts. We define the syntax of the augmented programming language below:
+\AP{
+Structure:
+\begin{enumerate}
+   \item i. Syntax, ii. Simple type system
+   \item i. evaluation semantics (resource-aware)
+   \item i. resource-aware type system
+         ii. inference rules
+   \item soundness
+\end{enumerate}
+}
 
+In this chapter, we define the type system, along with the associated operational semantics and type rules, for a simple system, that only counts the amount of ticks in a program. The chapter concludes with a soundness proof, showing that the relation between operational semantics is consistent - the resource bounds assigned to types provide a true upper bound on the concrete resource consumption of evaluating an expression.
+In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the calculated resource consumption and (2) types that reflect resource consumption. The first problem is solved by introducing the instruction \(\<tick>~q\) to the programming language. Where \(q\) is a rational number, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the unit type with two resource annotations, one for the resources required a priori, and another for the resources freed afterward.
 
-\begin{definition}[var-tick language]
-   \label{def:prog-lang-5}
+\section{Language Syntax and Type System}
+Below, we define the programming language for this chapter.
+
+\begin{definition}[let-tick language]
+   \label{def:prog-lang-4}
 
 \begin{align*}
-   e := ~~~ & \letexp{x}{e_1}{e_2}		& \text{(let)}\\
-            & \tick{k}				& \text{(tick)}\\
-	    & x					& \text{(var)}\\
-	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
-	    & q					& \text{(const rational)}\\
+   e := ~~~ & \letexp{\_}{e_1}{e_2}             & \text{(let)}\\
+            & \tick{q}                         & \text{(tick)}
 \end{align*}
 
+\APm{Add the basic type system here (without resource annotations)}
+
 \end{definition}
 
+\section{Big-step Operation Semantics}
+In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \(p_0\) and \(p_1\) are positive rational numbers, \(p_0\) being the amount of resources needed to start evaluating the expression, and \(p_1\) being the resources freed after the evaluation of expression \(e\).
+This yields the following definitions:
 
-\section{Evaluation Semantics}
 
-We begin this section by introducing environments, which provide a necessary link between variable names and values. For this, we define an \nameref{def:environment}, which is a mapping from variable names to values. Along with this, we introduce two notations related to environments, one for retrieving the value of the variable and another notation that allows us to check if an environmant contains a specific variable name; This will be needed to ensure that rules featuring variables are correctly defined.
-
-\begin{definition}[Environment]\label{def:environment}
-   We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function from variable names (\Var) to values (\Vals). 
-\end{definition}
-
-\begin{definition}\label{def:environment-getter}	
-   Let \(E\) be an \nameref{def:environment} and \(x\) be a variable name, we then write \(E(x)\) for the value of \(x\) in the environment \(E\):
-
+\begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
+   Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1)\) be a \nameref{def:resource-pair}.
+   The \emph{evaluation judgement} encodes A judgement of the form  encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
    \[
-      E(x) =
-      \begin{cases}
-	 E(x)		    & \mbox{,if } \contains{E}{x} \\
-	 \textbf{undefined} &\mbox{,else}
-      \end{cases}
+      \evals{}{e}{v}{p_0}{p_1}
    \]
 \end{definition}
 
-\begin{definition}\label{def:in-environment}
-   Given an \nameref{def:environment} \(E\) and a variable name \(x\), we define \(\contains{E}{x}\) as follows:
-   \[
-      \contains{E}{x} = 
-      \begin{cases*}
-	 \false & \mbox{,if E(x) is undefined}\\
-	 \true & \mbox{,else} 
-      \end{cases*}
-   \]
+It is important to differentiate between the resources required by an expression, and the resources \emph{consumed} by an expression. In the above definition, the expression requires \(p\) resources a priori, whereas its resource consumption amounts to \(p - p'\); That is, the resource consumption is precisely the resources needed upfront, minus the resources that are freed in the end.
+
+The first case is relevant, if the resources required by the second operation are exceeded, which is equivalent to \(q_0 \geq p_1\). In this case, we need to increase the initial resources by the difference between the reimbursement of the first operation and the cost of second operation. For the second case, the resources that are reimbursed suffice to start the second operation. As a result, we do not need to increase the initial cost, but increase the final reimbursement. It becomes apparent, that the difference between the resource reimbursement of the first operation and the resource requirement of the second operation has a key role in determining the resulting cost. We, therefore, give this metric a distinguished name:
+
+\begin{definition}[Resource disparity] \label{def:resource-disparity}
+   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, of subsequent operations, as introduced above. We then define the \textbf{disparity} of these two operations as \(\max(p_1, q_0)\).
 \end{definition}
 
-Here, we define a partial function \(f\) as a function either maps a value \(x\) to a value in the codomain or returns \textbf{undefined} otherwise. Defining environments using partial functions precisely captures the notion of an environment, while providing us with the needed flexibility; Once new variables are instantiated, we are able to define their value in the environment pointwise:
 
-\begin{definition}\label{def:environment-augment}	
-   Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(b\) be the value assigned to \(a\). We write \(E[x \mapsto y]\) for the environment \(E\), where \(a\) is additionally mapped onto \(b\):
 
-   \[
-      \envaugment{E}{a}{b} = 
-      \begin{cases}
-	 E(x)  & \mbox{,if } x \neq a\\
-	 b     & \mbox{,else } 
-      \end{cases}
-   \]
+Having this definition in place, allows us to compose evaluations together, and yield the resource consumption of their subsequent execution. We will now define rules for the evaluation of programming language constructs, in the form of operational semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
+First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
+
+\[
+   \inference[(let)]
+   {\evals{}{e_1}{()}{p_0}{p_1} ~~,~~ \evals{}{e_2}{()}{q_0}{q_1}}
+   {\evals{}{\letexp{}{e_1}{e_1}}{()}{p_0 - p_1}{q_1 - q_0}}
+\]
+\todo{Introduce rule as split case? See below.}
+
+Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. These two cases translate directly into two inference rules, provided below:
+
+\[
+   \inference[\((E:tick_{+})\)]
+   {q \geq 0}
+   {\evals{}{\tick{q}}{()}{q}{}}
+\]
+
+\[
+   \inference[\((E:tick_{-})\)]
+   {q < 0}
+   {\evals{}{\tick{q}}{()}{}{-q}}
+\]
+
+In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules. 
+
+\section{Type Rules}
+The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.
+
+For now, our programming language only constructs values of type \(\unit\). As a result, our type system only comprises the unit type. Contrary to that, the \nameref{def:evaluation-judgement} features resource-annotations. To embed the resource-pair into the type signature of an expression, we define the following notation:
+
+\begin{definition}[Resource-annotated types]\label{def:ra-type}
+   Let \(A\) be a type, and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. The resource-annotated type then refers to a tuple comprising the type and the resource-pair.
+
+   \[A^{p_0}_{p_1} = (A, (p_0, p_1))\] 
 
 \end{definition}
+\todo{weirdly written?}
 
-As we now evaluate expressions with respect to an \nameref{def:environment}, we need to update \cref{def:evaluation-judgement} to accommodate environments:
+For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The above definition, however, will be valid even once we extend our type system with types besides unit. Below is a figure containing the type system of our language:
 
-\begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
-   Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then write the following for the evaluation judgement that incorporates an environment:
-
-   \[
-      \evals{E}{e}{v}{p_0}{p_1}
-   \]
-	
-\end{definition}
-
-Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. We start with the rule \((E:var)\), which provides an explicit handle for resolving variable names to their values. We want to highlight that (E:var) has no cost associated with it. This can simply be changed by adjusting the a priori resources for the rule:
-
-\[
-   \inference[(E:var)]
-   {\contains{E}{x}}
-   {\evals{E}{x}{E(x)}{}{}}
-\]
-
-Next, we define one rule (E:bool) that unifies the evaluation of both boolean constants. Again, we decide to associate no cost to the evaluation of boolean values, though for a different reason this time. We want the programmer to have the highest degree of jurisdiction, as a result, we want \(\tick\) to be the prominent means of administering cost. The same line of thought holds for the creation of numeric constants.
-
-\[
-   \inference[(E:bool)]{b \in \{\true, \false\}}{\evals{E}{b}{b}{}{}}%
-   \quad\quad\quad
-   \inference[(E:int)]{n \in \mathbb{Z}}{\evals{E}{n}{n}{}{}}
-\]
-
-Next, we introduce environments into the evaluation rule for \(\tick{}\). It is worth noting that the evaluation of a \(\tick{}\) expression is \emph{invariant} under the environment, as it does not rely on any state.
-
-\[
-   \inference[(E:tick)]
-   {}
-   {\evals{E}{\tick{q}}{()}{a}{b}}%
-   \qquad 
-   \begin{aligned}
-      \text{where }  &a = \max(q, 0)\\
-      \text{and }    &b = \max(0, -q) 
-   \end{aligned}
-\]
-
-Given an expression \(\tick{k}\), there are two mutually exclusive cases: \(k\) is positive, or it is negative. In the former case, \(a\) reduces to \(k\) and \(b\) to zero. In the latter case, \(a\) is zero and \(b\) reduces to \(-q\), which is again a positive number - as desired. Splitting this evaluation rule up into two distinct rules for positive and negative \(k\) is equally valid.
-
-The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. Note that the values of \(a\) and \(b\) are closely linked to \cref{def:multiplying-pairs}, corresponding to the first and second entry of the tuple, respectively.
-
-\[
-   \inference[(E:let)]
-   {\evals{E}{e_1}{v_1}{p_0}{p_1} \qquad \evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{q_0}{q_1}}
-   {\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{a}{b}}%
-   \qquad
-   \begin{aligned}
-      \text{where }  &a = p_0 - p_1 + \max(p_1, q_0)\\
-      \text{and }    &b = q_1 - q_0 + \max(p_1, q_0) 
-   \end{aligned}
-\]
-
-
-\section{Type Rules}\label{sec:type-rules-5}
-
-In this section, we will first motivate the new type system, introduce \nameref{def:context}s and define the necessary type rules.With respect to the type system, we are required to introduce two new types: \bool~and \typeint. This yields the following type system:
-
-\begin{figure}[H]
-   \[A := \unit~|~\text{\bool}~|~\text{\typeint}\]
-   \caption{Type system with booleans and integers added.}
-   \label{fig:type-system-5}
+\begin{figure}[h] \label{fig:type-system}
+   \[A := \unit \]
+   \caption{Type system with resource-annotated unit type.}
 \end{figure}
 
-In the previous chapter, the programming language at hand only produced values of a singular type \textbf{unit}. For this programming language, we introduced two new types which forces us to reconsider the type we assign to \emph{sequential expressions}. For this, we note two facts: (1) The resource-consumption assigned to a sequential operation is invariant of the type the operation returns. (2) The result of the first expression is consumed by the second expression, and, therefore, the result of the sequential evaluation is defined by the return type of the second expression. This motivates the following, updated definition:
-
-\begin{definition}
-   Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{fig:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
-   \[
-      e_1;e_2 : \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}
-   \]
-\end{definition}
-
-Next, we introduce \nameref{def:context}s. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
-
-\begin{definition}[Context]\label{def:context}
-   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\Types}\) as a partial function from variable names to types.
-\end{definition}
-
-We know define some notations that are tightly linked to the ones introduced in \cref{def:in-environment}, \cref{def:environment-getter} and \cref{def:environment-augment}:
-
-
-\begin{definition}\label{def:context-getter}
-   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, then \(\Gamma(x)\) returns either the type of \(x\) or undefined.
-\end{definition}
-
-\begin{definition}\label{def:in-context}
-   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, we define \(\contains{\Gamma}{x}\) as follows:
-   \[
-      x \in \Gamma =
-      \begin{cases}
-	 \false	     & \text{,if } \Gamma(x) \text{ is undefined}\\
-	 \true	     & \text{,else}
-      \end{cases}
-   \]
-\end{definition}
-
-\begin{definition}\label{def:context-augment}
-   Let \(\Gamma\) be a context, \(A\) be a type and let \(x : A\) be a variable. We can embed the variable \(x\) with its associated type \(A\) by writing \(\Gamma ; x:A\).
-\end{definition}
-
-\begin{definition}[Typing Judgement with contexts]\label{def:type-judgement-context}
-   Let \(\Gamma\) be a \nameref{def:context}, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
-   \[
-      \typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}
-   \]
-\end{definition}
-
-This comprises most definitions that are needed to define the necessary type rules. We will introduce further notations, once they become necessary, clearly motivating their use and definition. Let us start by introducing the rule (T:var), which allows us to add a variable and its associated type into a context.
+Similarly to the previous section on operational semantics, we define two rules, one for \textbf{let} expressions and one for \textbf{tick}. Before we can introduce the rule for \textbf{let}, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \cref{def:resource-pairs}. For this, consider the following example:
 
 \[
-   \inference[(T:var)]
-   {}
-   {\typing{\Gamma; x: A}{x}{A}}
+   \inference[]
+   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}}, \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
+   {\typing{}{\letexp{\_}{e_1}{e_2}}{?}}
 \]
 
-Next, we introduce two rules, one for boolean constants and one for integer constands. The rule (T:bool) assigns a type \bool~to any occurence of \(\true\) or \(\false\), and, similarly, the rule (T:int) assigns a type \typeint to any occurence of integer constants.
+Similarly to the composition of resource-annotations in the previous section on operational semantics, we could initially define the product of resource-annotated types using a case distinction similar to the previous section. Here, however, we skip this step and directly define the product using the \nameref{def:resource-disparity}.
+
+This yields the following rules:
 
 \[
-   \inference[(T:bool)]
-   {b \in \{\true, \false\}}
-   {\typing{\emptycontext}{b}{\text{\bool}}}%
-   \qquad
-   \inference[(T:int)]
-   {n \in \mathbb{Z}}
-   {\typing{\emptycontext}{n}{\text{\typeint}}}
+   \label{def:tr-let-4}
+   \inference[(T:let)]
+   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
+   {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}}}
 \]
 
-Most significantly, we used the \emph{empty context}, written as \(\emptycontext\). This is the context that contains no information. We do this for two reasons: Firstly, the rule is more declarative as a result, because the typing is \emph{invariant} with respect to the context - an integer is always an integer. Secondly, this is precisely the smallest context for which the rule holds true; As such, the empty context forms the most general case for these rules to hold. Now, we are even able to type constant integers or booleans with an arbitrarily large \nameref{def:context} by applying the (T:var) rule, such that the contexts match. 
-
-Defining the type rule for the \(\tick{}\) is straightforward, we add a context \(\Gamma\) to the rule from the previous chapter \cref{def:tr-tick-4}:
-
 \[
+   \label{def:tr-tick-4}
    \inference[(T:tick)]
    {q_0 \geq k + q_1}
-   {\typing{\emptycontext}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
+   {\typing{}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
 \]
 
-For the let expression, we provide a definition that differs from the one provided in \cref{def:tr-let-4}. For this, we make the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
-We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the \nameref{def:resource-consumption}. We avoid this by enforcing that the relaxed resource-consumption is \emph{at least} as large as the resource-consumption prior.
+Let us now perform an exemplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
 
 \[
-   \inference[(T:relax)]
-   {\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}} \qquad q_0 \geq p_0 \qquad q_0 - q_1 \geq p_0 - p_1}
-   {\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}}
+   \letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}
 \]
 
-As the subexpressions of the let expression might have different contexts, we need to account for that as well. To permit a consistent formulation of the type rule, we need to add an assumption: the two contexts need to be \emph{disjoint}. This will allow us to avoid any typing inconsistencies that could arise from mismatched types between the two contexts. 
-For this, a variable \(x\) could be present in both contexts \(\Gamma_1\) and \(\Gamma_2\), with differnt types assigned to the variable:
+Intuitively, we have three distinct steps, the first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
 
 \[
-   \typing{\Gamma_1}{x}{A} \qquad \typing{\Gamma_2}{x}{B}
+   \inference
+   {
+      \inference
+      {q_0 \geq 3 + q_1}
+      {\typing{}{\tick{3}}{\ratype{\unit}{q_0}{q_1}}}
+       &
+      \inference
+      {
+         \inference
+         {t_0 \geq -2 + t_1}
+         {\typing{}{\tick{-2}}{\ratype{\unit}{t_0}{t_1}}}
+          &
+         \inference
+         {s_0 \geq 5 + s_1}
+         {\typing{}{\tick{5}}{\ratype{\unit}{s_0}{s_1}}}
+      }
+      {\typing{}{\letexp{\_}{\tick{-2}}{\tick{5}}}{\ratype{\unit}{r_0}{r_1}}}
+   }
+   {\typing{}{\letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}}{\ratype{\unit}{p_0}{p_1}}}
 \]
 
-This is prevented, by demanding that the contexts are \emph{disjoint}. While this makes the rule less flexible, we avoid cases where the application of (T:let) would yield a possibly ill-typed judgement; If the variable \(x\) is present in both contexts, altering the type of that variable may construe the resulting typing of the expression.
+\begin{align*}
+   \text{Where }  & r_0 = t_0 - t_1 + \max(t_1, s_0) \\
+                  & r_1 = s_1 - s_0 + \max(t_1, s_0) \\
+                  & p_0 = q_0 - q_1 + \max(q_1, r_0) \\
+                  & p_1 = r_1 - r_1 + \max(q_1, r_0) \\
+\end{align*}
+
+We are now left with the task of resolving the collected, numeric constraints. As a result of applying the (T:tick) rule for the three instances of \(\tick{}\) expressions, we get the following values: \(q_0 = 3, t_1 = 2, s_0 = 5, q_1 = t_0 = s_1 = 0\). Using these values, we are able to compute the intermediary values \(r_0, r_1, p_0, p_1\), resulting in:
 
 \[
-   \inference[(T:let)]
-   {\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}} \qquad \typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}} \qquad \Gamma_1 \cap \Gamma_2 = \emptyset}
-   {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
+   p_0 = 6 \qquad p_1 = 0
 \]
+
+This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type judgement is: 
+\[
+   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{6}{0}
+\]
+
+The resulting type \(\ratype{\unit}{6}{0}\) indeed furnishes a tight bound on the resources required. Having a solid grasp of how the type rules orchestrate together, having exercised a simple example, we now prove soundness for the \emph{let-tick} programming language.
 
 
 \section{Soundness}
+Ultimately, we want our type rules to be consistent with the operational semantics defined previously. This will allow us to reason about the type of a program, while ensuring that the resource-annotations of the resulting type line up with the concrete resource consumption of the expression.
 
-Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is necessary to formulate the soundness theorem as to account for environments and contexts. This yields the following statement:
+Let us first sketch the structure of our soundness proof:
 
-\begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
-   Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A\) be a type, along with two \nameref{def:resource-pair}s \((p_0, p_1), (q_0, q_1)\) and an expression \(e\) that evaluates to the value \(v\). The Soundness Theorem states:
+If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
+The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The a priori resource annotation of the type is not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, like so: 
 
-   \begin{center}
-   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{q_0}{q_1}\), \(q_0 \geq p_0\) and \(q_0 - q_1 \geq p_0 - p_1\).
-   \end{center}
+\begin{itemize}
+   \item \(p_0 \geq q_0\)     
+   \item \(p_0 - p_1 \geq q_0 - q_1\)
+\end{itemize}
+
+The first bullet point capturing that the result of evaluating the expression \(e\) has the type that was constructed using the type rules. The second bullet point stating that the \emph{a priori} resource bound that was constructed using the type rules is an upper bound on the concrete resources required a priori. And the third point stating that the resource consumption of the constructed type also provides an upper bound on the concrete resource consumption.
+
+\begin{theorem}[Soundness of typing for let-tick language]
+   Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
 \end{theorem}
 
+In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and that the expression evaluates, like so \(\evals{}{e}{()}{q_0}{q_1}\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.
+
 \begin{proof}
-
-(tick): The proof given in \cref{thm:soundness-4} for the tick expression still holds.
-
-(bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\), which shows that both inequalities are satisfied. It furthermore follows that the type of the resulting value \(b\) is of type \bool~, and such, consistent with the typing derived from the type rule.
-
-(int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows that the desired inequalities hold, and similarly, the type of \(n\) is \typeint~, which is consistent.
-
-(let): Here, the let expression is a special case. Where any other language construct corresponded to exactly one type rule, the let expression may actually be typed by two different rules, (T:let) or (T:relax). As such, we need to prove that for the application of both type rules, soundness holds.  
-
-For (T:let):\\
-By assumption, we get that \(\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0 - r_1 + \max(r_1, s_0)}{s_1 - s_0 + \max(r_1, s_0)}\) with \(\evals{E}{e_1}{v_1}{r_0}{r_1}\) and \(\evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{s_0}{s_1}\) for the evaluation, and similarly, \(\typing{\Gamma_1;\Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}\) with \(\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}}\) and \(\typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}}\) for the typing: \\  
-We want to show that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\). For the subterm \(- r_1 + \max(r_1, s_0)\) we know that it is at most zero (if \(r_1 \geq s_0\) and negative otherwise. This allows us to infer that, as \(p_0 \geq r_0\) by assumption, it especially holds that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\), as desired.  \\
-Next, we want to show \(p_0 - q_1 \geq r_0 - r_1 + \max(r_1, s_0) - s_1 + s_0 - \max(r_1, s_0)\). The max expression cancel each other out, which shows that we only have to prove \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\). As we assume soundness for both subexpressions, the following two inequalities hold: \(p_0 - m \geq r_0 - r_1\) and \(m - q_1 \geq s_0 - s_1\). Applying both inequalities immediately proves the desired inequality: \(p_0 - m + m - q_1 \geq r_0 - r_1 + s_0 - s_1\) which is equivalent to \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\).\\
-As the resource-annotations are sound, it especially holds that \(v : \ratype{B}{p_0}{q_1}\).
-
-For (T:relax):
-By assumption, the following to hold true: \(\evals{E}{e}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}\) and are assumed to be sound. As a result, the following hold true: 
-
-\begin{equation}\label{eq:relax-base}
-   p_0 \geq r_0 \text{ and } p_0 - p_1 \geq r_0 - r_1
-\end{equation}
-
-This requires another proof via induction, as we could have an arbitrarily long chain of (T:relax) applications. Let us start proving soundness for the base case, that is a single application of the (T:relax) rule.\\
-Applying (T:relax) will yield the typing \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), together with \(q_0 \geq p_0\) and \(q_0 - q_1 \geq p_0 - p_1\). Using the two inequalities in \cref{eq:relax-base} we can directly infer the desired inequalities \(q_0 \geq r_0\) and \(q_0 - q_1 \geq r_0 - r_1\).
-
-Let us continue by proving the induction step. For this, our induction hypothesis assumes that for any fixed number of subsequent applications of (T:relax), soundness is preserved. The proof is similar to the one for the base case.\\
- The induction hypothesis ensures that for \(q_0\) and \(q_1\), \(q_0 \geq r_0\) and \(q_0 - q_1 \geq p_0 - p_1\) hold. Let the next application of (T:relax) yield the following typing: \(\typing{\Gamma}{e}{\ratype{A}{m_0}{m_1}}\). The application of (T:relax) then assumes that \(m_0 \geq q_0\) and \(m_0 - m_1 \geq q_0 - q_1\). These inequalities directly proof soundness.
+   (tick): We make a case distinction. Let \(q \geq 0\). Then the following hold by assumption:
+   \begin{align}
+      q     &\geq 0 \label{4.1}\\
+      q_0   &= q \label{4.2}\\
+      q_1   &= 0 \label{4.3}\\
+      p_0   &\geq q + p_1 \label{4.4}
+   \end{align}
+   Since \(p_1 \geq 0\) by definition, we can infer from \ref{4.4} that \(p_0 \geq q\) holds. Applying this inequality to \ref{4.2}, we get that \(p_0 \geq q_0\). Which proves the first part.
+   Next, we show \(p_0 - p_1 \geq q_0 - q_1\). Combining \ref{4.4} with \ref{4.2}, we get \(p_0 \geq q_0 + p_1\). Subtracting \(p_1\) from both sides, we get \(p_0 - p_1 \geq q_0\). Since \(q_1 \geq 0\) by definition as well, it especially holds that \(p_0 - p_1 \geq q_0 - q_1\). Which concludes the proof for the case of \(q \geq 0\).
+   For the second case, we assume that \(q < 0\). Then, the following hold:
+   \begin{align}
+      q_1   &= q \label{4.5}\\
+      q_0   &= 0 \label{4.6}
+   \end{align}
+   Furthermore, \ref{4.1} and \ref{4.4} also hold true. By definition \(p_0 \geq 0\) holds. Using \ref{4.6}, we get \(p_0 \geq q_0\). 
+   Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \cref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
+   \todo{Add case distinction into type rules, or explain why that holds.}
+      
+   (let): By assumption, we get that \(\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 \max(p_1, q_0)}{q_1 - q_0 \max(p_1, q_0)}}\), and similarly \(\evals{}{\letexp{\_}{e_1}{e_2}}{()}{r_0 - r_1 + \max(s_0, r_1)}{s_1 - s_0 + \max(s_0, r_1)}\). As a result, the following hold true:
+   \begin{align}
+      p_0         &\geq r_0 \label{4.7}\\
+      q_0         &\geq s_0 \label{4.8} \\
+      p_0 - p_1   &\geq r_0 - r_1 \label{4.9} \\
+      q_0 - q_1   &\geq s_0 - s_1 \label{4.10}
+   \end{align}
+   We want to show that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(r_1, s_0)\). For this, we consider two cases: first the case where \(s_0 \geq r_1\), and second the case where \(s_0 < r_1\)
+   Let \(s_0 \geq r_1\). We get the following chain of inequalities:
+   \begin{align*}
+      r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + s_0 \\
+                                 &\stackrel{\ref{4.9}}{\leq}p_0 - p_1 + s_0\\
+                                 &\stackrel{\ref{4.8}}{\leq}p_0 - p_1 + q_0\\
+                                 &\stackrel{*}{\leq}p_0 - p_1 + \max(q_0, p_1)
+   \end{align*}
+   Where the inequality with \(*\) is justified, as \(\max(q_0, p_1) \geq q_0\) trivially holds. This concludes the first case.
+   For the second case, we assume that \(s_0 < r_1\). 
+   \begin{align*}
+      r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + r_1 \\
+                                 &= r_0 \\
+                                 &\stackrel{\ref{4.7}}{\leq} p_0\\
+                                 &\stackrel{*}{\leq} p_0 - p_1 + \max(q_0, p_1)
+   \end{align*}
+   Similarly, we justify \(*\), because \(\max(q_0, p_1) \geq p_1\), which means that \(-p_1 + \max(q_0, p_1) \geq 0\). 
 \end{proof}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
