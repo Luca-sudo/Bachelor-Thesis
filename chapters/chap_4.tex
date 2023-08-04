@@ -46,8 +46,15 @@ We start by defining resource pairs. These pairs will fundamentally encode the c
 When reasoning about a resource pair \((p_0, p_1)\), we say that \(p_0\) are the \emph{initial} resources, and \(p_1\) are the \emph{residual} resources. 
 
 \begin{example}
-   A \nameref{def:resource-pair} with 4 initial and 2 residual resources is denoted by \((4, 2)\). 
-   
+   A \nameref{def:resource-pair} with 4 initial and 2 residual resources is denoted by \((4, 2)\).
+\end{example}
+
+\begin{definition}[Resource Consumption]
+   Given \((p_0, p_1) \in \resource\), we define the \emph{resource consumption} as the difference between initial and residual resources, \(p_0 - p_1\).
+\end{definition}
+
+\begin{example}
+   For \((4, 2) \in \resource\), the resource consumption equals \(2\).
 \end{example}
 
 As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need to define the resource cost of subsequent evaluations. 
@@ -74,10 +81,15 @@ This yields the following definition:
    For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \cdot (5, 0) = (7,0)\).
 \end{example}
 
+\begin{definition}[Resource disparity]
+   Let \((p_0, p_1), (q_0, q_1) \in \resource\), we define the \emph{disparity} of these resource pairs as \(\max(p_1, q_0)\).
+\end{definition}
+\todo{Keep or dump?}
+
 We remark that the multiplication on resource pairs forms a monoid.
 \todo{Add Proof to appendix? Or proof in lean?}
 
-\section{Comparing Resource Consumption}
+\section{Comparing Resource Pairs}
 
 Whenever we define a programming language, along with evaluation semantics and type rules, we want to proof soundness of that language with respect to evaluation semantics and type rules. With respect to resource consumption, soundness assures that the inferred resource consumption is never less than the concrete cost of evaluation. In order to reasons more precisely and concisely about the resource consumption, we define a partial ordering on the set of resources, which leads to the definition of \emph{relaxation}.
 
@@ -128,4 +140,5 @@ Most notably, this relation defines a partial ordering on the set of resource pa
 \end{proof}
 \todo{Refer to it}
 
-Having thoroughly introduced resources, we now define resource-annotated types, which are tuples of a type and an associated \nameref{def:resource-pair}. Most importantly
+
+

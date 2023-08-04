@@ -17,7 +17,7 @@ In this chapter, we define the type system, along with the associated operationa
 In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the calculated resource consumption and (2) types that reflect resource consumption. The first problem is solved by introducing the instruction \(\<tick>~q\) to the programming language. Where \(q\) is a rational number, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the unit type with two resource annotations, one for the resources required a priori, and another for the resources freed afterward.
 
 \section{Language Syntax and Type System}
-Below, we define the programming language for this chapter.
+We begin by defining the programming language and the associated type system below:
 
 \begin{definition}[let-tick language]
    \label{def:prog-lang-4}
@@ -28,33 +28,25 @@ Below, we define the programming language for this chapter.
 \end{align*}
 
 \APm{Add the basic type system here (without resource annotations)}
-
 \end{definition}
 
-\section{Big-step Operation Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \(p_0\) and \(p_1\) are positive rational numbers, \(p_0\) being the amount of resources needed to start evaluating the expression, and \(p_1\) being the resources freed after the evaluation of expression \(e\).
-This yields the following definitions:
+\begin{definition}[Type System]\label{fig:type-system}
+   \[A := \unit \]
+\end{definition}
+
+\section{Evaluation Semantics}
+In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \((p_0, p_1) \in \resource\). 
 
 
 \begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
-   Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1)\) be a \nameref{def:resource-pair}.
-   The \emph{evaluation judgement} encodes A judgement of the form  encodes that the expression e is evaluated to the value v, with \(p_0\) resources needed upfront, and \(p_1\) resources being freed afterward.
+   Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1) \in \resource\). 
+   The \emph{evaluation judgement} encodes a judgement of the form  encodes that the expression e is evaluated to the value v, with \(p_0\) initial resources, and \(p_1\) residual resources. 
    \[
       \evals{}{e}{v}{p_0}{p_1}
    \]
 \end{definition}
 
-It is important to differentiate between the resources required by an expression, and the resources \emph{consumed} by an expression. In the above definition, the expression requires \(p\) resources a priori, whereas its resource consumption amounts to \(p - p'\); That is, the resource consumption is precisely the resources needed upfront, minus the resources that are freed in the end.
-
-The first case is relevant, if the resources required by the second operation are exceeded, which is equivalent to \(q_0 \geq p_1\). In this case, we need to increase the initial resources by the difference between the reimbursement of the first operation and the cost of second operation. For the second case, the resources that are reimbursed suffice to start the second operation. As a result, we do not need to increase the initial cost, but increase the final reimbursement. It becomes apparent, that the difference between the resource reimbursement of the first operation and the resource requirement of the second operation has a key role in determining the resulting cost. We, therefore, give this metric a distinguished name:
-
-\begin{definition}[Resource disparity] \label{def:resource-disparity}
-   Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, of subsequent operations, as introduced above. We then define the \textbf{disparity} of these two operations as \(\max(p_1, q_0)\).
-\end{definition}
-
-
-
-Having this definition in place, allows us to compose evaluations together, and yield the resource consumption of their subsequent execution. We will now define rules for the evaluation of programming language constructs, in the form of operational semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
+We will now define rules for the evaluation of programming language constructs, in the form of operational semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
 First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
 
 \[
@@ -64,7 +56,7 @@ First, we need a rule that allows us to combine two expression into a let expres
 \]
 \todo{Introduce rule as split case? See below.}
 
-Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. These two cases translate directly into two inference rules, provided below:
+Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. These two cases translate directly into two evaluation rules, provided below:
 
 \[
    \inference[\((E:tick_{+})\)]
@@ -83,22 +75,16 @@ In the next section, we introduce type rules that are tightly linked to the oper
 \section{Type Rules}
 The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.
 
-For now, our programming language only constructs values of type \(\unit\). As a result, our type system only comprises the unit type. Contrary to that, the \nameref{def:evaluation-judgement} features resource-annotations. To embed the resource-pair into the type signature of an expression, we define the following notation:
+For now, our programming language only constructs values of type \(\unit\). As a result, our type system only comprises the unit type. Additionally, the \nameref{def:evaluation-judgement} features resource-annotations. To embed the resource-pair into the type signature of an expression, we define the following notation:
 
 \begin{definition}[Resource-annotated types]\label{def:ra-type}
-   Let \(A\) be a type, and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. The resource-annotated type then refers to a tuple comprising the type and the resource-pair.
-
+   Let \(A\) be a type, and let \((p_0, p_1) \in \resource\). The resource-annotated type then refers to a tuple comprising the type and the resource-pair.
    \[A^{p_0}_{p_1} = (A, (p_0, p_1))\] 
-
 \end{definition}
 \todo{weirdly written?}
 
 For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The above definition, however, will be valid even once we extend our type system with types besides unit. Below is a figure containing the type system of our language:
 
-\begin{figure}[h] \label{fig:type-system}
-   \[A := \unit \]
-   \caption{Type system with resource-annotated unit type.}
-\end{figure}
 
 Similarly to the previous section on operational semantics, we define two rules, one for \textbf{let} expressions and one for \textbf{tick}. Before we can introduce the rule for \textbf{let}, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \cref{def:resource-pairs}. For this, consider the following example:
 
@@ -126,11 +112,16 @@ This yields the following rules:
    {\typing{}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
 \]
 
+
 Let us now perform an exemplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
+
+\begin{example}
 
 \[
    \letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}
 \]
+
+\end{example}
 
 Intuitively, we have three distinct steps, the first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
 
@@ -162,6 +153,7 @@ Intuitively, we have three distinct steps, the first one consuming 3 resources, 
                   & p_0 = q_0 - q_1 + \max(q_1, r_0) \\
                   & p_1 = r_1 - r_1 + \max(q_1, r_0) \\
 \end{align*}
+
 
 We are now left with the task of resolving the collected, numeric constraints. As a result of applying the (T:tick) rule for the three instances of \(\tick{}\) expressions, we get the following values: \(q_0 = 3, t_1 = 2, s_0 = 5, q_1 = t_0 = s_1 = 0\). Using these values, we are able to compute the intermediary values \(r_0, r_1, p_0, p_1\), resulting in:
 
@@ -196,9 +188,9 @@ The first bullet point capturing that the result of evaluating the expression \(
    Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
 \end{theorem}
 
-In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction, which concretely means, we assume that the expression \(e\) has the type \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and that the expression evaluates, like so \(\evals{}{e}{()}{q_0}{q_1}\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.
-
 \begin{proof}
+In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use structural induction on the type derivation of the expression, which concretely means, we assume that the expression \(e\) has the type \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and that the expression evaluates, like so \(\evals{}{e}{()}{q_0}{q_1}\). We now need to prove that, for every type rule that could be the last rule applied in a type derivation, the inequality holds.
+
    (tick): We make a case distinction. Let \(q \geq 0\). Then the following hold by assumption:
    \begin{align}
       q     &\geq 0 \label{4.1}\\
