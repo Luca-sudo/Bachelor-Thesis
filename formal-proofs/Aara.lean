@@ -10,56 +10,57 @@ instance : OfNat Resource n where
 
 abbrev ResourcePair := Resource × Resource
 
+namespace ResourcePair
+
 --Initial resources
-def ResourcePair.init : ResourcePair → Resource := Prod.fst
+def init : ResourcePair → Resource := Prod.fst
 
 --Residual resources
-def ResourcePair.resid : ResourcePair → Resource := Prod.snd 
+def resid : ResourcePair → Resource := Prod.snd 
 
 --Concrete Resource consumption, definition ... in thesis
 @[simp, reducible]
-def ResourcePair.consumption (p : ResourcePair) : Int := p.init - p.resid 
+def consumption (p : ResourcePair) : Int := p.init - p.resid 
 
 --Resource disparity, definition ... in thesis
 @[simp, reducible]
-def ResourcePair.disparity (p q : ResourcePair) : Resource := max p.resid q.init 
+def disparity (p q : ResourcePair) : Resource := max p.resid q.init 
 
 --Equality of resource pairs
 @[simp, reducible]
-def ResourcePair.equal (p q: ResourcePair) := p.init = q.init ∧ p.consumption = q.consumption
+def equal (p q: ResourcePair) := p.init = q.init ∧ p.consumption = q.consumption
 
 --Neutral element in Resource Pairs
-def ResourcePair.unit := (0, 0)
+def unit := (0, 0)
 
 --Multiplication of resource pairs
 @[simp, reducible]
-def ResourcePair.mult (p q : ResourcePair) : ResourcePair := 
+def mult (p q : ResourcePair) : ResourcePair := 
   let r := {val := p.init.val - p.resid + p.disparity q, property := by sorry}
   let r':= {val := q.resid.val - q.init + p.disparity q, property := by sorry}
   (r, r')
 
 -- Relaxation relation
-def ResourcePair.relaxation_of (p q : ResourcePair) : Bool 
+def relaxation_of (p q : ResourcePair) : Bool 
   := (p.init ≥ q.init) ∧ (p.consumption ≥ q.consumption) 
 
-infix:50 "≽" => ResourcePair.relaxation_of
+infix:50 "≽" => relaxation_of
 
-infix:50 "⬝" => ResourcePair.mult
-
+infix:50 "⬝" => mult
 
 --Relaxation is partial ordering
 theorem relaxation_reflexive (p : ResourcePair) : p ≽ p := by
-  simp [ResourcePair.relaxation_of]
+  simp [relaxation_of]
 
 theorem relaxation_transitive (p q r: ResourcePair) : p ≽ q → q ≽ r → p ≽ r := by
-  simp [ResourcePair.relaxation_of]
+  simp [relaxation_of]
   intros H_p H_p' H_q H_q'
   apply And.intro
   apply le_trans H_q H_p
   linarith
   
 theorem relaxation_antisymmetric (p q :ResourcePair) : p ≽ q → q ≽ p → p.equal q := by
-  simp [ResourcePair.relaxation_of]
+  simp [relaxation_of]
   intros H_p H_p' H_q H_q'
   apply And.intro
   apply le_antisymm H_q H_p
@@ -69,17 +70,18 @@ theorem relaxation_antisymmetric (p q :ResourcePair) : p ≽ q → q ≽ p → p
 #eval (4, 2) ⬝ (5, 0) -- (7, 0)
 
 --Example 2.7
-#eval ((4, 2) ≽ (3, 2))
+#eval ((4, 2) ≽ (3, 2)) --true
 
 --Example 2.8
-#eval ((4, 2) ≽ (5, 4))
+#eval ((4, 2) ≽ (5, 4)) --false
 
 --Example 2.9
-#eval ((5, 4) ≽ (2, 0))
+#eval ((5, 4) ≽ (2, 0)) --false
 
 --Example 2.10
-#eval ((4, 2) ≽ (5, 4)) ∧ ((5, 4) ≽ (4, 2))
+#eval ((4, 2) ≽ (5, 4)) ∧ ((5, 4) ≽ (4, 2)) --false
 
+end ResourcePair
 
 namespace LetTick
 
