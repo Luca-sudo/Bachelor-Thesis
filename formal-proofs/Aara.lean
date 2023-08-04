@@ -7,9 +7,9 @@ abbrev Resource := {r: Int // r ≥ 0}
 instance : OfNat Resource n where
   ofNat := { val := n, property := by linarith}
 
-structure ResourcePair :=
+structure ResourcePair where
   --Initial and Residual Resources
-  rp :: (init: Resource) (resid: Resource) 
+  rp :: (init: Resource) (resid: Resource)
 
 open ResourcePair
 
@@ -28,8 +28,8 @@ def ResourcePair.equal (p q: ResourcePair) := p.init = q.init ∧ p.consumption 
 --Multiplication of resource pairs
 @[simp, reducible]
 def ResourcePair.mult (p q : ResourcePair) := 
-  let r   := (p.init.val - p.resid + p.disparity q, by sorry)
-  let r'  := (q.resid.val - q.init + p.disparity q, by sorry)
+  let r : Resource   := {val := p.init.val - p.resid + p.disparity q, property := by sorry}
+  let r': Resource   := {val := q.resid.val - q.init + p.disparity q, property := by sorry}
   rp r r'
 
 -- Relaxation relation
@@ -67,4 +67,39 @@ theorem relaxation_antisymmetric (p q :ResourcePair) : p ≽ q → q ≽ p → p
 
 --Example 2.10
 #eval false = (rp 4 2 ≽ rp 5 4) ∧ false = (rp 5 4 ≽ rp 4 2)
+
+
+namespace LetTick
+
+inductive Prog :=
+  | tick (k : Int)
+  | let (e_1 e_2 : Prog)
+
+inductive BaseType :=
+  | Unit
+
+def RAType := BaseType × ResourcePair
+
+--Evaluation judgement
+inductive Evaluation : Prog → ResourcePair → Prop :=
+  | e_tick_pos (k : Int) (pos : k ≥ 0):
+    Evaluation (.tick k) (rp ⟨k, pos⟩ 0) 
+  | e_tick_neg (k : Int) (neg: k < 0):
+    Evaluation (.tick (abs k)) (rp ⟨(abs k), abs_nonneg k⟩ 0)
+  | e_let {e_1 e_2 : Prog} {r_1 r_2 : ResourcePair} (eval_e_1 : Evaluation e_1 r_1) (eval_e_2 : Evaluation e_2 r_2)
+    : Evaluation (.let e_1 e_2) (r_1.mult r_2)
+
+--Typing judgement
+inductive Typing : Prog → BaseType → ResourcePair → Prop :=
+  | t_tick (k : Int) (t : BaseType) (r : ResourcePair) (suff_res : r.init ≥ k + r.resid) :
+    Typing (.tick k) t r
+  | t_let {e_1 e_2 : Prog} {r_1 r_2 : ResourcePair} {t_1 t_2 : BaseType} (e_1types : Typing e_1 t_1 r_1) (e_2Types : Typing e_2 t_2 r_2) (suff_res : r_1.resid = r_2.init) :
+    Typing (.let e_1 e_2) t_2 (rp r_1.init r_2.resid)
+
+--Proof of soundness. Theorem 3.5
+theorem soundness (p : Prog) (r_1 r_2 : ResourcePair) (t : BaseType) 
+  : Evaluation p r_1 → Typing p t r_2 → r_2 ≽ r_1 := by
+    sorry
+  
+end LetTick
 
