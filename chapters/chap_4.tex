@@ -105,7 +105,7 @@ We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\).
    \((5, 4) \notrelaxation (2, 0)\), as \(5 - 4 \centernot{\geq} 2 - 0\).
 \end{example}
 
-Even more notably, for any two resource pairs, one \emph{need not} be a relaxation of the other, as the following example shows.
+Even more notably, for any two resource pairs, one \emph{need not} be a relaxation of the other. Therefore, relaxation does not define a total ordering - as the following example shows.
 
 \begin{example}
    Let \((4,2), (5,4) \in \resource\). Then, \((4,2) \notrelaxation (5,4)\) \emph{and} \((5,4) \notrelaxation (4,2)\).
@@ -118,6 +118,14 @@ Most notably, this relation defines a partial ordering on the set of resource pa
    & a \relaxation b \text{ and } b \relaxation a\text{, then } a = b \tag{anti-symmetry}\\
    & a \relaxation b \text{ and } b \relaxation c\text{, then } a \relaxation c. \tag{transitivity}
 \end{align}
-\todo{Proof partial ordering? As lean script?}
+
+\begin{lemma}
+   The relaxation relation defines a partial ordering on the set of resource pairs.
+\end{lemma}
+
+\begin{proof}
+   We provide a proof script written in lean.
+\end{proof}
+\todo{Refer to it}
 
 Having thoroughly introduced resources, we now define resource-annotated types, which are tuples of a type and an associated \nameref{def:resource-pair}. Most importantly
