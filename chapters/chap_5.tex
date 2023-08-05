@@ -75,35 +75,38 @@ In the next section, we introduce type rules that are tightly linked to the oper
 \section{Type Rules}
 The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.
 
-For now, our programming language only constructs values of type \(\unit\). As a result, our type system only comprises the unit type. Additionally, the \nameref{def:evaluation-judgement} features resource-annotations. To embed the resource-pair into the type signature of an expression, we define the following notation:
+\subsection{Resource-aware Type System}
 
-\begin{definition}[Resource-annotated types]\label{def:ra-type}
-   Let \(A\) be a type, and let \((p_0, p_1) \in \resource\). The resource-annotated type then refers to a tuple comprising the type and the resource-pair.
+We start by introducing \emph{resource-aware types}, which comprise two parts: the type assigned to an expression, together with a resource-pair representing the infered resource consumption. To this end, we provide an ergonomic notation for resource-aware types:
+
+\begin{definition}[Resource-aware types]\label{def:ra-type}
+   Let \(A\) be a type, and let \((p_0, p_1) \in \resource\). The resource-aware type then refers to a tuple comprising the type and the resource-pair.
    \[A^{p_0}_{p_1} = (A, (p_0, p_1))\] 
 \end{definition}
-\todo{weirdly written?}
 
-For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The above definition, however, will be valid even once we extend our type system with types besides unit. Below is a figure containing the type system of our language:
+For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The above definition, however, will be valid even once we extend our type system with types besides unit. To acquaint the reader with the new notation, consider the example below.
 
+\begin{example}
+   \(\typing{}{e}{\ratype{\unit}{4}{2}}\) is a judgement, claiming that the expression \(e\) produces a value of type \(\unit\), with a resource demand of 4 initial resources and 2 residual resources.
+\end{example}
 
-Similarly to the previous section on operational semantics, we define two rules, one for \textbf{let} expressions and one for \textbf{tick}. Before we can introduce the rule for \textbf{let}, however, we need to define how resource-annotations of types propagate. This corresponds to calculating the resource consumption of two subsequent evaluations, as defined in \cref{def:resource-pairs}. For this, consider the following example:
+\subsection{Inference Rules}
 
-\[
-   \inference[]
-   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}}, \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
-   {\typing{}{\letexp{\_}{e_1}{e_2}}{?}}
-\]
-
-Similarly to the composition of resource-annotations in the previous section on operational semantics, we could initially define the product of resource-annotated types using a case distinction similar to the previous section. Here, however, we skip this step and directly define the product using the \nameref{def:resource-disparity}.
+We need to define two rules, one for each language construct each. Similarly to the composition of resource-annotations in the previous section on operational semantics, we define the cost of sequantial operations in a let expression as the product of the respective resource pairs.
 
 This yields the following rules:
-
 \[
    \label{def:tr-let-4}
-   \inference[(T:let)]
-   {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
-   {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}}}
+   \vcenter{\hbox{
+      \inference[(T:let)]
+      {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
+      {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{r_0}{r_1}}}
+}}\qquad \begin{aligned}
+      r_0 = p_0 - p_1 + \max(p_1, q_0) \\
+      r_1 = q_1 - q_0 + \max(p_1, q_0)
+   \end{aligned}
 \]
+
 
 \[
    \label{def:tr-tick-4}
@@ -146,6 +149,7 @@ Intuitively, we have three distinct steps, the first one consuming 3 resources, 
    }
    {\typing{}{\letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}}{\ratype{\unit}{p_0}{p_1}}}
 \]
+\todo{Introduce type derivations in the preliminaries?}
 
 \begin{align*}
    \text{Where }  & r_0 = t_0 - t_1 + \max(t_1, s_0) \\
