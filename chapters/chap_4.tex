@@ -1,25 +1,5 @@
 \chapter{Resources}
 
-\begin{itemize}
-   \item What are resources?
-   \item Resource pairs
-      \begin{itemize}
-         \item Definition
-         \item Multiplication \(\sim\) sequencing
-         \begin{itemize}
-            \item Example
-            \item Monoid
-         \end{itemize}
-      \item How and why we want to compare resource pairs
-         \begin{itemize}
-            \item Motivate relaxation
-            \item Partial ordering
-            \item Relaxation
-            \item Example
-         \end{itemize}
-      \end{itemize}
-\end{itemize}
-
 Throughout this thesis, we introduce programming language constructs, in order to elicit resource consumption for programs. It is, therefore, important to mention that resources can be an arbitrary cost metric, including but not limited to: memory consumption, runtime, energy consumption. While the details of the respective type of resource are nuanced, the resource consumption generally comprises two parts: Resources consumed to start evaluating, and possibly, resources freed after evaluation.
 
 We will associate resource consumption with resource pairs. We will then define multiplication on resource-pairs, which is intimately linked to sequential evaluation, as well as a partial ordering. The partial ordering will lead to the definition of \emph{relaxation} and allow us to compare the resource consumption of evaluations. 
@@ -95,7 +75,7 @@ Whenever we define a programming language, along with evaluation semantics and t
 
 Intuitively, one resource pair is "smaller" than another resource pair, if the initial resources and the resource consumption are smaller:
 
-\begin{definition}[Partial ordering on resource pairs]
+\begin{definition}[Relaxation]\label{def:relaxation}
    Let \((p_0, p_1), (q_0, q_1) \in \resource\). We define the relation \relaxation ~as follows:
 
    \[

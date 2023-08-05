@@ -175,17 +175,12 @@ Ultimately, we want our type rules to be consistent with the operational semanti
 Let us first sketch the structure of our soundness proof:
 
 If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
-The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The a priori resource annotation of the type is not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, like so: 
-
-\begin{itemize}
-   \item \(p_0 \geq q_0\)     
-   \item \(p_0 - p_1 \geq q_0 - q_1\)
-\end{itemize}
-
-The first bullet point capturing that the result of evaluating the expression \(e\) has the type that was constructed using the type rules. The second bullet point stating that the \emph{a priori} resource bound that was constructed using the type rules is an upper bound on the concrete resources required a priori. And the third point stating that the resource consumption of the constructed type also provides an upper bound on the concrete resource consumption.
+The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The initial resources of the type are not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, by using the relaxation relation defined in \cref{def:relaxation}, yielding the following theorem:
+\todo{Cref: Refs definition as theorem}
 
 \begin{theorem}[Soundness of typing for let-tick language]
-   Let e be an expression in our programming language, and let \((q_0, q_1)\) and \((p_0, p_1)\) be \nameref{def:resource-pair}s. If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\).
+   Let e be an expression in our programming language, and let \((q_0, q_1), (p_0, p_1) \in \resource\). 
+   \center If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \((p_0, p_1) \relaxation (q_0, q_1)\).
 \end{theorem}
 
 \begin{proof}
@@ -198,7 +193,7 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
       q_1   &= 0 \label{4.3}\\
       p_0   &\geq q + p_1 \label{4.4}
    \end{align}
-   Since \(p_1 \geq 0\) by definition, we can infer from \ref{4.4} that \(p_0 \geq q\) holds. Applying this inequality to \ref{4.2}, we get that \(p_0 \geq q_0\). Which proves the first part.
+   Since \(p_1 \geq 0\) by definition, using \ref{4.4}, \(p_0 \geq q\) holds. Applying this inequality to \ref{4.2}, we get that \(p_0 \geq q_0\). Which proves the first part.
    Next, we show \(p_0 - p_1 \geq q_0 - q_1\). Combining \ref{4.4} with \ref{4.2}, we get \(p_0 \geq q_0 + p_1\). Subtracting \(p_1\) from both sides, we get \(p_0 - p_1 \geq q_0\). Since \(q_1 \geq 0\) by definition as well, it especially holds that \(p_0 - p_1 \geq q_0 - q_1\). Which concludes the proof for the case of \(q \geq 0\).
    For the second case, we assume that \(q < 0\). Then, the following hold:
    \begin{align}
@@ -206,31 +201,53 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
       q_0   &= 0 \label{4.6}
    \end{align}
    Furthermore, \ref{4.1} and \ref{4.4} also hold true. By definition \(p_0 \geq 0\) holds. Using \ref{4.6}, we get \(p_0 \geq q_0\). 
-   Let us now prove the second part. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \cref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
-   \todo{Add case distinction into type rules, or explain why that holds.}
-      
-   (let): By assumption, we get that \(\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{p_0 - p_1 \max(p_1, q_0)}{q_1 - q_0 \max(p_1, q_0)}}\), and similarly \(\evals{}{\letexp{\_}{e_1}{e_2}}{()}{r_0 - r_1 + \max(s_0, r_1)}{s_1 - s_0 + \max(s_0, r_1)}\). As a result, the following hold true:
+   Let us now prove soundness with respect to resource consumption. Subtracting \(p_1\) from both sides in \ref{4.4}, we get \(p_0 - p_1 \geq q \). Applying \cref{4.5}, we get \(p_0 - p_1 \geq q_1\). Because \(q_1 \geq 0\) by definition, it also holds that \(p_0 - p_1 \geq 0 - q_1\). Using \ref{4.6}, we get \(p_0 - p_1 \geq q_0 - q_1\), concluding our proof for tick.
+
+   (let):  If the let rule was applied, the expression has the form \(\letexp{\_}{e_1}{e_2}\). Our induction hypothesis includes judgements, and soundness, for the sub-expressions \(e_1, e_2\). We list all assumptions below:
+   \begin{align*}
+      &\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}}                   & &(p_0, p_1)\relaxation (m_0, m_1)\\
+      &\evals{}{e_1}{v_1}{m_0}{m_1}                               & &(q_0, q_1)\relaxation (n_0, n_1)\\
+      &\typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}                   & & r_0= p_0 - p_1 + \max(p_1, q_0) \\
+      &\evals{}{e_2}{v_2}{n_0}{n_1}                               & & r_1= q_1 - q_0 + \max(p_1, q_0) \\
+      &\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{r_0}{r_1}} & & s_0= m_0 - m_1 + \max(m_1, n_0) \\
+      &\evals{}{\letexp{\_}{e_1}{e_2}}{v_2}{s_0}{s_1}             & & s_1= n_1 - n_0 + \max(m_1, n_0) 
+   \end{align*}
+   
+   To prove soundness for the let expression, we need to prove \((r_0, r_1) \relaxation (s_0, s_1)\). We do this by proving soundness for two mutually exclusive conditions: \(n_0 \geq m_1\) and \(n_0 < m_1\). Before introducing the case distinction, we prove soundness for the resource consumption in the general case:
    \begin{align}
-      p_0         &\geq r_0 \label{4.7}\\
-      q_0         &\geq s_0 \label{4.8} \\
-      p_0 - p_1   &\geq r_0 - r_1 \label{4.9} \\
-      q_0 - q_1   &\geq s_0 - s_1 \label{4.10}
+      s_0 - s_1   &= m_0 - m_1 + \max(m_1, s_0) - (n_1 - n_0 + \max(m_1, s_0)) \\
+                  &= m_0 - m_1 + n_0 - n_1 + \max(m_1, s_0) - \max(m_1, s_0) \\
+                  &= m_0 - m_1 + n_0 - n_1 \\
+                  &\leq p_0 - p_1 + q_0 - q_1 \label{eqn:3.16}\\
+                  &= p_0 - p_1 + \max(p_1, q_0) + q_0 - q_1 - \max(p_1, q_0) \\
+                  &= \underbrace{p_0 - p_1 + \max(p_1, q_0)}_{= r_0} - \underbrace{(q_1 - q_0 + \max(p_1, q_0))}_{= r_1}
    \end{align}
-   We want to show that \(p_0 - p_1 + \max(q_0, p_1) \geq r_0 - r_1 + \max(r_1, s_0)\). For this, we consider two cases: first the case where \(s_0 \geq r_1\), and second the case where \(s_0 < r_1\)
-   Let \(s_0 \geq r_1\). We get the following chain of inequalities:
-   \begin{align*}
-      r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + s_0 \\
-                                 &\stackrel{\ref{4.9}}{\leq}p_0 - p_1 + s_0\\
-                                 &\stackrel{\ref{4.8}}{\leq}p_0 - p_1 + q_0\\
-                                 &\stackrel{*}{\leq}p_0 - p_1 + \max(q_0, p_1)
-   \end{align*}
-   Where the inequality with \(*\) is justified, as \(\max(q_0, p_1) \geq q_0\) trivially holds. This concludes the first case.
-   For the second case, we assume that \(s_0 < r_1\). 
-   \begin{align*}
-      r_0 - r_1 + \max(s_0, r_1) &= r_0 - r_1 + r_1 \\
-                                 &= r_0 \\
-                                 &\stackrel{\ref{4.7}}{\leq} p_0\\
-                                 &\stackrel{*}{\leq} p_0 - p_1 + \max(q_0, p_1)
-   \end{align*}
-   Similarly, we justify \(*\), because \(\max(q_0, p_1) \geq p_1\), which means that \(-p_1 + \max(q_0, p_1) \geq 0\). 
+
+   Where \cref{eqn:3.16} uses \((p_0, p_1) \relaxation (m_0, m_1), (q_0, q_1) \relaxation (n_0, n_1)\). We have proven \((r_0, r_1) \relaxation (s_0, s_1)\) for \(n_0 \geq m_1\). Next, we prove soundness for \(n_0 < m_1\).
+
+   Next, we prove \(r_0 \geq s_0\) by means of case distinction. Let \(n_0 \geq m_1\).
+   \begin{align}
+      s_0   &= m_0 - m_1 + \max(m_1, n_0) \\
+            &= m_0 - m_1 + n_0 \\
+            &\leq p_0 - p_1 + n_0 \label{eqn:3.9}\\
+            &\leq p_0 - p_1 + q_0 \label{eqn:3.10}\\
+            &\leq p_0 - p_1 + \max(p_1, q_0) \\
+            &= r_0
+   \end{align}
+   
+   Where \cref{eqn:3.9} and \cref{eqn:3.10} are justified by \((p_0, p_1) \relaxation (m_0, m_1)\) and \((q_0, q_1) \relaxation (n_0, n_1)\), respectively. Next, we prove that \(r_0 - r_1 \geq s_0 - s_1\).
+
+   Let \(n_0 < m_1\). We start by showing \(r_0 \geq s_0\).
+   \begin{align}
+      s_0   &= m_0 - m_1 + \max(m_1, n_0) \\
+            &= m_0 - m_1 + m_1 \\
+            &= m_0 \\
+            &\leq p_0 \label{eqn:3.22}\\
+            &\leq p_0 - p_1 + \max(p_1, q_0) = r_0 \label{eqn:3.23}
+   \end{align}
+
+   Where \cref{eqn:3.22} uses \((p_0, p_1) \relaxation (m_0, m_1)\), and \cref{eqn:3.23} uses the fact that \(\max(p_1, q_0) - p_1 \geq 0\) for any \(p_1, q_0\).
+   \todo{Provide a proof for that as well?}
+
+   This concludes our proof of soundness.
 \end{proof}
