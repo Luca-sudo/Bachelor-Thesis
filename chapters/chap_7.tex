@@ -1,0 +1,166 @@
+\chapter{Introducing Lists}
+
+Questions:
+\begin{itemize}
+   \item How to Propagate potential? E.g.: addL(addL(l)), where addL :: \(L(Int) \to L^5(Int)\)? Resulting type should be \(L^{10}(Int)\)?
+   \item Same for resource pairs. Possible solution: Push cost to return type.
+   \item How to best combine potential and resource pair in notation? 
+\end{itemize}
+
+In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce functions and a provide refresher on type signatures.
+
+We introduce list construction and matching, as well as function application:
+
+
+\begin{definition}[list-tick language]
+   \label{def:prog-lang-6}
+
+\begin{align*}
+   e := ~~~ & \letexp{x}{e_1}{e_2}		& \text{(let)}\\
+            & \tick{k}				& \text{(tick)}\\
+	    & x					& \text{(var)}\\
+	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
+	    & q					& \text{(const integer)}\\
+            & \cons{x}{xs} ~~| ~~ \listnil      & \text{(list constructor)}\\
+            & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
+            & f x                               & \text{(function application)}\\
+\end{align*}
+\end{definition}
+\todo{Do I have to add function abstraction here?}
+
+For the reader not familiar with constructing lists using \cons{x}{xs}, we provide a small example to illustrate the use. Let us start by creating a list with integers from one to five. Conceptually, this list can be split up into the \emph{head}, one in this case, and its \emph{tail}, which is the sub list from two to five. Writing this out we get:
+
+\[
+   \cons{1}{\cons{2}{\cons{3}{\cons{4}{\cons{5}{\listnil}}}}}
+\]
+
+Which is equivalent to the following list, defined in Java:
+
+\begin{minted}{java}
+   new List(1,2,3,4,5);
+\end{minted}
+\todo{Introduce type signatures for function by examples}
+\todo{Introduce generic signatures as well}
+
+\section{Evaluation Semantics}
+
+We start by introducing two rules for the construction of lists, corresponding to the two constructors of our programming language. In this thesis, construction of both empty and non-empty lists has no associated cost. As a result the cost of operations on lists is purely dictated by the actions performed on the list. 
+
+\[
+   \inference[(E:Nil)]
+   {}
+   {\evals{E}{\listnil}{null}{}{}}
+   \qquad
+   \inference[(E:Cons)]
+   {\contains{E}{x, xs} \qquad l = (E(x), E(xs))}
+   {\evals{E}{\cons{x}{xs}}{l}{}{}}
+\]
+\todo{Need to introduce null somewhere}
+
+In order to implement functions that work recursively on a list, we need pattern matching on lists. Whenever a match statement involving a list is invoked, there are two cases: (1) The list passed to it is nil. (2) The list passed to it contains values. We define an evaluation rule for each of these cases, respectively:
+
+\[
+   \inference[(E:MatchNil)]
+   {E(l) = Null \qquad \evals{E}{e_1}{v}{q_0}{q_1}}
+   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
+\]
+
+\[
+   \inference[(E:MatchCons)]
+   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{q_0}{q_1}}
+   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
+\]
+
+For the latter rule we define the concrete value of the list \(l\) as a tuple \((v_x, v_{xs})\). Where \(v_x\) points to the head, and \(v_{xs}\) points to the tail. 
+
+To define recursive functions we are currently missing function application. With the evaluation rules provided until now, we are not able to derive a type for an expression of the form \(f x\). As a result, we would not be able to type a \emph{recursive} function call. 
+In the rule below, \(e_f\) is the expression referenced by the function name \(f\). 
+
+\[
+   \inference[(E:App)]
+   {E(f) = e_f \qquad \evals{\envaugment{E}{y}{x}}{e_f}{v}{q_0}{q_1}}
+   {\evals{E}{f x}{v}{q_0}{q_1}}
+\]
+\todo{Need to define how we get from f to the expression of f}
+\todo{Maybe talk about free and bound variables in preface?}
+
+\section{Type Rules}
+
+As alluded to earlier, we introduce the concept of potentials to derive resource-annotated types for lists. More specifically, we define the potential for primitive types, give a recursive definition of the potential for lists and define the potential of a \nameref{def:context}. 
+
+\subsection{Potential Function}
+
+\begin{definition}
+   For a value \(v\) type \(A\) we define the potential as follows:
+
+   \[
+      \Phi(v : A) = \begin{cases}
+         0                                            &\text{for } A \in \{\unit, \typeint, \bool\} \\
+         \Phi(x : B) + q + \Phi(xs : \ralist{q}{B})  & A = \ralist{q}{B}\\
+                    \end{cases}
+   \]
+\end{definition}
+
+\begin{corollary}
+   For a list \(l : \ralist{q}{A}\), where \(|l|\) is the length of the list, we get:
+   \[
+      \Phi(l : \ralist{q}{A}) = q \cdot |l| + \sum_{x \in l} \Phi(x : A)
+   \]
+\end{corollary}
+\todo{Fix numbering of corollaries}
+
+Our definition of the potential function 
+
+
+\begin{itemize}
+   \item Introduce potential function
+      \begin{itemize}
+         \item Explain the role of potential
+         \item explain why we only assign potential to lists
+      \end{itemize}
+   \item Define type system
+   \item T:Nil
+   \item T:Cons
+   \item T:MatchList
+      \begin{itemize}
+         \item Explain why the constraints exist
+      \end{itemize}
+   \item T:App
+      \begin{itemize}
+         \item Mechanism to determine type of function? w.r.t resource-annotation?
+      \end{itemize}
+   \item T:Share
+\end{itemize}
+
+\subsection{Example Type Derivation}
+\begin{itemize}
+   \item Define function map
+   \item Provide a type derivation
+\end{itemize}
+
+\begin{minted}{ocaml}
+   def map f l = match l with 
+      | nil -> nil
+      | cons(x, xs) -> cons(f x, map f xs).
+\end{minted}
+
+\begin{itemize}
+   \item Provide type derivation for map
+   \item Example with nested lists?
+      \begin{itemize}
+         \item Need to define share for that?
+      \end{itemize}
+\end{itemize}
+
+\section{Soundness}
+\begin{itemize}
+   \item Explain how introduction of potential alters soundness proof.
+\end{itemize}
+
+\section{Questions}
+
+\begin{itemize}
+   \item Suppose we have a function \emph{map}, with the signature \((A \to B) \to L(A) \to L(B)\). Where and how to attribute cost?
+   \item Should we introduce the share rule? Would constraint us to a linear system?
+\end{itemize}
+
