@@ -130,6 +130,7 @@ In this section, we will first motivate the new type system, introduce \nameref{
    \caption{Type system with booleans and integers added.}
    \label{fig:type-system-5}
 \end{figure}
+\todo{Move type system to prog. lang. def.}
 
 In the previous chapter, the programming language at hand only produced values of a singular type \textbf{unit}. For this programming language, we introduced two new types which forces us to reconsider the type we assign to \emph{sequential expressions}. For this, we note two facts: (1) The resource-consumption assigned to a sequential operation is invariant of the type the operation returns. (2) The result of the first expression is consumed by the second expression, and, therefore, the result of the sequential evaluation is defined by the return type of the second expression. This motivates the following, updated definition:
 
@@ -139,6 +140,7 @@ In the previous chapter, the programming language at hand only produced values o
       e_1;e_2 : \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}
    \]
 \end{definition}
+\todo{Use \(r_i\) for costs}
 
 Next, we introduce \nameref{def:context}s. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
 
@@ -152,6 +154,7 @@ We know define some notations that are tightly linked to the ones introduced in 
 \begin{definition}\label{def:context-getter}
    Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, then \(\Gamma(x)\) returns either the type of \(x\) or undefined.
 \end{definition}
+\todo{Change to be similar to E(x) for environments}
 
 \begin{definition}\label{def:in-context}
    Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, we define \(\contains{\Gamma}{x}\) as follows:
@@ -271,6 +274,9 @@ Applying (T:relax) will yield the typing \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_
 Let us continue by proving the induction step. For this, our induction hypothesis assumes that for any fixed number of subsequent applications of (T:relax), soundness is preserved. The proof is similar to the one for the base case.\\
  The induction hypothesis ensures that for \(q_0\) and \(q_1\), \(q_0 \geq r_0\) and \(q_0 - q_1 \geq p_0 - p_1\) hold. Let the next application of (T:relax) yield the following typing: \(\typing{\Gamma}{e}{\ratype{A}{m_0}{m_1}}\). The application of (T:relax) then assumes that \(m_0 \geq q_0\) and \(m_0 - m_1 \geq q_0 - q_1\). These inequalities directly proof soundness.
 \end{proof}
+\todo{Refactor proof, using relaxation. Be more descriptive}
+\todo{Refactor all occurrences of resources to use notation}
+\todo{Refactor all occurrences of relaxation to use notation}
 
 
 

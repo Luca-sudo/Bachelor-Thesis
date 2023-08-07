@@ -1,5 +1,15 @@
 \chapter{Preliminaries} \label{chap:preliminaries}
 
+\begin{itemize}
+	\item Amortized analysis potential method
+	\item Type Theory basics
+	   \begin{itemize}
+	   	\item Judgement 
+		\item Context
+		\item Universe
+	   \end{itemize}
+\end{itemize}
+
 \section{Amortized Analysis: Potential Method}
 Analysing the time and space complexity of algorithms is itself a vast field. There are three methods for computing amortized resourec bounds: Aggregate method, accounting method and the potential method. For AARA, potential method is used, as one can define particularly intuitive and ergonomic potential functions, which is done for linear potentials in \ref{chap:potential} and for polynomial potentials in \ref{chap:polynomial-potential}.
 To perform amortized analysis, we define a potential function \(\Phi\), which assigns to every possible state of a data structure a \emph{non-negative} integer. The \emph{amortized} cost of an operation accounts for the actual cost of the operation, as well as the difference in potential as a consequence of the operation. Using the potential assigned to a specific state, more expensive operations can be amortized by preceding, cheaper operations. As we will see, this provides a less pessimistic bound than worst-case analysis while matching empirical bounds tightly \todo{reference data from thesis}. 
