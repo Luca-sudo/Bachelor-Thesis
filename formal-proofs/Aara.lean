@@ -87,7 +87,7 @@ namespace LetTick
 
 inductive Prog :=
   | tick (k : Int)
-  | let (e_1 e_2 : Prog)
+  | letexp (e_1 e_2 : Prog)
 
 inductive BaseType :=
   | Unit
@@ -101,19 +101,18 @@ inductive Evaluation : Prog → ResourcePair → Prop :=
   | e_tick_neg (k : Int) (neg: k < 0):
     Evaluation (.tick (abs k)) (⟨(abs k), abs_nonneg k⟩, 0)
   | e_let {e_1 e_2 : Prog} {r_1 r_2 : ResourcePair} (eval_e_1 : Evaluation e_1 r_1) (eval_e_2 : Evaluation e_2 r_2)
-    : Evaluation (.let e_1 e_2) (r_1.mult r_2)
+    : Evaluation (.letexp e_1 e_2) (r_1.mult r_2)
 
 --Typing judgement
 inductive Typing : Prog → BaseType → ResourcePair → Prop :=
   | t_tick (k : Int) (t : BaseType) (r : ResourcePair) (suff_res : r.init ≥ k + r.resid) :
     Typing (.tick k) t r
   | t_let {e_1 e_2 : Prog} {r_1 r_2 : ResourcePair} {t_1 t_2 : BaseType} (e_1types : Typing e_1 t_1 r_1) (e_2Types : Typing e_2 t_2 r_2) (suff_res : r_1.resid = r_2.init) :
-    Typing (.let e_1 e_2) t_2 (r_1.init, r_2.resid)
+    Typing (.letexp e_1 e_2) t_2 (r_1.init, r_2.resid)
 
 --Proof of soundness. Theorem 3.5
 theorem soundness (p : Prog) (r_1 r_2 : ResourcePair) (t : BaseType) 
-  : Evaluation p r_1 → Typing p t r_2 → r_2 ≽ r_1 := by
-    sorry
+  : Evaluation p r_1 → Typing p t r_2 → r_2 ≽ r_1 := by sorry
   
 end LetTick
 

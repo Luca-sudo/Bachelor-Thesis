@@ -13,11 +13,17 @@ Similarly to environments, we will introduce contexts for the type rules. While 
             & \tick{k}				& \text{(tick)}\\
 	    & x					& \text{(var)}\\
 	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
-	    & q					& \text{(const rational)}\\
+	    & q					& \text{(const integers)}\\
 \end{align*}
-
 \end{definition}
 
+The newly introduced constructors for integers and booleans are reflected in the type system for the language:
+
+\begin{definition}[Type system]\label{def:type-system-5}
+   \[
+      A := \unit~|~\text{\bool}~|~\text{\typeint}
+   \]
+\end{definition}
 
 \section{Evaluation Semantics}
 
@@ -68,7 +74,7 @@ Here, we define a partial function \(f\) as a function either maps a value \(x\)
 As we now evaluate expressions with respect to an \nameref{def:environment}, we need to update \cref{def:evaluation-judgement} to accommodate environments:
 
 \begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
-   Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then write the following for the evaluation judgement that incorporates an environment:
+   Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1) \in \resource\). We then write the following for the evaluation judgement that incorporates an environment:
 
    \[
       \evals{E}{e}{v}{p_0}{p_1}
@@ -97,11 +103,11 @@ Next, we introduce environments into the evaluation rule for \(\tick{}\). It is 
 \[
    \inference[(E:tick)]
    {}
-   {\evals{E}{\tick{q}}{()}{a}{b}}%
+   {\evals{E}{\tick{q}}{()}{r_0}{r_1}}%
    \qquad 
    \begin{aligned}
-      \text{where }  &a = \max(q, 0)\\
-      \text{and }    &b = \max(0, -q) 
+      \text{where }  &r_0 = \max(q, 0)\\
+      \text{and }    &r_1 = \max(0, -q) 
    \end{aligned}
 \]
 
@@ -123,24 +129,19 @@ The last rule missing is (E:let). Here, we need to carefully weave the value tha
 
 \section{Type Rules}\label{sec:type-rules-5}
 
-In this section, we will first motivate the new type system, introduce \nameref{def:context}s and define the necessary type rules.With respect to the type system, we are required to introduce two new types: \bool~and \typeint. This yields the following type system:
-
-\begin{figure}[H]
-   \[A := \unit~|~\text{\bool}~|~\text{\typeint}\]
-   \caption{Type system with booleans and integers added.}
-   \label{fig:type-system-5}
-\end{figure}
-\todo{Move type system to prog. lang. def.}
-
 In the previous chapter, the programming language at hand only produced values of a singular type \textbf{unit}. For this programming language, we introduced two new types which forces us to reconsider the type we assign to \emph{sequential expressions}. For this, we note two facts: (1) The resource-consumption assigned to a sequential operation is invariant of the type the operation returns. (2) The result of the first expression is consumed by the second expression, and, therefore, the result of the sequential evaluation is defined by the return type of the second expression. This motivates the following, updated definition:
 
 \begin{definition}
-   Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{fig:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
+   Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{def:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
    \[
-      e_1;e_2 : \ratype{B}{p_0 - p_1 + \max(p_1, q_0)}{q_1 - q_0 + \max(p_1, q_0)}
+      e_1;e_2 : \ratype{B}{r_0}{r_1}
+      \qquad
+      \begin{aligned}
+	 \text{where }	&r_0 = p_0 - p_1 + \max(p_1, q_0) \\
+			&r_1 = q_1 - q_0 + \max(p_1, q_0)
+      \end{aligned}
    \]
 \end{definition}
-\todo{Use \(r_i\) for costs}
 
 Next, we introduce \nameref{def:context}s. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
 
@@ -154,7 +155,7 @@ We know define some notations that are tightly linked to the ones introduced in 
 \begin{definition}\label{def:context-getter}
    Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, then \(\Gamma(x)\) returns either the type of \(x\) or undefined.
 \end{definition}
-\todo{Change to be similar to E(x) for environments}
+\todo{Is there a nicer way to define this?}
 
 \begin{definition}\label{def:in-context}
    Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, we define \(\contains{\Gamma}{x}\) as follows:
@@ -168,11 +169,11 @@ We know define some notations that are tightly linked to the ones introduced in 
 \end{definition}
 
 \begin{definition}\label{def:context-augment}
-   Let \(\Gamma\) be a context, \(A\) be a type and let \(x : A\) be a variable. We can embed the variable \(x\) with its associated type \(A\) by writing \(\Gamma ; x:A\).
+   Let \(\Gamma\) be a context, \(A\) be a type and let \(x : A\) be a variable. We can embed the variable \(x\) with its associated type \(A\) into the context \(\Gamma\),  by writing \(\Gamma ; x:A\).
 \end{definition}
 
 \begin{definition}[Typing Judgement with contexts]\label{def:type-judgement-context}
-   Let \(\Gamma\) be a \nameref{def:context}, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1)\) be a \nameref{def:resource-pair}. We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
+   Let \(\Gamma\) be a \nameref{def:context}, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1) \in \resource\). We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
    \[
       \typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}
    \]
@@ -209,11 +210,11 @@ Defining the type rule for the \(\tick{}\) is straightforward, we add a context 
 \]
 
 For the let expression, we provide a definition that differs from the one provided in \cref{def:tr-let-4}. For this, we make the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
-We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the \nameref{def:resource-consumption}. We avoid this by enforcing that the relaxed resource-consumption is \emph{at least} as large as the resource-consumption prior.
+We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the \nameref{def:resource-consumption}. We do this, by enforcing that \((q_0, q_1) \relaxation (p_0, p_1)\).
 
 \[
    \inference[(T:relax)]
-   {\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}} \qquad q_0 \geq p_0 \qquad q_0 - q_1 \geq p_0 - p_1}
+   {\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}} \qquad (q_0, q_1) \relaxation (p_0, p_1)}
    {\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}}
 \]
 
@@ -238,10 +239,10 @@ This is prevented, by demanding that the contexts are \emph{disjoint}. While thi
 Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is necessary to formulate the soundness theorem as to account for environments and contexts. This yields the following statement:
 
 \begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
-   Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A\) be a type, along with two \nameref{def:resource-pair}s \((p_0, p_1), (q_0, q_1)\) and an expression \(e\) that evaluates to the value \(v\). The Soundness Theorem states:
+   Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A\) be a type, \((p_0, p_1), (q_0, q_1) \in \resource\) and an expression \(e\) that evaluates to the value \(v\). The Soundness Theorem states:
 
    \begin{center}
-   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{q_0}{q_1}\), \(q_0 \geq p_0\) and \(q_0 - q_1 \geq p_0 - p_1\).
+   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{}{}\) with \((q_0, q_1) \relaxation (p_0, p_1)\).
    \end{center}
 \end{theorem}
 

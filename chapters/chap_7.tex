@@ -7,10 +7,7 @@ Questions:
    \item How to best combine potential and resource pair in notation? 
 \end{itemize}
 
-In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce functions and a provide refresher on type signatures.
-
-We introduce list construction and matching, as well as function application:
-
+In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce function application, which introduces recursion into our programming language. 
 
 \begin{definition}[list-tick language]
    \label{def:prog-lang-6}
@@ -28,19 +25,32 @@ We introduce list construction and matching, as well as function application:
 \end{definition}
 \todo{Do I have to add function abstraction here?}
 
-For the reader not familiar with constructing lists using \cons{x}{xs}, we provide a small example to illustrate the use. Let us start by creating a list with integers from one to five. Conceptually, this list can be split up into the \emph{head}, one in this case, and its \emph{tail}, which is the sub list from two to five. Writing this out we get:
+Because a list can contain \emph{any type} of data, assuming it is homogenous data, we introduce generic lists. Similarly, we need to introduce function types, which map values of one type to values of another type. For more concrete examples of list types and function types, we supplement examples below.
 
-\[
-   \cons{1}{\cons{2}{\cons{3}{\cons{4}{\cons{5}{\listnil}}}}}
-\]
+\begin{definition}[Type system]\label{def:type-system-5}
+   \[
+      A, B := \unit~|~\text{\bool}~|~\text{\typeint}~|~\ralist{}{A}~|~\rafunc{A}{B}{}{}
+   \]
+\end{definition}
 
-Which is equivalent to the following list, defined in Java:
+\begin{example}
+   \(\ralist{}{\typeint}\) is the type of lists that contain integers
+\end{example}
 
-\begin{minted}{java}
-   new List(1,2,3,4,5);
-\end{minted}
-\todo{Introduce type signatures for function by examples}
-\todo{Introduce generic signatures as well}
+\begin{example}
+   \(\ralist{}{\ralist{}{\bool}}\) is the type of lists that contain lists with values of type \bool. A concrete example would be \([[1;2];[3;4];[5;6]]\).
+\end{example}
+\todo{Change notation}
+
+\begin{example}
+   A function \(\lambda x:\typeint.x+1\) has the type \(\rafunc{\typeint}{\typeint}{}{}\).
+\end{example}
+
+\begin{example}
+A function \(\lambda l:\ralist{}{\typeint}. sum ~ l\), that sums integers in a list has the type \(\rafunc{\ralist{}{\typeint}}{\typeint}\).
+\end{example}
+
+
 
 \section{Evaluation Semantics}
 

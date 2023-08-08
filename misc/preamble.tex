@@ -82,10 +82,10 @@
 \newcommand{\contains}[2]{#2 \in #1}
 
 % Symbol for type int
-\newcommand{\typeint}{Int}
+\newcommand{\typeint}{\text{Int}}
 
 % Symbol for type bool
-\newcommand{\bool}{Bool}
+\newcommand{\bool}{\text{Bool}}
 
 % Symbol for the set of Types.
 \newcommand{\Types}{Type}
@@ -94,7 +94,7 @@
 \newcommand{\emptycontext}{\emptyset}
 
 % List type.
-\newcommand{\ralist}[2]{L^{#1}(#2)}
+\newcommand{\ralist}[2]{\text{L}^{#1}(#2)}
 
 % List constructor.
 \newcommand{\cons}[2]{\textbf{cons}(#1, #2)}
@@ -113,6 +113,9 @@
 
 % Not relaxation of resource
 \newcommand{\notrelaxation}{\centernot \relaxation}
+
+% Resource-aware function type
+\newcommand{\rafunc}[4]{#1 \to \ratype{#2}{#3}{#4}}
 
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}

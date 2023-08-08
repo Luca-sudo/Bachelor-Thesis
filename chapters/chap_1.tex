@@ -51,7 +51,8 @@ The formula for amortized cost \ref{eq:amortized-cost} allows us to provide an u
 Because we inferred that any sequence of \(n\) insert operations has \(\mathcal{O}(n)\) amortized cost, this inequality shows that any sequence of insert operations also has at most \(\mathcal{O}(n)\) actual cost.
 
 AARA will deploy the potential method in order to provide bounds. In \ref{chap:potential}, we introduce a set of potential functions that are especially ergonomic for AARA with linear potential.
-\todo{Reference to chapter for potential properties.} This forms the basis for extending AARA to polynomial potentials in \ref{chap:polynomial-potential}.
+This forms the basis for extending AARA to polynomial potentials in \ref{chap:polynomial-potential}.
+\todo{Rework entire introduction to Amortized Analysis}
 
 \section{Big-Step operational semantics}
 Operational Semantics provide a framework for reasoning about properties of parts of a formalized language, such as safety or correctness. In the case of programming languages, operational semantics define how a program is interpreted as a sequence of computations. In order to reason about the behavior of a sequence of computational steps, we need to choose an appropriate type of operational semantics.
@@ -65,6 +66,8 @@ When tracking resource consumption in the form of memory, we need to know precis
 Having defined stacks and heaps, we can now define evaluation judgements with resource-annotations. An evaluation judgment has the following form:
 $$ V, H \turnstile e \rightsquigarrow v, H' | (p, p') $$
 With the following meaning: Given a stack V and a heap H, the expression e evaluates to the value v and the new stack H'. In order to evaluate e we need p resources beforehand, and are left with p' resources after evaluation. This yields a resource consumption $\delta = p - p'$, which can be a negative integer if resources become available after the evaluation of the expression.
+\todo{Scrap and introduce evaluation semantic basics}
+\todo{Maybe introduce basic type-related notions? Derivations, judgement, etc. for reader completely unfamiliar}
+\todo{Maybe introduce idea of lean scripts?}
 
-\todo{Type rules for operational semantics?}
 

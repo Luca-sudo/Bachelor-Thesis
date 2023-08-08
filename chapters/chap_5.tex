@@ -50,11 +50,15 @@ We will now define rules for the evaluation of programming language constructs, 
 First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
 
 \[
-   \inference[(let)]
+   \inference[(E:let)]
    {\evals{}{e_1}{()}{p_0}{p_1} ~~,~~ \evals{}{e_2}{()}{q_0}{q_1}}
-   {\evals{}{\letexp{}{e_1}{e_1}}{()}{p_0 - p_1}{q_1 - q_0}}
+   {\evals{}{\letexp{}{e_1}{e_1}}{()}{r_0}{r_1}}
+   \qquad
+   \begin{aligned}
+      \text{where }  &r_0 = p_0 - p_1 + \max(p_1, q_0)\\
+                     &r_1 = q_1 - q_0 + \max(p_1, q_0) 
+   \end{aligned}
 \]
-\todo{Introduce rule as split case? See below.}
 
 Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. These two cases translate directly into two evaluation rules, provided below:
 
@@ -227,9 +231,9 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
                   &= \underbrace{p_0 - p_1 + \max(p_1, q_0)}_{= r_0} - \underbrace{(q_1 - q_0 + \max(p_1, q_0))}_{= r_1}
    \end{align}
 
-   Where \cref{eqn:3.16} uses \((p_0, p_1) \relaxation (m_0, m_1), (q_0, q_1) \relaxation (n_0, n_1)\). We have proven \((r_0, r_1) \relaxation (s_0, s_1)\) for \(n_0 \geq m_1\). Next, we prove soundness for \(n_0 < m_1\).
-
-   Next, we prove \(r_0 \geq s_0\) by means of case distinction. Let \(n_0 \geq m_1\).
+   Where \cref{eqn:3.16} uses \((p_0, p_1) \relaxation (m_0, m_1), (q_0, q_1) \relaxation (n_0, n_1)\). We have proven \(r_0 - r_1 \geq s_0 - s_1\). Next, we prove \(r_0 \geq s_0\) by means of case distinction. 
+   
+   Let \(n_0 \geq m_1\).
    \begin{align}
       s_0   &= m_0 - m_1 + \max(m_1, n_0) \\
             &= m_0 - m_1 + n_0 \\
@@ -241,7 +245,7 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
    
    Where \cref{eqn:3.9} and \cref{eqn:3.10} are justified by \((p_0, p_1) \relaxation (m_0, m_1)\) and \((q_0, q_1) \relaxation (n_0, n_1)\), respectively. Next, we prove that \(r_0 - r_1 \geq s_0 - s_1\).
 
-   Let \(n_0 < m_1\). We start by showing \(r_0 \geq s_0\).
+   Let \(n_0 < m_1\). 
    \begin{align}
       s_0   &= m_0 - m_1 + \max(m_1, n_0) \\
             &= m_0 - m_1 + m_1 \\
