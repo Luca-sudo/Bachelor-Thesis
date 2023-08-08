@@ -161,12 +161,6 @@ Whenever we write programs, we might use a list in multiple instructions. In ord
 \section{Inference Rules}
 
 \begin{itemize}
-   \item Introduce potential function
-      \begin{itemize}
-         \item Explain the role of potential
-         \item explain why we only assign potential to lists
-      \end{itemize}
-   \item Define type system
    \item T:Nil
    \item T:Cons
    \item T:MatchList
@@ -179,6 +173,44 @@ Whenever we write programs, we might use a list in multiple instructions. In ord
       \end{itemize}
    \item T:Share
 \end{itemize}
+
+We start by introducing two rules associated to the two list constructors. 
+
+\[
+   \inference[(T:Nil)]
+   {}
+   {\typing{\Gamma}{nil}{\ralist{p}{A}}}
+   \qquad
+   \inference[(T:Cons)]
+   {}
+   {\typing{\Gamma;x : A; xs : \ralist{p}{A}}{cons(x, xs)}{\ralist{p}{A}}}
+\]
+
+In order to type expression that pattern match on lists, we introduce a rule (T:MatchList). 
+\todo{Motivate the rule a bit}
+
+\[
+   \inference[(T:MatchList)]
+   {\typing{\Gamma}{e_1}{\ratype{B}{q_0}{q_1}} \qquad \typing{\Gamma;x : A; xs : \ralist{p}{A}}{e_2}{\ratype{B}{q_0 + p}{q_1}}}
+   {\typing{\Gamma;l : \ralist{p}{A}}{\listmatch{l}{e_1}{e_2}}{\ratype{B}{q_0}{q_1}}}
+\]
+
+Next, we introduce an inference rule for function application. For the rule to be valid, we must ensure that the value \(x\) applied to the function \(f\) has a type that matches the input of \(f\). Furthermore, the type of \(f x\) is then determined by the function \(f\). For resource-aware types, we compose the cost similar to a let expression. 
+
+\[
+   \inference[(T:Application)]
+   {\typing{\Gamma}{f}{\rafunc{A}{B}{p_0}{p_1}} \qquad \typing{\Gamma}{x}{\ratype{A}{q_0}{q_1}}}
+   {\typing{\Gamma}{f x}{\ratype{B}{r_0}{r_1}}}
+   \qquad
+   \begin{aligned}
+      \text{where }  & r_0 = p_0 - p_1 + \max(p_1, q_0)\\
+                     & r_1 = q_1 - q_0 + \max(p_1, q_0)
+   \end{aligned}
+\]
+
+\todo{(T:Share) purposefully left out for now.}
+
+To illustrate how the newly introduced inference rules orchestrate together, we perform exemplary type derivations for selected examples.
 
 \subsection{Example Type Derivation}
 \begin{itemize}
