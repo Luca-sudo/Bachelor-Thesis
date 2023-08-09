@@ -237,7 +237,7 @@ We introduce examples of varying complexity, both with and without lists, to ill
          {
             \inference
             {
-               Recursive Call
+               \text{Recursive Call}
             }
             {
                \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
@@ -249,15 +249,41 @@ We introduce examples of varying complexity, both with and without lists, to ill
          }
       }
       {
-         \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}{\ralist{}{\typeint}}
+         \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}{\ratype{\ralist{0}{\typeint}}{2}{0}}
       }
    }
    {
-      \typing{\Gamma;l : \ralist{p}{A}}{\listmatch{l}{\listnil}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}}{\ralist{2}{\typeint}}
+      \typing{\Gamma;l : \ralist{2}{A}}{\listmatch{l}{\listnil}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}}{\ralist{0}{\typeint}}
    }
 \]
 
+In this example, there are already a lot of moving parts; Therefore, let us explain key parts of the derivation:
 
+\begin{itemize}
+   \item At the top, we labelled a premise using "Recursive Call", because we again apply the function \(add1\) to the tail (\(xs\)) of our initial list. We, therefore, can stop the derivation at this point without loss of information. We already collected the necessary constraints.
+
+   \item In the second line, we typed the let expression with \(\ratype{\ralist{0}{\typeint}}{2}{0}\). This is the result of two facts: We did not collect any constraints that impose a potential on the resulting list. And, the inference rule for let expression requires us to consider the resource cost of the tick expression. 
+
+   \item Lastly, we derive a potential of \(2\) for the input list \(l\). The expression that is evaluated for an empty list has no cost associated. For a non-empty list, we have an initial cost of 2. By definition of the (T:MatchList) rule, the potential \(p\) is precisely the difference in the two respective costs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{itemize}
 
 
 For our second example, we define a function \(sum\) that takes two inputs: The list of integers to sum over, and an accumulator. 
