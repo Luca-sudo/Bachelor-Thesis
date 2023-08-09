@@ -212,7 +212,66 @@ Next, we introduce an inference rule for function application. For the rule to b
 
 To illustrate how the newly introduced inference rules orchestrate together, we perform exemplary type derivations for selected examples.
 
-\subsection{Example Type Derivation}
+\subsection{Example Type Derivations}
+
+We introduce examples of varying complexity, both with and without lists, to illustrate type derivation for functions and lists. We begin with a function \(add3 :: \rafunc{\typeint}{\typeint}{}{}\), where we assign a cost of \(2\) to a singular addition operation, using the tick expression.
+
+\begin{minted}{ocaml}
+   def add1 l = match l with 
+      | nil -> nil
+      | cons(x, xs) -> let _ = tick 2 in 
+                       cons((x + 1), add1 xs)
+\end{minted}
+
+\[
+   \hspace*{-2.5cm}
+   \inference
+   {
+      \typing{\Gamma}{\listnil}{\ralist{p}{A}} 
+      &
+      \inference
+      {
+         \typing{\Gamma}{\tick{2}}{\ratype{\unit}{2}{0}}
+         &
+         \inference
+         {
+            \inference
+            {
+               Recursive Call
+            }
+            {
+               \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
+               \typing{\Gamma;xs:\ralist{p}{\typeint}}{add1~xs}{\ralist{p}{\typeint}}
+            }
+         }
+         {
+            \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\cons{x + 1}{add1~xs}}{\ralist{p}{\typeint}}
+         }
+      }
+      {
+         \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}{\ralist{}{\typeint}}
+      }
+   }
+   {
+      \typing{\Gamma;l : \ralist{p}{A}}{\listmatch{l}{\listnil}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}}{\ralist{2}{\typeint}}
+   }
+\]
+
+
+
+
+For our second example, we define a function \(sum\) that takes two inputs: The list of integers to sum over, and an accumulator. 
+
+\begin{minted}{ocaml}
+   def sum l n = match l with 
+      | nil -> n
+      | cons(x, xs) -> sum xs (n + x)
+\end{minted}
+
+\todo{Add derivation for sum}
+
+
+
 \begin{itemize}
    \item Define function map
    \item Provide a type derivation
