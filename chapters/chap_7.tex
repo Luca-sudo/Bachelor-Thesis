@@ -214,7 +214,10 @@ To illustrate how the newly introduced inference rules orchestrate together, we 
 
 \subsection{Example Type Derivations}
 
-We introduce examples of varying complexity, both with and without lists, to illustrate type derivation for functions and lists. We begin with a function \(add3 :: \rafunc{\typeint}{\typeint}{}{}\), where we assign a cost of \(2\) to a singular addition operation, using the tick expression.
+We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists. 
+
+\begin{example}
+   For our first example, consider a function \(add1\) that increments every integer in a list.
 
 \begin{minted}{ocaml}
    def add1 l = match l with 
@@ -223,41 +226,9 @@ We introduce examples of varying complexity, both with and without lists, to ill
                        cons((x + 1), add1 xs)
 \end{minted}
 
-\[
-   \hspace*{-2.5cm}
-   \inference
-   {
-      \typing{\Gamma}{\listnil}{\ralist{p}{A}} 
-      &
-      \inference
-      {
-         \typing{\Gamma}{\tick{2}}{\ratype{\unit}{2}{0}}
-         &
-         \inference
-         {
-            \inference
-            {
-               \text{Recursive Call}
-            }
-            {
-               \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
-               \typing{\Gamma;xs:\ralist{p}{\typeint}}{add1~xs}{\ralist{p}{\typeint}}
-            }
-         }
-         {
-            \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\cons{x + 1}{add1~xs}}{\ralist{p}{\typeint}}
-         }
-      }
-      {
-         \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}{\ratype{\ralist{0}{\typeint}}{2}{0}}
-      }
-   }
-   {
-      \typing{\Gamma;l : \ralist{2}{A}}{\listmatch{l}{\listnil}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}}{\ralist{0}{\typeint}}
-   }
-\]
+\newpage
 
-In this example, there are already a lot of moving parts; Therefore, let us explain key parts of the derivation:
+The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, let us briefly explain key parts of the derivation:
 
 \begin{itemize}
    \item At the top, we labelled a premise using "Recursive Call", because we again apply the function \(add1\) to the tail (\(xs\)) of our initial list. We, therefore, can stop the derivation at this point without loss of information. We already collected the necessary constraints.
@@ -265,36 +236,117 @@ In this example, there are already a lot of moving parts; Therefore, let us expl
    \item In the second line, we typed the let expression with \(\ratype{\ralist{0}{\typeint}}{2}{0}\). This is the result of two facts: We did not collect any constraints that impose a potential on the resulting list. And, the inference rule for let expression requires us to consider the resource cost of the tick expression. 
 
    \item Lastly, we derive a potential of \(2\) for the input list \(l\). The expression that is evaluated for an empty list has no cost associated. For a non-empty list, we have an initial cost of 2. By definition of the (T:MatchList) rule, the potential \(p\) is precisely the difference in the two respective costs.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \end{itemize}
 
+\begin{figure}[H]
+\begin{center}
+   \[
+      \hspace*{-2.5cm}
+      \inference
+      {
+         \typing{\Gamma}{\listnil}{\ralist{p}{A}} 
+         &
+         \inference
+         {
+            \typing{\Gamma}{\tick{2}}{\ratype{\unit}{2}{0}}
+            &
+            \inference
+            {
+               \inference
+               {
+                  \text{Recursive Call}
+               }
+               {
+                  \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
+                  \typing{\Gamma;xs:\ralist{p}{\typeint}}{add1~xs}{\ralist{p}{\typeint}}
+               }
+            }
+            {
+               \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\cons{x + 1}{add1~xs}}{\ralist{p}{\typeint}}
+            }
+         }
+         {
+            \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}{\ratype{\ralist{0}{\typeint}}{2}{0}}
+         }
+      }
+      {
+         \typing{\Gamma;l : \ralist{2}{\typeint}}{\listmatch{l}{\listnil}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}}{\ralist{0}{\typeint}}
+      }
+   \]
+   \end{center}
+   \caption{Type derivation of the add1 function.}
+   \label{fig:type-derivation-add1}
+\end{figure}
 
-For our second example, we define a function \(sum\) that takes two inputs: The list of integers to sum over, and an accumulator. 
+The resulting resource-aware type for \(add1\) is, therefore:
+\[
+   add1 :: \rafunc{\ralist{2}{\typeint}}{\ralist{}{\typeint}}{}{}
+\]
+\end{example}
 
-\begin{minted}{ocaml}
-   def sum l n = match l with 
-      | nil -> n
-      | cons(x, xs) -> sum xs (n + x)
-\end{minted}
+\begin{example}
+   For our second example, we define a function \(sum\), which sums all the integers in a list, given an accumulator. 
+   \begin{minted}{ocaml}
+      def sum l n = match l with 
+         | nil -> n
+         | cons(x, xs) -> sum xs (n + x)
+   \end{minted}
+\end{example}
 
-\todo{Add derivation for sum}
+The associated type derivation can be found in \cref{fig:type-derivation-sum}. 
+
+\begin{figure}[H]
+\begin{center}
+   \[
+      \hspace*{-1.5cm}
+      \inference
+      {
+         \typing{\Gamma}{\listnil}{\ralist{p}{A}}
+         &
+         \inference
+         {
+            \typing{}{\tick{3}{\ratype{\unit}{3}{0}}}
+            &
+            \inference
+            {
+               \text{Recursive Call}
+            }
+            {
+               \typing
+               {\Gamma;x:\typeint;xs:\ralist{p}{\typeint};n:\typeint}
+               {sum~xs~(x+n)}
+               {\typeint}
+            }
+         }
+         {
+            \typing
+            {\Gamma;x:A;xs:\ralist{p}{A};n:B}
+            {\letexp{\_}{\tick{3}}{sum~xs~(x+n)}}
+            {\ratype{\typeint}{3}{0}}
+         }
+      }
+      {
+         \typing
+         {\Gamma;l:\ralist{3}{\typeint};n:\typeint}
+         {\listmatch{l}{\listnil}{\letexp{\_}{\tick{3}}{sum~xs~(x+n)}}}
+         {\typeint}
+      }
+   \]
+   \end{center}
+   \caption{Type derivation of the sum function.}
+   \label{fig:type-derivation-sum}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
