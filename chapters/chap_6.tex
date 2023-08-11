@@ -29,7 +29,7 @@ The newly introduced constructors for integers and booleans are reflected in the
 
 We begin this section by introducing environments, which provide a necessary link between variable names and values. For this, we define an \nameref{def:environment}, which is a mapping from variable names to values. Along with this, we introduce two notations related to environments, one for retrieving the value of the variable and another notation that allows us to check if an environment contains a specific variable name; This will be needed to ensure that rules featuring variables are correctly defined.
 
-\subsection{Environments}
+\subsection{Environments}\label{sec:environments}
 
 \begin{definition}[Environment]\label{def:environment}
    We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function from variable names (\Var) to values (\Vals). 
@@ -153,17 +153,27 @@ In the previous chapter, the programming language at hand only produced values o
    \]
 \end{definition}
 
-Next, we introduce \nameref{def:context}s. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
+\subsection{Contexts}
+
+What environments are for evaluation rules, contexts are for inference rules. Contexts allow us to map variables to types, which is necessary since we introduce variables in this chapter. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
 
 \begin{definition}[Context]\label{def:context}
    We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\Types}\) as a partial function from variable names to types.
 \end{definition}
 
-We know define some notations that are tightly linked to the ones introduced in \cref{def:in-environment}, \cref{def:environment-getter} and \cref{def:environment-augment}:
-
+Similarly to \cref{sec:environments}, we define how to retrieve the type of a variable, given a context, what it means for a variable to be in a context and how we can introduce new variables into a context. 
 
 \begin{definition}\label{def:context-getter}
-   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, then \(\Gamma(x)\) returns either the type of \(x\) or undefined.
+   Let \(\Gamma\) be a \emph{context}, \(x\) be a variable name and \(A \in \mathbb{T}\) the type of \(x\). 
+
+   \[
+      \Gamma(x) = 
+      \begin{cases}
+	 A		      & \mbox{,if } \Gamma(x) \text{ is defined}\\
+	 \textbf{undefined}   & \mbox{,else } 
+      \end{cases}
+   \]
+
 \end{definition}
 \todo{Is there a nicer way to define this?}
 
@@ -188,6 +198,8 @@ We know define some notations that are tightly linked to the ones introduced in 
       \typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}
    \]
 \end{definition}
+
+\subsection{Inference Rules}
 
 This comprises most definitions that are needed to define the necessary type rules. We will introduce further notations, once they become necessary, clearly motivating their use and definition. Let us start by introducing the rule (T:var), which allows us to add a variable and its associated type into a context.
 
