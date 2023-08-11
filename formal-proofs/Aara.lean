@@ -31,7 +31,7 @@ def disparity (p q : ResourcePair) : Resource := max p.resid q.init
 def equal (p q: ResourcePair) := p.init = q.init ∧ p.consumption = q.consumption
 
 --Neutral element in Resource Pairs
-def unit := (0, 0)
+def unit : ResourcePair := (0, 0)
 
 --Multiplication of resource pairs
 @[simp, reducible]
@@ -48,10 +48,11 @@ infix:50 "≽" => relaxation_of
 
 infix:50 "⬝" => mult
 
---Relaxation is partial ordering
+--Relaxation is reflexive
 theorem relaxation_reflexive (p : ResourcePair) : p ≽ p := by
   simp [relaxation_of]
 
+--Relaxation is transitive
 theorem relaxation_transitive (p q r: ResourcePair) : p ≽ q → q ≽ r → p ≽ r := by
   simp [relaxation_of]
   intros H_p H_p' H_q H_q'
@@ -59,6 +60,7 @@ theorem relaxation_transitive (p q r: ResourcePair) : p ≽ q → q ≽ r → p 
   apply le_trans H_q H_p
   linarith
   
+  --Relaxation is antisymmetric
 theorem relaxation_antisymmetric (p q :ResourcePair) : p ≽ q → q ≽ p → p.equal q := by
   simp [relaxation_of]
   intros H_p H_p' H_q H_q'
@@ -80,6 +82,22 @@ theorem relaxation_antisymmetric (p q :ResourcePair) : p ≽ q → q ≽ p → p
 
 --Example 2.10
 #eval ((4, 2) ≽ (5, 4)) ∧ ((5, 4) ≽ (4, 2)) --false
+
+-- Example 2.14
+#eval equal (4, 2) (4, 3) -- false
+
+--(0, 0) is left unit under resource multiplication
+theorem left_unit (p : ResourcePair) : equal (unit ⬝ p)  p := by
+   sorry
+
+--(0, 0) is right unit under resource multiplication
+theorem right_unit (p: ResourcePair) : equal (p ⬝ unit) p := by
+  sorry
+
+--ResourcePair multiplication is associative
+theorem associative (p q r : ResourcePair) : equal (p ⬝ (q ⬝ r)) ((p ⬝ q) ⬝ r) := by
+  sorry
+   
 
 end ResourcePair
 

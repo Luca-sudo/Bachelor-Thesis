@@ -111,6 +111,19 @@ Most notably, this relation defines a partial ordering on the set of resource pa
    & a \relaxation b \text{ and } b \relaxation c\text{, then } a \relaxation c. \tag{transitivity}
 \end{align}
 
+Before we can show that resources form a monoid under relaxation, we need to define equality for resources. Intuitively two resource pairs are equal, if the respective initial cost is equal and the resource consumption is equal. Note that this is equivalent to the following definition:
+
+\begin{definition}[Equality of Resource Pairs]
+   Let \((p_0, p_1), (q_0, q_1) \in \resource\), then: 
+   \[
+      (p_0, p_1) = (q_0, q_1) :\iff p_0 = q_0 \wedge p_1 = q_1
+   \]
+\end{definition}
+
+\begin{example}
+   \((4, 2) \neq (4, 3)\), as \(3 \neq 2\).
+\end{example}
+
 \begin{lemma}
    The relaxation relation defines a partial ordering on the set of resource pairs.
 \end{lemma}
