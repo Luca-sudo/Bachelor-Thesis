@@ -201,7 +201,7 @@ Similarly to \cref{sec:environments}, we define how to retrieve the type of a va
 
 \subsection{Inference Rules}
 
-This comprises most definitions that are needed to define the necessary type rules. We will introduce further notations, once they become necessary, clearly motivating their use and definition. Let us start by introducing the rule (T:var), which allows us to add a variable and its associated type into a context.
+Let us start by introducing the rule (T:var), which allows us to add a variable and its associated type into a context.
 
 \[
    \inference[(T:var)]
@@ -209,7 +209,7 @@ This comprises most definitions that are needed to define the necessary type rul
    {\typing{\Gamma; x: A}{x}{A}}
 \]
 
-Next, we introduce two rules, one for boolean constants and one for integer constands. The rule (T:bool) assigns a type \bool~to any occurence of \(\true\) or \(\false\), and, similarly, the rule (T:int) assigns a type \typeint to any occurence of integer constants.
+Next, we introduce two rules, one for boolean constants and one for integer constants. The rule (T:bool) assigns a type \bool~to any occurrence of \(\true\) or \(\false\), and, similarly, the rule (T:int) assigns a type \typeint to any occurrence of integer constants.
 
 \[
    \inference[(T:bool)]
@@ -232,7 +232,7 @@ Defining the type rule for the \(\tick{}\) is straightforward, we add a context 
 \]
 
 For the let expression, we provide a definition that differs from the one provided in \cref{def:tr-let-4}. For this, we make the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
-We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the \nameref{def:resource-consumption}. We do this, by enforcing that \((q_0, q_1) \relaxation (p_0, p_1)\).
+We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the resource demand. We do this, by enforcing that \((q_0, q_1) \relaxation (p_0, p_1)\).
 
 \[
    \inference[(T:relax)]
@@ -272,60 +272,29 @@ Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is n
 
 (tick): The proof given in \cref{thm:soundness-4} for the tick expression still holds.
 
-(bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\), which shows that both inequalities are satisfied. It furthermore follows that the type of the resulting value \(b\) is of type \bool~, and such, consistent with the typing derived from the type rule.
+(bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\) by definition. As a result \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\), which is identical to \((p_0, p_1) \relaxation (q_0, q_1)\). It furthermore follows that the type of the resulting value \(b\) is of type \bool~, and such, consistent with the typing derived from the type rule.
 
-(int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows that the desired inequalities hold, and similarly, the type of \(n\) is \typeint~, which is consistent.
+(int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows \((p_0, p_1) \relaxation (q_0, q_1)\), and similarly, the type of \(n\) is \typeint~, which is consistent.
 
-(let): Here, the let expression is a special case. Where any other language construct corresponded to exactly one type rule, the let expression may actually be typed by two different rules, (T:let) or (T:relax). As such, we need to prove that for the application of both type rules, soundness holds.  
+(let): We have a program of the form \(\letexp{x}{e_1}{e_2}\). Here, the let expression is a special case. Where any other language construct corresponded to exactly one type rule, the let expression may be typed by two different rules, (T:let) or (T:relax). As such, we need to prove that for the application of both type rules, soundness holds.  
 
-For (T:let):\\
-By assumption, we get that \(\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0 - r_1 + \max(r_1, s_0)}{s_1 - s_0 + \max(r_1, s_0)}\) with \(\evals{E}{e_1}{v_1}{r_0}{r_1}\) and \(\evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{s_0}{s_1}\) for the evaluation, and similarly, \(\typing{\Gamma_1;\Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}\) with \(\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}}\) and \(\typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}}\) for the typing: \\  
-We want to show that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\). For the subterm \(- r_1 + \max(r_1, s_0)\) we know that it is at most zero (if \(r_1 \geq s_0\) and negative otherwise. This allows us to infer that, as \(p_0 \geq r_0\) by assumption, it especially holds that \(p_0 \geq r_0 - r_1 + \max(r_1, s_0)\), as desired.  \\
-Next, we want to show \(p_0 - q_1 \geq r_0 - r_1 + \max(r_1, s_0) - s_1 + s_0 - \max(r_1, s_0)\). The max expression cancel each other out, which shows that we only have to prove \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\). As we assume soundness for both subexpressions, the following two inequalities hold: \(p_0 - m \geq r_0 - r_1\) and \(m - q_1 \geq s_0 - s_1\). Applying both inequalities immediately proves the desired inequality: \(p_0 - m + m - q_1 \geq r_0 - r_1 + s_0 - s_1\) which is equivalent to \(p_0 - q_1 \geq r_0 - r_1 + s_0 - s_1\).\\
-As the resource-annotations are sound, it especially holds that \(v : \ratype{B}{p_0}{q_1}\).
+For (T:let): The proof from \cref{let-tick:soundness-t-let} still holds.
 
-For (T:relax):
-By assumption, the following to hold true: \(\evals{E}{e}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}\) and are assumed to be sound. As a result, the following hold true: 
+For (T:relax): What is special for the (T:relax) inference rule is that it could be applied an arbitrary (finite!) number of times. Thus our prove changes slightly. Instead of proving soundness for one application of (T:Relax), we use induction. 
 
-\begin{equation}\label{eq:relax-base}
-   p_0 \geq r_0 \text{ and } p_0 - p_1 \geq r_0 - r_1
-\end{equation}
+Let us start with the base case; That is, applying (T:Relax) \emph{once}. By assumption, the following to hold true: \(\evals{E}{\letexp{x}{e_1}{e_2}}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{\letexp{x}{e_1}{e_2}}{\ratype{A}{p_0}{p_1}}\) and (\((p_0, p_1) \relaxation (r_0, r_1)\). As \((p_0, p_1) \relaxation (r_0, r_1)\) is exactly what we wanted to show, we are done for the base case.
 
-This requires another proof via induction, as we could have an arbitrarily long chain of (T:relax) applications. Let us start proving soundness for the base case, that is a single application of the (T:relax) rule.\\
-Applying (T:relax) will yield the typing \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), together with \(q_0 \geq p_0\) and \(q_0 - q_1 \geq p_0 - p_1\). Using the two inequalities in \cref{eq:relax-base} we can directly infer the desired inequalities \(q_0 \geq r_0\) and \(q_0 - q_1 \geq r_0 - r_1\).
+For the induction step, we can leverage the fact that the relaxation relation defines a partial ordering, or more specifically, is \emph{transitive}. Our induction hypothesis includes the following assumptions:
 
-Let us continue by proving the induction step. For this, our induction hypothesis assumes that for any fixed number of subsequent applications of (T:relax), soundness is preserved. The proof is similar to the one for the base case.\\
- The induction hypothesis ensures that for \(q_0\) and \(q_1\), \(q_0 \geq r_0\) and \(q_0 - q_1 \geq p_0 - p_1\) hold. Let the next application of (T:relax) yield the following typing: \(\typing{\Gamma}{e}{\ratype{A}{m_0}{m_1}}\). The application of (T:relax) then assumes that \(m_0 \geq q_0\) and \(m_0 - m_1 \geq q_0 - q_1\). These inequalities directly proof soundness.
+   \begin{align*}
+      &										    & &\exists (m_0, m_1) \in \resource\\
+      &\typing{}{\letexp{x}{e_1}{e_2}}{\ratype{\unit}{p_0}{p_1}}                   & &(p_0, p_1)\relaxation (m_0, m_1)\\
+      &\evals{}{\letexp{x}{e_1}{e_2}}{v_1}{q_0}{q_1}                               & &(m_0, m_1)\relaxation (q_0, q_1)\\
+   \end{align*}
+
+Where \((r_0, r_1)\) is the resource-annotation of the previous application of (T:Relax). As the relaxation relation is transitive, it follows that \((p_0, p_1) \relaxation (q_0, q_1)\). Which concludes our proof.
+
 \end{proof}
-\todo{Refactor proof, using relaxation. Be more descriptive}
-\todo{Refactor all occurrences of resources to use notation}
-\todo{Refactor all occurrences of relaxation to use notation}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
