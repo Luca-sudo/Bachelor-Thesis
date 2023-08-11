@@ -12,6 +12,7 @@
 \usepackage{semantic}
 \usepackage{multicol}
 \usepackage{centernot}
+\usepackage{enumitem}
 
 
 \usepackage{tikz} % used on frontpage
@@ -116,6 +117,12 @@
 
 % Resource-aware function type
 \newcommand{\rafunc}[4]{#1 \to \ratype{#2}{#3}{#4}}
+
+% Equivalent types
+\newcommand{\typeequiv}{\equiv}
+
+% Capacity relation
+\newcommand{\capacity}{\succ}
 
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}

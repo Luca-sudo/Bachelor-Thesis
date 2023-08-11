@@ -158,21 +158,47 @@ Whenever we write programs, we might use a list in multiple instructions. In ord
 \todo{Doesnt align correctly}
 \todo{Notation for types? Something like \(A \in \mathbb{T}\)?}
 
-\section{Inference Rules}
+\subsection{Equivalence and Capacity Relation}
 
-\begin{itemize}
-   \item T:Nil
-   \item T:Cons
-   \item T:MatchList
-      \begin{itemize}
-         \item Explain why the constraints exist
-      \end{itemize}
-   \item T:App
-      \begin{itemize}
-         \item Mechanism to determine type of function? w.r.t resource-annotation?
-      \end{itemize}
-   \item T:Share
-\end{itemize}
+Composing functions lies at the very core of functional programming languages. Our programming language does not offer an explicit handle to compose functions, for simplicity. We can, however, emulate function composition using let expressions. For this, consider two function with the following signatures:
+\[
+   f :: \rafunc{\ralist{2}{\typeint}}{\ralist{}{\typeint}}{}{}
+   \qquad
+   g :: \rafunc{\ralist{3}{\typeint}}{\ralist{}{\typeint}}{}{}
+\]
+
+Emulating function composition can be achieved using a let expression, like so:
+\[
+   \letexp{y}{f~x}{g~y}
+\]
+
+As we have introduced lists, along with their potential, into the programming language, we would face inconsistencies when chaining together computations that have potentials assigned to them. In the example above, we have no means of composing potentials assigned to lists. As a result, the composite function would not account for the potential of the function \(g\).
+
+To enhance the type rule for let expressions, such that potentials also compose, we need to introduce two new relations:
+
+\begin{enumerate}[label=\Roman*.]
+   \item Equivalence relation, which ensures that the set of values represented by two types is the same.
+   \item Capacity relation, which allows us to compare potentials in a meaningful and ergonomic way.
+\end{enumerate}
+
+\begin{definition}[Equivalent Types]
+   Let \(A, B\) be types. Two types are \emph{equivalent}, if the set of values, that inhabit the respective type, is the same. 
+   \[
+      A \typeequiv B :\iff A \text{ is equivalent to } B
+   \]
+\end{definition}
+
+\begin{definition}[Capacity Relation]
+   Let \(A, B\) be types. We define a \emph{capacity relation} on types, by comparing their potential:
+   \[
+      A \capacity B :\iff \Phi(v : A) \geq \Phi(w : B)
+   \]
+\end{definition}
+\todo{Maybe use different symbol?}
+
+We will use both of these definitions in the rule \href{def:t-let-6}{(T:Let)}, to ensure that let expression with potentials can be typed properly.
+
+\section{Inference Rules}
 
 We start by introducing two rules associated to the two list constructors. 
 
@@ -210,6 +236,25 @@ Next, we introduce an inference rule for function application. For the rule to b
 
 \todo{(T:Share) purposefully left out for now.}
 
+\[
+   \label{def:t-let-6}
+   \inference[(T:let)]
+   {
+      \typing
+      {\Gamma_1}
+      {e_1}
+      {\ratype{A}{p_0}{m}} 
+         \qquad 
+      \typing
+      {\Gamma_2}
+      {e_2}
+      {\ratype{B}{m}{q_1}}
+         \qquad 
+      \Gamma_1 \cap \Gamma_2 = \emptyset
+   }
+   {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
+\]
+
 To illustrate how the newly introduced inference rules orchestrate together, we perform exemplary type derivations for selected examples.
 
 \subsection{Example Type Derivations}
@@ -225,8 +270,6 @@ We introduce examples of varying complexity, to illustrate the nuances of type d
       | cons(x, xs) -> let _ = tick 2 in 
                        cons((x + 1), add1 xs)
 \end{minted}
-
-\newpage
 
 The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, let us briefly explain key parts of the derivation:
 
@@ -293,7 +336,7 @@ The resulting resource-aware type for \(add1\) is, therefore:
    \end{minted}
 \end{example}
 
-The associated type derivation can be found in \cref{fig:type-derivation-sum}. 
+The associated type derivation can be found in \cref{fig:type-derivation-sum}. Interestingly, this derivation and the previous one are structurally similar: First we pattern match on a list, followed by a let expression. For this reason, the highlights from the previous example can be applied to this example as well.
 
 \begin{figure}[H]
 \begin{center}
@@ -305,7 +348,7 @@ The associated type derivation can be found in \cref{fig:type-derivation-sum}.
          &
          \inference
          {
-            \typing{}{\tick{3}{\ratype{\unit}{3}{0}}}
+            \typing{}{\tick{3}}{\ratype{\unit}{3}{0}}
             &
             \inference
             {
@@ -337,6 +380,11 @@ The associated type derivation can be found in \cref{fig:type-derivation-sum}.
    \label{fig:type-derivation-sum}
 \end{figure}
 
+This results in a resource-aware type of the following form:
+\[
+   sum :: \rafunc{\rafunc{\ralist{3}{\typeint}}{\typeint}{}{}}{\typeint}{}{}
+\]
+\todo{Explain currying?}
 
 
 

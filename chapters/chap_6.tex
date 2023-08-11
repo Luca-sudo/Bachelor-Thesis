@@ -27,54 +27,60 @@ The newly introduced constructors for integers and booleans are reflected in the
 
 \section{Evaluation Semantics}
 
-We begin this section by introducing environments, which provide a necessary link between variable names and values. For this, we define an \nameref{def:environment}, which is a mapping from variable names to values. Along with this, we introduce two notations related to environments, one for retrieving the value of the variable and another notation that allows us to check if an environmant contains a specific variable name; This will be needed to ensure that rules featuring variables are correctly defined.
+We begin this section by introducing environments, which provide a necessary link between variable names and values. For this, we define an \nameref{def:environment}, which is a mapping from variable names to values. Along with this, we introduce two notations related to environments, one for retrieving the value of the variable and another notation that allows us to check if an environment contains a specific variable name; This will be needed to ensure that rules featuring variables are correctly defined.
+
+\subsection{Environments}
 
 \begin{definition}[Environment]\label{def:environment}
    We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function from variable names (\Var) to values (\Vals). 
 \end{definition}
 
+Whenever we have a variable name, we want to get the concrete value associated with that variable. As we defined an environment as a \emph{partial function}, we can simply apply the variable name of interest to the environment.
+
 \begin{definition}\label{def:environment-getter}	
    Let \(E\) be an \nameref{def:environment} and \(x\) be a variable name, we then write \(E(x)\) for the value of \(x\) in the environment \(E\):
-
    \[
       E(x) =
       \begin{cases}
-	 E(x)		    & \mbox{,if } \contains{E}{x} \\
+	 v_x		    & \mbox{,if } E(x) \text{ is defined} \\
 	 \textbf{undefined} &\mbox{,else}
       \end{cases}
    \]
 \end{definition}
+
+With this definition, it is easy to check an environment for the existance of a variable. If applying the environment to the variable returns \textbf{undefined} then the variable is not defined. Conversely, we know that a variable is defined, should the environment return a value.
 
 \begin{definition}\label{def:in-environment}
    Given an \nameref{def:environment} \(E\) and a variable name \(x\), we define \(\contains{E}{x}\) as follows:
    \[
       \contains{E}{x} = 
       \begin{cases*}
-	 \false & \mbox{,if E(x) is undefined}\\
+	 \false & \mbox{,if E(x) is } \textbf{undefined}\\
 	 \true & \mbox{,else} 
       \end{cases*}
    \]
 \end{definition}
 
-Here, we define a partial function \(f\) as a function either maps a value \(x\) to a value in the codomain or returns \textbf{undefined} otherwise. Defining environments using partial functions precisely captures the notion of an environment, while providing us with the needed flexibility; Once new variables are instantiated, we are able to define their value in the environment pointwise:
+In most programming settings, we start with an empty environment and incrementally populate it with variables as our program evaluates. This constitutes the need for extending environments - we want to add variables to the environment upon introducing them.
 
 \begin{definition}\label{def:environment-augment}	
-   Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(b\) be the value assigned to \(a\). We write \(E[x \mapsto y]\) for the environment \(E\), where \(a\) is additionally mapped onto \(b\):
+   Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(v\) be the value assigned to \(a\). We write \(E[a \mapsto v]\) for the environment \(E\), where \(a\) is additionally mapped onto \(v\):
 
    \[
-      \envaugment{E}{a}{b} = 
+      \envaugment{E}{a}{v} = 
       \begin{cases}
 	 E(x)  & \mbox{,if } x \neq a\\
-	 b     & \mbox{,else } 
+	 v     & \mbox{,else } 
       \end{cases}
    \]
 
 \end{definition}
 
-As we now evaluate expressions with respect to an \nameref{def:environment}, we need to update \cref{def:evaluation-judgement} to accommodate environments:
+Having all of these definitions in place, we can now update the definition of an \emph{evaluation judgement}. Previously, we did not have variables in any expression. As a result, the expression where evaluated as is, invariant of an environment, as there was no state to keep track of. As we now evaluate expressions with respect to \nameref{def:environment}s, we need to update \cref{def:evaluation-judgement} to use environments:
+\todo{cref ref definition as theorem}
 
 \begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
-   Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1) \in \resource\). We then write the following for the evaluation judgement that incorporates an environment:
+   Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1) \in \resource\). We then write the following for the evaluation judgement with respect to an environment:
 
    \[
       \evals{E}{e}{v}{p_0}{p_1}
@@ -82,7 +88,11 @@ As we now evaluate expressions with respect to an \nameref{def:environment}, we 
 	
 \end{definition}
 
-Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. We start with the rule \((E:var)\), which provides an explicit handle for resolving variable names to their values. We want to highlight that (E:var) has no cost associated with it. This can simply be changed by adjusting the a priori resources for the rule:
+\subsection{Evaluation Rules}
+
+Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. Most notably, we assign a cost only to evaluating tick expressions, but not to construction of booleans, integers, or the lookup of variable values. As a result, the tick instruction endows the user with a high degree of control. 
+
+We start with the rule (E:var), which provides an explicit handle for resolving variable names to their values. In order for the rule to be consistent, we must enforce that the variable we want to resolve is defined in the current environment. 
 
 \[
    \inference[(E:var)]
@@ -90,7 +100,7 @@ Having all the necessary definitions at hand, let us now define evaluation rules
    {\evals{E}{x}{E(x)}{}{}}
 \]
 
-Next, we define one rule (E:bool) that unifies the evaluation of both boolean constants. Again, we decide to associate no cost to the evaluation of boolean values, though for a different reason this time. We want the programmer to have the highest degree of jurisdiction, as a result, we want \(\tick\) to be the prominent means of administering cost. The same line of thought holds for the creation of numeric constants.
+Next, we define one rule (E:bool) that unifies the evaluation of both boolean constants. Similarly, we define the evaluation of constant integers using the rule (E:Int). In contrast to the previous rule, we do not need to check the environment for existence of any variables, as both booleans and integers are evaluated in a direct manner.
 
 \[
    \inference[(E:bool)]{b \in \{\true, \false\}}{\evals{E}{b}{b}{}{}}%
@@ -98,7 +108,7 @@ Next, we define one rule (E:bool) that unifies the evaluation of both boolean co
    \inference[(E:int)]{n \in \mathbb{Z}}{\evals{E}{n}{n}{}{}}
 \]
 
-Next, we introduce environments into the evaluation rule for \(\tick{}\). It is worth noting that the evaluation of a \(\tick{}\) expression is \emph{invariant} under the environment, as it does not rely on any state.
+Next, we introduce the evaluation rule for \textbf{tick}. Here, the concrete environment has no impact on the evaluation of a tick expression, as it is evaluated \emph{as is}. 
 
 \[
    \inference[(E:tick)]
@@ -113,16 +123,16 @@ Next, we introduce environments into the evaluation rule for \(\tick{}\). It is 
 
 Given an expression \(\tick{k}\), there are two mutually exclusive cases: \(k\) is positive, or it is negative. In the former case, \(a\) reduces to \(k\) and \(b\) to zero. In the latter case, \(a\) is zero and \(b\) reduces to \(-q\), which is again a positive number - as desired. Splitting this evaluation rule up into two distinct rules for positive and negative \(k\) is equally valid.
 
-The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. Note that the values of \(a\) and \(b\) are closely linked to \cref{def:multiplying-pairs}, corresponding to the first and second entry of the tuple, respectively.
+The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. Note that the values of \(r_0\) and \(r_1\) are closely linked to \cref{def:multiplying-pairs}.
 
 \[
    \inference[(E:let)]
    {\evals{E}{e_1}{v_1}{p_0}{p_1} \qquad \evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{q_0}{q_1}}
-   {\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{a}{b}}%
+   {\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0}{r_1}}%
    \qquad
    \begin{aligned}
-      \text{where }  &a = p_0 - p_1 + \max(p_1, q_0)\\
-      \text{and }    &b = q_1 - q_0 + \max(p_1, q_0) 
+      \text{where }  &r_0 = p_0 - p_1 + \max(p_1, q_0)\\
+      \text{and }    &r_1 = q_1 - q_0 + \max(p_1, q_0) 
    \end{aligned}
 \]
 
