@@ -1,46 +1,48 @@
 \chapter{Resources}
 
-Throughout this thesis, we introduce programming language constructs, in order to elicit resource consumption for programs. It is, therefore, important to mention that resources can be an arbitrary cost metric, including but not limited to: memory consumption, runtime, energy consumption. While the details of the respective type of resource are nuanced, the resource consumption generally comprises two parts: Resources consumed to start evaluating, and possibly, resources freed after evaluation.
+Throughout this thesis, we introduce programming language constructs, in order to elicit resource consumption of programs. It is, therefore, important to mention that resources can be an arbitrary cost metric, including but not limited to: memory consumption, runtime, energy consumption. While the details of the respective type of resource are nuanced, the resource consumption generally comprises two parts: Resources consumed to start evaluating, and possibly, resources freed after evaluation.
 
-We will associate resource consumption with resource pairs. We will then define multiplication on resource-pairs, which is intimately linked to sequential evaluation, as well as a partial ordering. The partial ordering will lead to the definition of \emph{relaxation} and allow us to compare the resource consumption of evaluations. 
+This overarching structure of resource demands leads us to a refined version of \href{def:resource-consumption}{resource consumption}. Furthermore, we will define a rich structure on the resource demand of programs; Most notably, we introduce multiplication, which gives rise to a monoidal structure, and relaxation, which defines a \emph{partial order} - allowing us to compare resource demands, that is consistent with our intuition about cost.
 
-\section{Resource Pairs}
+\section{Resource Demand}
 
-We start by defining resource pairs. These pairs will fundamentally encode the cost of evaluating an expression. Most importantly, a resource pair only comprises \emph{positive} integers. 
+We start by defining resources mathematically, which will lead to defining resource demand of programs as a tuple of resources. Afterward, we introduce multiplication of these tuples and disambiguate reasoning about resource demand, by naming key figures of resource demands.
 
 \begin{definition}[Resources]
-   We denote by \(\mathcal{R}\) the set of resource pairs, which we identify like so:
+   We identify resources with the natural numbers, where the value refers to an amount of resources.
    \[
-      \resource = \mathbb{N} \times \mathbb{N}
+      \resource = \mathbb{N}_0
    \]
 \end{definition}
 
-\begin{definition}[Resource pair]
-   \label{def:resource-pair}
-   We define a \emph{resource pair} as a tuple, where \(p_0\) is the a priori resources needed, and \(p_1\) is the a posteriori resources reimbursed at the end.
+
+\begin{definition}[Resource demand]\label{def:resource-pair}
+   We denote by \(\demand\) the set of resource demands, which is a pair of resources.
    \[
-      (p_0, p_1) \in \resource
+      \demand = \resource \times \resource
    \]
 \end{definition}
 
-When reasoning about a resource pair \((p_0, p_1)\), we say that \(p_0\) are the \emph{initial} resources, and \(p_1\) are the \emph{residual} resources. 
+When reasoning about a resource demand \((p_0, p_1) \in \demand\), \(p_0\) are the \emph{initial} resources, and \(p_1\) are the \emph{residual} resources. 
 
 \begin{example}
    A \nameref{def:resource-pair} with 4 initial and 2 residual resources is denoted by \((4, 2)\).
 \end{example}
 
-\begin{definition}[Resource Consumption]
-   Given \((p_0, p_1) \in \resource\), we define the \emph{resource consumption} as the difference between initial and residual resources, \(p_0 - p_1\).
+It is important to distinguish the resource demand from the \emph{resource consumption}. The resource consumption of a program is precisely its residual resource subtracted from its initial resources. To illustrate this, imagine that we pay resources with tokens as a currency. To start evaluating an expression we need to pay 6 tokens, but we get 2 tokens back after completing evaluation; As a result, our \emph{effective cost} is 4 tokens, not 6.
+
+\begin{definition}[Resource Consumption]\label{def:resource-consumption}
+   Given \((p_0, p_1) \in \demand\), we define the \emph{resource consumption} as the difference between initial and residual resources, \(p_0 - p_1\).
 \end{definition}
 
 \begin{example}
-   For \((4, 2) \in \resource\), the resource consumption equals \(2\).
+   For \((4, 2) \in \resource\), the resource consumption equals \(4 - 2 = 2\).
 \end{example}
 
 As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need to define the resource cost of subsequent evaluations. 
-For this, there are two cases: The first operation has enough residual resources for the second operation to be executed, or the second operation requires more initial resources than residual resources of the first operation. In the latter case we need to increase the initial resources of the composed evaluation.
+For this, there are two cases: The first operation has enough residual resources for the second operation to be executed, or the second operation requires more initial resources than residual resources of the first operation provides. In the latter case we need to increase the initial resources of the composed evaluation.
 
-This yields two cases for the resulting resource pair:
+This yields two cases for the resulting resource demand:
 \[
    \begin{cases}
       (p_0 + q_0 - p_1,  q_1) & \mbox{if } q_0 \geq p_1 \\
@@ -48,10 +50,10 @@ This yields two cases for the resulting resource pair:
    \end{cases}
 \]
 
-We can, however, simplify the multiplication of resource-pairs by merging the two cases. Consider that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the initial resources for both cases. Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) precisely matches the residual resources for both cases. 
+We can, however, simplify the multiplication of resource demands by merging the two cases. Consider that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the initial resources for both cases. Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) precisely matches the residual resources for both cases. 
 This yields the following definition:
 
-\begin{definition}[Multiplying resource pairs]
+\begin{definition}[Multiplying resource demands]
    \label{def:multiplying-pairs}
    Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, as introduced above. We then define:
    \[(p_0, p_1) \cdot (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]
@@ -60,23 +62,24 @@ This yields the following definition:
 \begin{example}
    For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \cdot (5, 0) = (7,0)\).
 \end{example}
+ 
+As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call it the \emph{disparity} of two resource demands.
 
 \begin{definition}[Resource disparity]
-   Let \((p_0, p_1), (q_0, q_1) \in \resource\), we define the \emph{disparity} of these resource pairs as \(\max(p_1, q_0)\).
+   Let \((p_0, p_1), (q_0, q_1) \in \demand\), we define the \emph{disparity} of these resource demands as \(\max(p_1, q_0)\).
 \end{definition}
-\todo{Keep or dump?}
 
-We remark that the multiplication on resource pairs forms a monoid.
-\todo{Add Proof to appendix? Or proof in lean?}
+\todo{Talk about the fact that it forms monoid?}
+
 
 \section{Comparing Resource Pairs}
 
-Whenever we define a programming language, along with evaluation semantics and type rules, we want to proof soundness of that language with respect to evaluation semantics and type rules. With respect to resource consumption, soundness assures that the inferred resource consumption is never less than the concrete cost of evaluation. In order to reasons more precisely and concisely about the resource consumption, we define a partial ordering on the set of resources, which leads to the definition of \emph{relaxation}.
+Whenever we define a programming language, we provide evaluation semantics and type rules, which we ultimately want to link by proving their \emph{soundness}. Soundness of a programming language with respect to evaluation semantics and type rules comprises two parts. First, we need to prove that the type we assign to an expression is consistent - evaluating the expression will produce a value of that type. Secondly, we need to show that the inferred resource demand is always \emph{at least} the concrete resource demand of evaluating an expression. In subsequent chapters, the main challenge of proving soundness will be in proving consistency of resource demands. 
 
-Intuitively, one resource pair is "smaller" than another resource pair, if the initial resources and the resource consumption are smaller:
+In order to do this, we need to be able to compare resource demands. This ultimately motivates the definition of \emph{relaxation}, which induces a partial order on the set of resource demands. Ultimately, this will streamline future soundness proofs. Let us therefore begin by defining what it means for a resource demand to be a relaxation of another one. Intuitively, one resource demand is a relaxation of another resource demand, if the initial resources and the resource consumption are at least as large.
 
 \begin{definition}[Relaxation]\label{def:relaxation}
-   Let \((p_0, p_1), (q_0, q_1) \in \resource\). We define the relation \relaxation ~as follows:
+   Let \((p_0, p_1), (q_0, q_1) \in \demand\). We define the relation \relaxation ~as follows:
 
    \[
       (p_0, p_1) \succcurlyeq (q_0, q_1) :\iff p_0 \geq q_0 \wedge p_0 - p_1 \geq q_0 - q_1
@@ -97,21 +100,18 @@ We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\).
    \((5, 4) \notrelaxation (2, 0)\), as \(5 - 4 \centernot{\geq} 2 - 0\).
 \end{example}
 
-Even more notably, for any two resource pairs, one \emph{need not} be a relaxation of the other. Therefore, relaxation does not define a total ordering - as the following example shows.
+Most notably, relaxation defines a partial ordering on the set of resource demands. Let us, therefore, define partial orders:
 
-\begin{example}
-   Let \((4,2), (5,4) \in \resource\). Then, \((4,2) \notrelaxation (5,4)\) \emph{and} \((5,4) \notrelaxation (4,2)\).
-\end{example}
+\begin{definition}[Partial Order]
+   Let \(M\) be a set, and \(\leq\) be a relation on \(M\). A partial order satisfies the following properties for any \(a, b, c \in M\):
+   \begin{enumerate}[I]
+      \item Reflexivity: \(a \leq a \) \tag{reflexivity} 
+      \item Anti-symmetry: \(a \leq b\) and \(b \leq a\), then \(a = b\) \tag{anti-symmetry}
+      \item Transitivity: \(a \leq b\) and \(b \leq c\), then \(a \leq c\) \tag{transitivity}
+   \end{enumerate}
+\end{definition}
 
-Most notably, this relation defines a partial ordering on the set of resource pairs. More specifically, a partial ordering satisfies the following properties for any elements \(a, b, c\):
-
-\begin{align}
-   & a \relaxation a \tag{reflexivity} \\
-   & a \relaxation b \text{ and } b \relaxation a\text{, then } a = b \tag{anti-symmetry}\\
-   & a \relaxation b \text{ and } b \relaxation c\text{, then } a \relaxation c. \tag{transitivity}
-\end{align}
-
-Before we can show that resources form a monoid under relaxation, we need to define equality for resources. Intuitively two resource pairs are equal, if the respective initial cost is equal and the resource consumption is equal. Note that this is equivalent to the following definition:
+Before we can show that resource demands form a partial order under relaxation, we need to define equality for resource demands. Intuitively two resource demands are equal, if the respective initial cost is equal and the resource consumption is equal. Note that this is equivalent to the following definition:
 
 \begin{definition}[Equality of Resource Pairs]
    Let \((p_0, p_1), (q_0, q_1) \in \resource\), then: 
@@ -125,13 +125,18 @@ Before we can show that resources form a monoid under relaxation, we need to def
 \end{example}
 
 \begin{lemma}
-   The relaxation relation defines a partial ordering on the set of resource pairs.
+   The relaxation relation \(\relaxation\) defines a partial ordering on the set of resource demands.
 \end{lemma}
 
 \begin{proof}
    We provide a proof script written in lean.
 \end{proof}
-\todo{Refer to it}
+
+It is important to note that, for any two resource pairs, one \emph{need not} be a relaxation of the other. Therefore, relaxation does not define a total order - as the following example shows.
+
+\begin{example}
+   Let \((4,2), (5,4) \in \demand\). Then, \((4,2) \notrelaxation (5,4)\) \emph{and} \((5,4) \notrelaxation (4,2)\).
+\end{example}
 
 
 
