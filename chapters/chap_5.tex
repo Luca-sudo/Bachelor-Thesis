@@ -1,20 +1,8 @@
 \chapter{LetTick Language}
 
-\APm{previous chapter: Introduce ``Resources'' in a previous chapter.}
+In this chapter, we introduce our first programming language. This language will be the core, subsequent chapters will extend this language incrementally. To this end, we define the type system, along with the associated evaluation semantics and type rules. The chapter then concludes with a proof of soundness, showing that the relation between evaluation semantics and type rules is consistent - the resource bounds assigned to types provide a true lower bound on the concrete resource consumption of evaluating an expression.
 
-\AP{
-Structure:
-\begin{enumerate}
-   \item i. Syntax, ii. Simple type system
-   \item i. evaluation semantics (resource-aware)
-   \item i. resource-aware type system
-         ii. inference rules
-   \item soundness
-\end{enumerate}
-}
-
-In this chapter, we define the type system, along with the associated operational semantics and type rules, for a simple system, that only counts the amount of ticks in a program. The chapter concludes with a soundness proof, showing that the relation between operational semantics is consistent - the resource bounds assigned to types provide a true upper bound on the concrete resource consumption of evaluating an expression.
-In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the calculated resource consumption and (2) types that reflect resource consumption. The first problem is solved by introducing the instruction \(\<tick>~q\) to the programming language. Where \(q\) is a rational number, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the unit type with two resource annotations, one for the resources required a priori, and another for the resources freed afterward.
+In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the resource demand and (2) types that reflect the resource demand. The first problem is solved by introducing the instruction \(\tick{k}\), where \(k\) is an integer, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the return type with a resource demand.
 
 \section{Language Syntax and Type System}
 We begin by defining the programming language and the associated type system below:
@@ -26,27 +14,26 @@ We begin by defining the programming language and the associated type system bel
    e := ~~~ & \letexp{\_}{e_1}{e_2}             & \text{(let)}\\
             & \tick{q}                         & \text{(tick)}
 \end{align*}
-
-\APm{Add the basic type system here (without resource annotations)}
 \end{definition}
 
 \begin{definition}[Type System]\label{fig:type-system}
-   \[A := \unit \]
+   \[\type := \unit \]
 \end{definition}
 
 \section{Evaluation Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the operational semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \((p_0, p_1) \in \resource\). 
+In this section, we define what it means for a program to consume (or free) resources, by defining the evaluation semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \((p_0, p_1) \in \demand\). 
 
 
 \begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
-   Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1) \in \resource\). 
-   The \emph{evaluation judgement} encodes a judgement of the form  encodes that the expression e is evaluated to the value v, with \(p_0\) initial resources, and \(p_1\) residual resources. 
+   Let \(e\) be an expression of our programming language, let \(v\) be the value that is obtained from evaluating \(e\). Furthermore, let \((p_0, p_1) \in \demand\). 
+   Where \(p_0\) are the initial resources needed to evaluate \(e\), and \(p_1\) resources are freed afterward.
+   
    \[
       \evals{}{e}{v}{p_0}{p_1}
    \]
 \end{definition}
 
-We will now define rules for the evaluation of programming language constructs, in the form of operational semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
+We will now define rules for the evaluation of programming language constructs, in the form of evaluation semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
 First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
 
 \[
@@ -71,24 +58,23 @@ Similarly, we now define a rule for the \<tick> instruction. The expression \<ti
 \[
    \inference[\((E:tick_{-})\)]
    {q < 0}
-   {\evals{}{\tick{q}}{()}{}{-q}}
+   {\evals{}{\tick{q}}{()}{}{|q|}}
 \]
 
-In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. Afterward, we will prove the soundness theorem, providing a correspondence between operational semantics and type rules. 
+In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. 
 
 \section{Type Rules}
-The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.
+The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{lower-bound} on the resource-consumption. As a result, type inference can be used to determine a lower bound on the resource consumption, without executing a program.
 
 \subsection{Resource-aware Type System}
 
-We start by introducing \emph{resource-aware types}, which comprise two parts: the type assigned to an expression, together with a resource-pair representing the infered resource consumption. To this end, we provide an ergonomic notation for resource-aware types:
+We start by introducing \emph{resource-aware types}, which comprise two parts: the type assigned to an expression, together with a resource-pair representing the inferred resource consumption. To this end, we provide an ergonomic notation for resource-aware types:
 
 \begin{definition}[Resource-aware types]\label{def:ra-type}
-   Let \(A\) be a type, and let \((p_0, p_1) \in \resource\). The resource-aware type then refers to a tuple comprising the type and the resource-pair.
-   \[A^{p_0}_{p_1} = (A, (p_0, p_1))\] 
+   Let \(A \in \type\) and \((p_0, p_1) \in \demand\). We define resource-aware types as tuples \((A, (p_0, p_1)) \in \type \times \demand\).
 \end{definition}
 
-For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The above definition, however, will be valid even once we extend our type system with types besides unit. To acquaint the reader with the new notation, consider the example below.
+Most of the time we write \(\ratype{A}{p_0}{p_1}\) for \((A, (p_0, p_1))\). For this chapter, the only type that \(A\) can adopt is that of \(\unit\). Therefore, resource-aware types have the form \(\ratype{\unit}{p_0}{p_1}\) for this chapter. To acquaint the reader with the new notation, consider the example below.
 
 \begin{example}
    \(\typing{}{e}{\ratype{\unit}{4}{2}}\) is a judgement, claiming that the expression \(e\) produces a value of type \(\unit\), with a resource demand of 4 initial resources and 2 residual resources.
@@ -96,7 +82,7 @@ For this chapter, the only type that \(A\) can adopt is that of \(\unit\). The a
 
 \subsection{Inference Rules}
 
-We need to define two rules, one for each language construct each. Similarly to the composition of resource-annotations in the previous section on operational semantics, we define the cost of sequantial operations in a let expression as the product of the respective resource pairs.
+We need to define two rules, one for each language construct each. Similarly to the composition of resource-annotations in the previous section on evaluation semantics, we define the cost of sequential operations in a let expression as the product of the respective resource pairs.
 
 This yields the following rules:
 \[
@@ -111,6 +97,9 @@ This yields the following rules:
    \end{aligned}
 \]
 
+\begin{remark}
+   Note that \((r_0, r_1) = (p_0, p_1) \cdot (q_0, q_1)\).
+\end{remark}
 
 \[
    \label{def:tr-tick-4}
@@ -123,11 +112,11 @@ This yields the following rules:
 Let us now perform an exemplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
 
 \begin{example}
-
-\[
-   \letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}
-\]
-
+   \begin{align*}
+   \letexp{\_}{\tick{3}}{} \\
+   \letexp{\_}{\tick{-2}}{} \\
+   \tick{5}
+   \end{align*}
 \end{example}
 
 Intuitively, we have three distinct steps, the first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
@@ -153,7 +142,6 @@ Intuitively, we have three distinct steps, the first one consuming 3 resources, 
    }
    {\typing{}{\letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}}{\ratype{\unit}{p_0}{p_1}}}
 \]
-\todo{Introduce type derivations in the preliminaries?}
 
 \begin{align*}
    \text{Where }  & r_0 = t_0 - t_1 + \max(t_1, s_0) \\
@@ -163,7 +151,7 @@ Intuitively, we have three distinct steps, the first one consuming 3 resources, 
 \end{align*}
 
 
-We are now left with the task of resolving the collected, numeric constraints. As a result of applying the (T:tick) rule for the three instances of \(\tick{}\) expressions, we get the following values: \(q_0 = 3, t_1 = 2, s_0 = 5, q_1 = t_0 = s_1 = 0\). Using these values, we are able to compute the intermediary values \(r_0, r_1, p_0, p_1\), resulting in:
+We are now left with the task of resolving the collected, numeric constraints. In concrete implementations, this would be done by an LP-solver. As a result of applying the (T:tick) rule for the three instances of \(\tick{}\) expressions, we get the following values: \(q_0 = 3, t_1 = 2, s_0 = 5, q_1 = t_0 = s_1 = 0\). Using these values, we are able to compute the intermediary values \(r_0, r_1, p_0, p_1\), resulting in:
 
 \[
    p_0 = 6 \qquad p_1 = 0
@@ -255,7 +243,6 @@ In the first part, I prove that the inequality \(p_0 \geq q_0\) holds. We use st
    \end{align}
 
    Where \cref{eqn:3.22} uses \((p_0, p_1) \relaxation (m_0, m_1)\), and \cref{eqn:3.23} uses the fact that \(\max(p_1, q_0) - p_1 \geq 0\) for any \(p_1, q_0\).
-   \todo{Provide a proof for that as well?}
 
    This concludes our proof of soundness.
 \end{proof}
