@@ -1,9 +1,8 @@
 \chapter{Adding Variables}
 
-Before continuing, let us examine the limitations of the \nameref{def:prog-lang-4} from the previous chapter. We are not able to declare variables, control flow, or constants. All of those features will be implemented in this chapter. In order to declare and use variables in our programming language, we need to provide a definition of an environment, which comprises the concrete values of variables. As we will see, introducing variables will demand cautious reformulation of most evaluation rules to account for environments.
+Before continuing, let us examine the limitations of the \nameref{def:prog-lang-4} from the previous chapter. We are not able to declare variables, control flow, or constants. All of those features will be implemented in this chapter. In order to declare and use variables in our programming language, we need to provide a definition of an environment, which comprises the concrete values of variables. As we will see, introducing variables will demand cautious reformulation of some evaluation rules to account for environments.
 
-Similarly to environments, we will introduce contexts for the type rules. While an environment maps variables to concrete values, a context will map variables to types. This will also require carefully embellishing previous type rules, to provide rules that are rigorous with respect to contexts. We define the syntax of the augmented programming language below:
-
+Similarly to environments, we will introduce contexts for the type rules. While an environment maps variables to concrete values, a context will map variables to types. This will also require carefully embellishing previous type rules, to provide rules that are rigorous with respect to contexts. We define the syntax of the augmented programming language below.
 
 \begin{definition}[var-tick language]
    \label{def:prog-lang-5}
@@ -21,7 +20,7 @@ The newly introduced constructors for integers and booleans are reflected in the
 
 \begin{definition}[Type system]\label{def:type-system-5}
    \[
-      A := \unit~|~\text{\bool}~|~\text{\typeint}
+      \type := \unit~|~\text{\bool}~|~\text{\typeint}
    \]
 \end{definition}
 
@@ -76,7 +75,7 @@ In most programming settings, we start with an empty environment and incremental
 
 \end{definition}
 
-Having all of these definitions in place, we can now update the definition of an \emph{evaluation judgement}. Previously, we did not have variables in any expression. As a result, the expression where evaluated as is, invariant of an environment, as there was no state to keep track of. As we now evaluate expressions with respect to \nameref{def:environment}s, we need to update \cref{def:evaluation-judgement} to use environments:
+Having all of these definitions in place, we can now update the definition of an \emph{evaluation judgement}. Previously, we did not have variables in any expression. As a result, the expressions were evaluated as is, irrespective of an environment, as there was no state to keep track of. As we now evaluate expressions with respect to \nameref{def:environment}s, we need to update \cref{def:evaluation-judgement} to use environments:
 \todo{cref ref definition as theorem}
 
 \begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
@@ -90,9 +89,7 @@ Having all of these definitions in place, we can now update the definition of an
 
 \subsection{Evaluation Rules}
 
-Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. Most notably, we assign a cost only to evaluating tick expressions, but not to construction of booleans, integers, or the lookup of variable values. As a result, the tick instruction endows the user with a high degree of control. 
-
-We start with the rule (E:var), which provides an explicit handle for resolving variable names to their values. In order for the rule to be consistent, we must enforce that the variable we want to resolve is defined in the current environment. 
+Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. We start with the rule (E:var), which provides an explicit handle for resolving variable names to their values. In order for the rule to be consistent, we must enforce that the variable we want to resolve is defined in the current environment. 
 
 \[
    \inference[(E:var)]
@@ -108,7 +105,7 @@ Next, we define one rule (E:bool) that unifies the evaluation of both boolean co
    \inference[(E:int)]{n \in \mathbb{Z}}{\evals{E}{n}{n}{}{}}
 \]
 
-Next, we introduce the evaluation rule for \textbf{tick}. Here, the concrete environment has no impact on the evaluation of a tick expression, as it is evaluated \emph{as is}. 
+Next, we introduce the evaluation rule for \textbf{tick}. Here, the concrete environment has no impact on the evaluation of a tick expression, it is evaluated \emph{as is}. 
 
 \[
    \inference[(E:tick)]
@@ -121,9 +118,9 @@ Next, we introduce the evaluation rule for \textbf{tick}. Here, the concrete env
    \end{aligned}
 \]
 
-Given an expression \(\tick{k}\), there are two mutually exclusive cases: \(k\) is positive, or it is negative. In the former case, \(a\) reduces to \(k\) and \(b\) to zero. In the latter case, \(a\) is zero and \(b\) reduces to \(-q\), which is again a positive number - as desired. Splitting this evaluation rule up into two distinct rules for positive and negative \(k\) is equally valid.
+Given an expression \(\tick{k}\), there are two mutually exclusive cases: \(k\) is positive, or it is negative. In the former case, \(r_0\) reduces to \(k\) and \(r_1\) to zero. In the latter case, \(r_0\) is zero and \(r_1\) reduces to \(|q|\), which is again a positive number - as desired. 
 
-The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. Note that the values of \(r_0\) and \(r_1\) are closely linked to \cref{def:multiplying-pairs}.
+The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. We do so by augmenting the environment using the variable name and result of the preceding sub-expression.
 
 \[
    \inference[(E:let)]
@@ -144,7 +141,7 @@ In the previous chapter, the programming language at hand only produced values o
 \begin{definition}
    Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{def:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
    \[
-      e_1;e_2 : \ratype{B}{r_0}{r_1}
+      \letexp{x}{e_1}{e_2} : \ratype{B}{r_0}{r_1}
       \qquad
       \begin{aligned}
 	 \text{where }	&r_0 = p_0 - p_1 + \max(p_1, q_0) \\
@@ -155,10 +152,10 @@ In the previous chapter, the programming language at hand only produced values o
 
 \subsection{Contexts}
 
-What environments are for evaluation rules, contexts are for inference rules. Contexts allow us to map variables to types, which is necessary since we introduce variables in this chapter. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{fig:type-system-5}:
+What environments are for evaluation rules, contexts are for inference rules. Contexts allow us to map variables to types, which is necessary since introducing variables. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{def:type-system-5}:
 
 \begin{definition}[Context]\label{def:context}
-   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\Types}\) as a partial function from variable names to types.
+   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\type}\) as a partial function from variable names to types.
 \end{definition}
 
 Similarly to \cref{sec:environments}, we define how to retrieve the type of a variable, given a context, what it means for a variable to be in a context and how we can introduce new variables into a context. 
@@ -175,7 +172,6 @@ Similarly to \cref{sec:environments}, we define how to retrieve the type of a va
    \]
 
 \end{definition}
-\todo{Is there a nicer way to define this?}
 
 \begin{definition}\label{def:in-context}
    Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, we define \(\contains{\Gamma}{x}\) as follows:
@@ -190,6 +186,12 @@ Similarly to \cref{sec:environments}, we define how to retrieve the type of a va
 
 \begin{definition}\label{def:context-augment}
    Let \(\Gamma\) be a context, \(A\) be a type and let \(x : A\) be a variable. We can embed the variable \(x\) with its associated type \(A\) into the context \(\Gamma\),  by writing \(\Gamma ; x:A\).
+\end{definition}
+
+In order to define a type rule for let expressions, we need to define when two contexts are \emph{disjoint}. Intuitively, they are disjoint, if any variable is not in both contexts. 
+
+\begin{definition}[Disjoint contexts]
+   Let \(\Gamma_1, \Gamma_2\) be contexts. Then, \(\Gamma_1 \cap \Gamma_2 = \emptyset\), if and only if for any variable x it holds that \(\neg(x \in \Gamma_1 \wedge x \in \Gamma_2)\).
 \end{definition}
 
 \begin{definition}[Typing Judgement with contexts]\label{def:type-judgement-context}
@@ -214,33 +216,22 @@ Next, we introduce two rules, one for boolean constants and one for integer cons
 \[
    \inference[(T:bool)]
    {b \in \{\true, \false\}}
-   {\typing{\emptycontext}{b}{\text{\bool}}}%
+   {\typing{\Gamma}{b}{\text{\bool}}}%
    \qquad
    \inference[(T:int)]
    {n \in \mathbb{Z}}
-   {\typing{\emptycontext}{n}{\text{\typeint}}}
+   {\typing{\Gamma}{n}{\text{\typeint}}}
 \]
-
-Most significantly, we used the \emph{empty context}, written as \(\emptycontext\). This is the context that contains no information. We do this for two reasons: Firstly, the rule is more declarative as a result, because the typing is \emph{invariant} with respect to the context - an integer is always an integer. Secondly, this is precisely the smallest context for which the rule holds true; As such, the empty context forms the most general case for these rules to hold. Now, we are even able to type constant integers or booleans with an arbitrarily large \nameref{def:context} by applying the (T:var) rule, such that the contexts match. 
 
 Defining the type rule for the \(\tick{}\) is straightforward, we add a context \(\Gamma\) to the rule from the previous chapter \cref{def:tr-tick-4}:
 
 \[
    \inference[(T:tick)]
    {q_0 \geq k + q_1}
-   {\typing{\emptycontext}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
+   {\typing{\Gamma}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
 \]
 
-For the let expression, we provide a definition that differs from the one provided in \cref{def:tr-let-4}. For this, we make the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
-We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the resource demand. We do this, by enforcing that \((q_0, q_1) \relaxation (p_0, p_1)\).
-
-\[
-   \inference[(T:relax)]
-   {\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}} \qquad (q_0, q_1) \relaxation (p_0, p_1)}
-   {\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}}
-\]
-
-As the subexpressions of the let expression might have different contexts, we need to account for that as well. To permit a consistent formulation of the type rule, we need to add an assumption: the two contexts need to be \emph{disjoint}. This will allow us to avoid any typing inconsistencies that could arise from mismatched types between the two contexts. 
+As the sub-expressions of the let expression might have different contexts, we need to account for that as well. To permit a consistent formulation of the type rule, we need to add an assumption: the two contexts need to be \emph{disjoint}. This will allow us to avoid any typing inconsistencies that could arise from mismatched types between the two contexts. 
 For this, a variable \(x\) could be present in both contexts \(\Gamma_1\) and \(\Gamma_2\), with differnt types assigned to the variable:
 
 \[
@@ -254,6 +245,16 @@ This is prevented, by demanding that the contexts are \emph{disjoint}. While thi
    {\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}} \qquad \typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}} \qquad \Gamma_1 \cap \Gamma_2 = \emptyset}
    {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
 \]
+
+Compared to the previous chapter, we made the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
+We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the resource demand. We do this, by enforcing that \((q_0, q_1) \relaxation (p_0, p_1)\).
+
+\[
+   \inference[(T:relax)]
+   {\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}} \qquad (q_0, q_1) \relaxation (p_0, p_1)}
+   {\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}}
+\]
+
 
 
 \section{Soundness}
