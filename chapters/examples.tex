@@ -1,0 +1,30 @@
+\chapter{Unit Test Functions}
+
+\(add1 :: L(\typeint) \to L(\typeint)\)
+\begin{minted}{ocaml}
+   def add1 l = match l with 
+      | nil -> nil
+      | cons(x, xs) -> let _ = tick 1 in 
+		       let x' = x + 1 in
+		       let xs' = add1 xs in
+                       cons(x', xs')
+\end{minted}
+
+\(sum :: L(\typeint) \to \typeint \to \typeint \)
+\begin{minted}{ocaml}
+   def sum l n = match l with 
+      | nil -> n
+      | cons(x, xs) -> let _ = tick 2 in 
+		       let x' = n + x in
+		       sum xs x'
+\end{minted}
+
+\(map :: (A \to B) \to L(A) \to L(B)\)
+\begin{minted}{ocaml}
+   def map f l = match l with
+      | nil -> nil
+      | cons(x, xs) -> let x' = f x in
+		       let xs' = map f xs in
+		       conx(x', xs')
+\end{minted}
+
