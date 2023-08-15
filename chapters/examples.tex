@@ -44,7 +44,7 @@
 	 | cons(x, xs) -> let acc' = op acc x in 
 			  fold op xs acc'
       \end{minted}
-   \caption{fold :: \((A \to B) \to \ralist{}{A} \to B \to B\)}
+   \caption{fold :: \((A \to B \to B) \to \ralist{}{A} \to B \to B\)}
 \label{fig:code-fold}
 \end{figure}
 

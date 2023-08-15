@@ -56,7 +56,6 @@ We want to infer resource-bounds for programs. In order for the inference to be 
 While this reduces the set of programs that we permit, most problems on lists naturally have a form that matches this constraint. For example, folding operations such as sum (\cref{fig:code-sum}), or functorial operations such as map (\cref{fig:code-map}), can be defined in this way. 
 \todo{@AP Should I elaborate more on this constraint?}
 
-
 \section{Evaluation Semantics}
 
 We introduce evaluation rules, which are nuanced when we evaluate a list, because the resource demand will, in most cases, be related to the length of the list. This necessitates the introduction of resource demands as \emph{recurrence relations}. We start by introducing recurrence relations and motivate the connection to resource demands. 
@@ -329,6 +328,7 @@ The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, l
    \label{fig:type-derivation-add1}
 \end{figure}
 \end{sidewaysfigure}
+\todo{Make it pretty and fit on page without flipping}
 
 The resulting resource-aware type for \(add1\) is, therefore:
 \[
@@ -338,7 +338,6 @@ The resulting resource-aware type for \(add1\) is, therefore:
 
 \begin{example}
    For our second example, we define a function \(sum\), which sums all the integers in a list, given an accumulator. The function is defined in \cref{fig:code-sum}.
-\end{example}
 
 The associated type derivation can be found in \cref{fig:type-derivation-sum}. Interestingly, this derivation and the previous one are structurally similar: First we pattern match on a list, followed by a let expression. For this reason, the highlights from the previous example can be applied to this example as well.
 
@@ -389,37 +388,47 @@ This results in a resource-aware type of the following form:
    sum :: \rafunc{\rafunc{\ralist{3}{\typeint}}{\typeint}{}{}}{\typeint}{}{}
 \]
 \todo{Explain currying?}
+\end{example}
 
+\begin{example}
+   Next, we derive a type for the function \(map\) (see \cref{fig:code-map}). In contrast to the previous examples, this is a \emph{higher-order} function. As we will see, the resource demand of the function will depend on two factors: (1) The resource demand of the function passed to map, and (2) the length of the list to map over.
 
+   \begin{figure}[H]
+      \[
+         \inference
+         {
+            \inference
+            {
+               \inference
+               {
+                  \typing{\Gamma;xs:\ralist{p}{A}}{map~f~xs}{\ralist{q}{B}}
+                  &
+                  \typing{\Gamma;x':\ratype{B}{q_0}{q_1};xs':\ralist{q}{B}}{\cons{x'}{xs'}}{\ratype{\ralist{q}{B}}{q_0}{q_1}}
+               }
+               {
+                  \typing{\Gamma;x':\ratype{B}{q_0}{q_1};xs:\ralist{p}{A}}{e_{map}'}{\ralist{q}{B}}
+               }
+               &
+               \typing{\Gamma;x:A;f:\rafunc{A}{B}{q_0}{q_1}}{f~x}{\ratype{B}{q_0}{q_1}}
+            }
+            {
+               \typing{\Gamma;f:\rafunc{A}{B}{q_0}{q_1};l:\ralist{p}{A}}{e_{map}}{\ralist{q}{B}}
+            }
+            &
+            \typing{\Gamma}{\listnil}{\ralist{p}{A}}
+         }
+         {
+            \typing{\Gamma;f:\rafunc{A}{B}{q_0}{q_1};l:\ralist{p}{A}}{map~f~l}{\ralist{q}{B}}
+         }
+      \]
+   \caption{Type derivation for the function \(fold\).}
+   \label{fig:derivation-fold}
+   \end{figure}
+   \todo{Make type derivation pretty}
 
-
-
-
-
-
-
-
-
-
-
-\begin{itemize}
-   \item Define function map
-   \item Provide a type derivation
-\end{itemize}
-
-\begin{minted}{ocaml}
-   def map f l = match l with 
-      | nil -> nil
-      | cons(x, xs) -> cons(f x, map f xs).
-\end{minted}
-
-\begin{itemize}
-   \item Provide type derivation for map
-   \item Example with nested lists?
-      \begin{itemize}
-         \item Need to define share for that?
-      \end{itemize}
-\end{itemize}
+Solving the list of constraints, we get that \(p = q_0 - q_1\). We can interpret this result as follows: For every element in the list, the required resources are precisely the resource consumption of the function \(f\) that is applied to the list element. As a result, the resource demand of the function \(map\) is solely determined by the function \(f\) that we pass.
+\end{example}
+\todo{@AP: Enough examples?}
 
 \section{Soundness}
 \begin{itemize}
