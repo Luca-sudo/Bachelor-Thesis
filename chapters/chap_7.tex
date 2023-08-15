@@ -271,21 +271,7 @@ To illustrate how the newly introduced inference rules orchestrate together, we 
 We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists. 
 
 \begin{example}
-   For our first example, consider a function \(add1\) that increments every integer in a list.
-
-   \begin{figure}[H]
-   
-   \begin{minted}{ocaml}
-      def add1 l = match l with 
-         | nil -> nil
-         | cons(x, xs) -> let _ = tick 2 in 
-                          let x' = x + 1 in
-                          let xs' = add1 xs in
-                          cons(x', xs')
-   \end{minted}
-   \caption{\(add1 :: L(\typeint) \to L(\typeint)\)}
-   \label{code:add1}
-   \end{figure}
+   For our first example, consider a function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}.
 
 The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, let us briefly explain key parts of the derivation:
 
@@ -347,12 +333,7 @@ The resulting resource-aware type for \(add1\) is, therefore:
 \end{example}
 
 \begin{example}
-   For our second example, we define a function \(sum\), which sums all the integers in a list, given an accumulator. 
-   \begin{minted}{ocaml}
-      def sum l n = match l with 
-         | nil -> n
-         | cons(x, xs) -> sum xs (n + x)
-   \end{minted}
+   For our second example, we define a function \(sum\), which sums all the integers in a list, given an accumulator. The function is defined in \cref{fig:code-sum}.
 \end{example}
 
 The associated type derivation can be found in \cref{fig:type-derivation-sum}. Interestingly, this derivation and the previous one are structurally similar: First we pattern match on a list, followed by a let expression. For this reason, the highlights from the previous example can be applied to this example as well.
