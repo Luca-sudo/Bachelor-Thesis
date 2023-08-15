@@ -51,6 +51,10 @@ Because a list can contain \emph{any type} of data, assuming it is homogenous da
    A function \(\lambda l. \text{fold add  0  l}\), that sums integers in a list, has the type \(\rafunc{\ralist{}{\typeint}}{\typeint}{}{}\).
 \end{example}
 
+We want to infer resource-bounds for programs. In order for the inference to be computationally tractable, we constrain the use of certain language features. Most notably, we enforce that functions on lists only recur on the tail of the list. As a result, recursive function calls \emph{will terminate}, eventually.
+
+While this reduces the set of programs that we permit, most problems on lists naturally have a form that matches this constraint. For example, folding operations such as sum (\cref{fig:code-sum}), or functorial operations such as map (\cref{fig:code-map}), can be defined in this way. 
+\todo{@AP Should I elaborate more on this constraint?}
 
 
 \section{Evaluation Semantics}
@@ -145,7 +149,7 @@ To define recursive functions we are currently missing function application. We 
 
 \section{Type Rules}
 
-Our goal is to introduce type rules that allow us to assign resource costs to lists. Previously, we assigned a resource-pair (\cref{def:resource-pair}) to the resulting type; This is not feasible for lists, as the cost of evaluating an expression featuring a list depends on the length of the list. For this reason, we introduce the notion of \emph{potentials}. Intuitively, we assign a potential to a list, which corresponds to a cost for each list element. Having introduced potentials, we will define resource-aware lists, which forces us to consider how potentials can be composed and shared.
+Our goal is to introduce type rules that allow us to assign resource costs to lists. Previously, we assigned a resource-pair (\cref{def:resource-pair}) to the resulting type; This is not feasible for lists, as the cost of evaluating an expression featuring a list depends on the length of the list. For this, we introduced recurrence relations to model resource demands that respect the length of a list. The type rule analogue to recurrence relations are \emph{potentials}. Intuitively, we assign a potential to a list, which corresponds to a cost for each list element. Having introduced potentials, we will define resource-aware lists, which forces us to consider how potentials can be composed and shared.
 
 \subsection{Resource-Aware Lists}
 

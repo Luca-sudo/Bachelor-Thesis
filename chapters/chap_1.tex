@@ -4,70 +4,14 @@
 	\item Amortized analysis potential method
 	\item Type Theory basics
 	   \begin{itemize}
-	   	\item Judgements 
+		\item Judgements 
 		\item Context
 		\item Universe
+		\item Inference rules?
 	   \end{itemize}
+   \item Linear type systems: what it is and why we want it for this thesis.
+   \item Functional Programming constraints (For those that only ever programmed imperatively)
+   \item Linear programming, and how it relates to the thesis
+   \item 
 \end{itemize}
-
-\section{Amortized Analysis: Potential Method}
-Analysing the time and space complexity of algorithms is itself a vast field. There are three methods for computing amortized resourec bounds: Aggregate method, accounting method and the potential method. For AARA, potential method is used, as one can define particularly intuitive and ergonomic potential functions, which is done for linear potentials in \ref{chap:potential} and for polynomial potentials in \ref{chap:polynomial-potential}.
-To perform amortized analysis, we define a potential function \(\Phi\), which assigns to every possible state of a data structure a \emph{non-negative} integer. The \emph{amortized} cost of an operation accounts for the actual cost of the operation, as well as the difference in potential as a consequence of the operation. Using the potential assigned to a specific state, more expensive operations can be amortized by preceding, cheaper operations. As we will see, this provides a less pessimistic bound than worst-case analysis while matching empirical bounds tightly \todo{reference data from thesis}. 
-
-As a firm grasp on the potential method is essential to understanding AARA, we contrast amortized analysis and worst-case analysis, by illustrate both using sequences of inserts over a \emph{DynamicArray} as an example. 
-When initialising a DynamicArray, we provide the size needed. Subsequent inserts to the DynamicArray will be performed instantaneously if memory is free. Whenever an insert to the array would exceed the memory allocated to it, the array doubles in size.
-This operation is costly, because we have to allocate the memory and move all previous data into the new memory location. Looking at the worst-case runtime, inserting into a dynamic array has a cost of \(\mathcal{O}(n)\). There are two important nuances: (1) Not every insert operation is equally costly and (2) The expensive inserts are rarer.
-
-In order to perform amortized analysis using the potential method, we first need to define the potential function \(\Phi\). The amortized cost is subsequently given as the sum of the actual cost of the operation and the difference in potential before and after the operation. Formally, we write \(C_{\text{actual}}(o)\) to denote the actual cost of some operation \(o\) as well as \(S_{\text{before}}\) and \(S_{\text{after}}\) for the state of the DynamicArray (or any arbitrary data structure) before and after performing operation \(o\). This yields the following formula for the amortized cost of an operation \(o\):
-
-\[C_{\text{amortized}}(o) = C_{\text{actual}}(o) + (\Phi(S_{\text{after}}) - \Phi(S_{\text{before}}))\]
-\label{eq:amortized-cost}
-
-For an arbitrary DynamicArray \(D\) of size \(N\), of which \(n\) memory cells have been used,  we define the potential function \(\Phi(D) = 2n - N\). Note that \(n \leq N\) and \(2n \geq N\), because the DynamicArray is always at least half full due to the resizing strategy explained above. 
-As alluded to earlier, a potential function needs to be non-negative for every possible state passed to it. We can immediately conclude that the above function satisfies that constraint, due to \(2n \geq N\) being an invariant. We now examine how different types of insert operations affect the potential function and subsequently the amortized cost.
-Suppose we insert into a DynamicArray, such that no doubling in size is necessary. The actual cost of the operation is constant. Because no resizing of the DynamicArray is induced, we simply increment \(n\). This yields the following potentials:
-
-\[\Phi(S_{\text{before}}) = 2n - N\]
-\[\Phi(S_{\text{after}}) = 2(n + 1) - N\]
-\todo{Label/annotate equations?}
-
-Hence, \(\Phi(S_{\text{after}}) - \Phi(S_{\text{before}}) = 2\). This yields an amortized cost of \(C_{\text{amortized}}(o) = C_{\text{actual}}(o) + 2\), where we know that \(C_{actual}(o)\) is constant. As a result, the amortized cost is again constant.
-
-Let us now assume that we insert one element into a DynamicArray, inducing a doubling in size. This results in the following potentials:
-
-\[\Phi(S_{\text{before}}) = 2n - N\]
-\[\Phi(S_{\text{after}}) = 2(n + 1) - 2N\]
-
-Note that \(n + 1 = N\), because the array needed to double in size. The potential therefore simplifies to \(\Phi(S_{\text{after}}) = 0\). This concludes that our potential function is indeed well-formed, because it will not yield negative values for any valid state.
-We know that the actual cost of resizing the array is \(\mathcal{O}(n)\), pluging this into the formula for amortized cost: \(C_{\text{amortized}}(o) = \mathcal{O}(n) + ( 0 - \mathcal{O}(n))\). Yielding constant time again, because the difference in potential allowed us to 'pay' for the cost incurred by reallocating the array.
-
-Generalizing the new won insight, allows us to claim the following: \emph{Any sequence of n insert operations takes \(\mathcal{O}(n)\) amortized time}. This follows, as the sum of \(n\) constant time operations is \(\mathcal{O}(n)\). 
-
-The formula for amortized cost \ref{eq:amortized-cost} allows us to provide an upper bound on the actual cost of an operation as well. Since the potential function is required to be non-negative, we get that \(\Phi(S) \geq 0\) for some state \(S\). Using this inequality, we can infer the following bound: 
-
-\[C_{\text{actual}}(o) \leq C_{\text{amortized}}(o)\]
-\label{ineq:actual-amortized}
-
-Because we inferred that any sequence of \(n\) insert operations has \(\mathcal{O}(n)\) amortized cost, this inequality shows that any sequence of insert operations also has at most \(\mathcal{O}(n)\) actual cost.
-
-AARA will deploy the potential method in order to provide bounds. In \ref{chap:potential}, we introduce a set of potential functions that are especially ergonomic for AARA with linear potential.
-This forms the basis for extending AARA to polynomial potentials in \ref{chap:polynomial-potential}.
-\todo{Rework entire introduction to Amortized Analysis}
-
-\section{Big-Step operational semantics}
-Operational Semantics provide a framework for reasoning about properties of parts of a formalized language, such as safety or correctness. In the case of programming languages, operational semantics define how a program is interpreted as a sequence of computations. In order to reason about the behavior of a sequence of computational steps, we need to choose an appropriate type of operational semantics.
-There are two types of operational semantics: small-step and big-step operational semantics, both differing in the level of detail and abstraction level they offer. Small-step operational semantics provide a detailed account of atomic evaluation steps, focusing on the transitions from one step in the program to another. Big-step operational semantics on the other hand focus on relation the input to the output of expressions, providing a higher level of abstraction. Most papers on AARA use big-step operational semantics, such as \todo{Reference papers}. One reason for favoring big-step operational semantics is their higher level of abstraction, as we are most interested in the relation between input and output.
-
-Before we are able to define big-step operational semantics, we need to introduce a couple of concepts, namely: stack, heap and evaluation judgement. All three are necessary to provide resource bounds for the evaluation of expressions.
-
-Since expressions can contain variable names, we need a mechanism of mapping variable names to the values associated with them - this is what the stack does. A stack, denoted by V, is a mapping from variable identifiers to values: $V : VID \to Val$. As such, different stacks may map the same variable name to different values, which could drastically alter the resulting potential. To avoid ambiguity, we specify a stack V explicitly when necessary. 
-When tracking resource consumption in the form of memory, we need to know precisely how much memory is used and freed after an evaluation step. For this we need a heap, denoted by H. Any values that are kept in memory are stored on the stack. Thus, a stack H is a mapping from locations to values: $H : loc \to val$. 
-
-Having defined stacks and heaps, we can now define evaluation judgements with resource-annotations. An evaluation judgment has the following form:
-$$ V, H \turnstile e \rightsquigarrow v, H' | (p, p') $$
-With the following meaning: Given a stack V and a heap H, the expression e evaluates to the value v and the new stack H'. In order to evaluate e we need p resources beforehand, and are left with p' resources after evaluation. This yields a resource consumption $\delta = p - p'$, which can be a negative integer if resources become available after the evaluation of the expression.
-\todo{Scrap and introduce evaluation semantic basics}
-\todo{Maybe introduce basic type-related notions? Derivations, judgement, etc. for reader completely unfamiliar}
-\todo{Maybe introduce idea of lean scripts?}
-
 
