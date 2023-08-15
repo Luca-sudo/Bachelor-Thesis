@@ -297,10 +297,10 @@ The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, l
    \item Lastly, we derive a potential of \(2\) for the input list \(l\). The expression that is evaluated for an empty list has no cost associated. For a non-empty list, we have an initial cost of 2. By definition of the (T:MatchList) rule, the potential \(p\) is precisely the difference in the two respective costs.
 \end{itemize}
 
+\begin{sidewaysfigure}
 \begin{figure}[H]
-\begin{center}
    \[
-      \hspace*{-2.5cm}
+      \hspace*{-1.5cm}
       \inference
       {
          \typing{\Gamma}{\listnil}{\ralist{p}{A}} 
@@ -311,31 +311,34 @@ The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, l
             &
             \inference
             {
+               \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
+               &
                \inference
                {
-                  \text{Recursive Call}
+                  \typing{\Gamma;xs:\ralist{p}{A}}{add1~xs}{\ralist{q}{\typeint}}
+                  &
+                  \typing{\Gamma;x':\typeint;xs':\ralist{p}{\typeint}}{\cons{x'}{xs'}}{\ralist{q}{\typeint}}  
                }
                {
-                  \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
-                  \typing{\Gamma;xs:\ralist{p}{\typeint}}{add1~xs}{\ralist{p}{\typeint}}
+                  \typing{\Gamma;x':\typeint:xs:\ralist{p}{A}}{e_1''}{\ralist{q}{\typeint}}
                }
             }
             {
-               \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\cons{x + 1}{add1~xs}}{\ralist{p}{\typeint}}
+               \typing{\Gamma;x:A;xs:\ralist{p}{A}}{e_1'}{\ralist{q}{\typeint}}
             }
          }
          {
-            \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}{\ratype{\ralist{0}{\typeint}}{2}{0}}
+            \typing{\Gamma;x:A;xs:\ralist{p}{A}}{e_1}{\ratype{\ralist{q}{\typeint}}{2}{0}}
          }
       }
       {
-         \typing{\Gamma;l : \ralist{2}{\typeint}}{\listmatch{l}{\listnil}{\letexp{\_}{\tick{2}}{\cons{x+1}{add1~xs}}}}{\ralist{0}{\typeint}}
+         \typing{\Gamma;l : \ralist{2}{\typeint}}{\listmatch{l}{\listnil}{e_1}}{\ralist{0}{\typeint}}
       }
    \]
-   \end{center}
    \caption{Type derivation of the add1 function.}
    \label{fig:type-derivation-add1}
 \end{figure}
+\end{sidewaysfigure}
 
 The resulting resource-aware type for \(add1\) is, therefore:
 \[
