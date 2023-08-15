@@ -55,6 +55,42 @@ Because a list can contain \emph{any type} of data, assuming it is homogenous da
 
 \section{Evaluation Semantics}
 
+We introduce evaluation rules, which are nuanced when we evaluate a list, because the resource demand will, in most cases, be related to the length of the list. This necessitates the introduction of resource demands as \emph{recurrence relations}. We start by introducing recurrence relations and motivate the connection to resource demands. 
+
+\subsection{Recurrence Relations As Resource Demands}
+
+Since we introduced lists and recursion into our programming language, this has a profound impact on the relation between input and resource demands. Previously the values of any type in our type system had no \emph{structural implication} for resource demands. As lists can inhabit any (finite) length, we need to find a general approach to relating lists with resource demands. 
+
+Let us build an intuition for the interplay of resource demands and lists of variable length, by informally working through an example function. For this consider the function \(add1\) in \cref{code:add1}.
+
+Given a non-empty list \(l\), we execute the body of the second match condition. There, we tick and increment the head of the list. Afterward we call the function recursively on the tail. Thus, we have paid \(2\) resources for the head of the list, plus, the cost of calling the function on the tail, which is not yet determined.
+
+We can model this cost as a function of the list, recursively. However, as we do not know how to handle an empty list yet, this is only a partial definition.
+
+\[
+   Q(l) = \begin{cases*}
+      2 + Q(xs)            & if l = x :: xs\\
+      \textbf{undefined}   & else
+   \end{cases*}
+\]
+
+This aligns with our intuition, as this recurrence relation states that for any list element we have a resource cost of \(2\). To derive a complete recurrence relation, and thus a resource demand for arbitrary, finite lists, we need to understand what cost we assign to the empty list. In our example, we simply return nil with no associated cost. Thus, there is a cost of \(0\) for the empty list. Augmenting the recurrence relation yields the following:
+
+\[
+   Q(l) = \begin{cases*}
+      2 + Q(xs)            & if l = x :: xs\\
+      0                    & else
+   \end{cases*}
+\]
+
+Which captures the resource demand for arbitrary lists. Having exercised this example, we now define recurrence relations. Notably, we constrain recurrence relations to have \emph{order} 1, as we only allow recursion on the tail of a list. For arbitrary, inductive data types, an order of 1 might not suffice. Binary trees, for example, may require order 2.
+
+\begin{definition}[Recurrence Relation]\label{def:recurrence-relation}
+   A \emph{recurrence relation} (of order 1) is an equation that defines the value of each element as a function of the preceding element.
+\end{definition}
+
+\subsection{Evaluation Rules}
+
 We start by introducing two rules for the construction of lists, corresponding to the two constructors of our programming language. In this thesis, construction of both empty and non-empty lists has no associated cost. As a result the cost of operations on lists is purely dictated by the actions performed on the list. 
 
 \[
@@ -68,7 +104,7 @@ We start by introducing two rules for the construction of lists, corresponding t
 \]
 \todo{Need to introduce null somewhere}
 
-In order to implement functions that work recursively on a list, we need pattern matching on lists. Whenever a match statement involving a list is invoked, there are two cases: (1) The list passed to it is nil. (2) The list passed to it contains values. We define an evaluation rule for each of these cases, respectively:
+In order to implement functions that work recursively on a list, we need pattern matching on lists. Whenever a match statement involving a list is invoked, there are two cases: (1) The list passed to it is nil. (2) The list passed to it contains values. The cost of both cases will be combined, to define a recurrence relation (see \cref{def:recurrence-relation}). We first define an evalution rule for matching on empty lists.
 
 \[
    \inference[(E:MatchNil)]
@@ -76,20 +112,32 @@ In order to implement functions that work recursively on a list, we need pattern
    {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
 \]
 
+Next, we define an evaluation rule for non-empty lists. Here, we need to extract all required resource demands, in order to construct a recurrence relation. As a result, we compute the resource demand of empty and non-empty lists, which allows us to create the needed recurrence relation.
+
 \[
    \inference[(E:MatchCons)]
-   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{q_0}{q_1}}
-   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
+   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{q(l)}{q'(l)} \qquad \evals{E}{e_1}{v_1}{q_0}{q_1}}
+   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{Q(l)}{Q'(l)}}
+\]
+\[
+   \begin{aligned}
+      \text{where }  & Q(l) \begin{cases*}
+         q(x :: xs)     & if l = x :: xs\\
+         q_0            & if l = null
+         \end{cases*} \text{and } Q'(l) \begin{cases*}
+         q'(x :: xs)     & if l = x :: xs\\
+         q_1            & if l = null
+      \end{cases*}
+   \end{aligned}
 \]
 
-For the latter rule we define the concrete value of the list \(l\) as a tuple \((v_x, v_{xs})\). Where \(v_x\) points to the head, and \(v_{xs}\) points to the tail. 
+For the latter rule we define the concrete value of the list \(l\) as a tuple \((v_x, v_{xs})\). Where \(v_x\) is the value contained in the head of the list, and \(v_{xs}\) points to the tail. 
 
-To define recursive functions we are currently missing function application. With the evaluation rules provided until now, we are not able to derive a type for an expression of the form \(f x\). As a result, we would not be able to type a \emph{recursive} function call. 
-In the rule below, \(e_f\) is the expression referenced by the function name \(f\). 
+To define recursive functions we are currently missing function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_f\) as the argument name used in the definition of \(f\). 
 
 \[
    \inference[(E:App)]
-   {E(f) = e_f \qquad \evals{\envaugment{E}{y}{x}}{e_f}{v}{q_0}{q_1}}
+   {E(f) = e_f \qquad \evals{\envaugment{E}{y_f}{x}}{e_f}{v}{q_0}{q_1}}
    {\evals{E}{f x}{v}{q_0}{q_1}}
 \]
 \todo{Need to define how we get from f to the expression of f}
@@ -159,46 +207,6 @@ Whenever we write programs, we might use a list in multiple instructions. In ord
 \todo{Doesnt align correctly}
 \todo{Notation for types? Something like \(A \in \mathbb{T}\)?}
 
-\subsection{Equivalence and Capacity Relation}
-
-Composing functions lies at the very core of functional programming languages. Our programming language does not offer an explicit handle to compose functions, for simplicity. We can, however, emulate function composition using let expressions. For this, consider two function with the following signatures:
-\[
-   f :: \rafunc{\ralist{2}{\typeint}}{\ralist{}{\typeint}}{}{}
-   \qquad
-   g :: \rafunc{\ralist{3}{\typeint}}{\ralist{}{\typeint}}{}{}
-\]
-
-Emulating function composition can be achieved using a let expression, like so:
-\[
-   \letexp{y}{f~x}{g~y}
-\]
-
-As we have introduced lists, along with their potential, into the programming language, we would face inconsistencies when chaining together computations that have potentials assigned to them. In the example above, we have no means of composing potentials assigned to lists. As a result, the composite function would not account for the potential of the function \(g\).
-
-To enhance the type rule for let expressions, such that potentials also compose, we need to introduce two new relations:
-
-\begin{enumerate}[label=\Roman*.]
-   \item Equivalence relation, which ensures that the set of values represented by two types is the same.
-   \item Capacity relation, which allows us to compare potentials in a meaningful and ergonomic way.
-\end{enumerate}
-
-\begin{definition}[Equivalent Types]
-   Let \(A, B\) be types. Two types are \emph{equivalent}, if the set of values, that inhabit the respective type, is the same. 
-   \[
-      A \typeequiv B :\iff A \text{ is equivalent to } B
-   \]
-\end{definition}
-
-\begin{definition}[Capacity Relation]
-   Let \(A, B\) be types. We define a \emph{capacity relation} on types, by comparing their potential:
-   \[
-      A \capacity B :\iff \Phi(v : A) \geq \Phi(w : B)
-   \]
-\end{definition}
-\todo{Maybe use different symbol?}
-
-We will use both of these definitions in the rule \href{def:t-let-6}{(T:Let)}, to ensure that let expression with potentials can be typed properly.
-
 \section{Inference Rules}
 
 We start by introducing two rules associated to the two list constructors. 
@@ -265,12 +273,19 @@ We introduce examples of varying complexity, to illustrate the nuances of type d
 \begin{example}
    For our first example, consider a function \(add1\) that increments every integer in a list.
 
-\begin{minted}{ocaml}
-   def add1 l = match l with 
-      | nil -> nil
-      | cons(x, xs) -> let _ = tick 2 in 
-                       cons((x + 1), add1 xs)
-\end{minted}
+   \begin{figure}[H]
+   
+   \begin{minted}{ocaml}
+      def add1 l = match l with 
+         | nil -> nil
+         | cons(x, xs) -> let _ = tick 2 in 
+                          let x' = x + 1 in
+                          let xs' = add1 xs in
+                          cons(x', xs')
+   \end{minted}
+   \caption{\(add1 :: L(\typeint) \to L(\typeint)\)}
+   \label{code:add1}
+   \end{figure}
 
 The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, let us briefly explain key parts of the derivation:
 
