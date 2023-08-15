@@ -427,6 +427,12 @@ This results in a resource-aware type of the following form:
    \todo{Make type derivation pretty}
 
 Solving the list of constraints, we get that \(p = q_0 - q_1\). We can interpret this result as follows: For every element in the list, the required resources are precisely the resource consumption of the function \(f\) that is applied to the list element. As a result, the resource demand of the function \(map\) is solely determined by the function \(f\) that we pass.
+
+Thus, the resource-annotated signature is:
+\[
+   map :: (\rafunc{A}{B}{q_0}{q_1}) \to \ralist{(q_0 - q_1)}{A} \to \ralist{}{B}
+\]
+
 \end{example}
 \todo{@AP: Enough examples?}
 
