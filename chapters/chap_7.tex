@@ -38,17 +38,16 @@ Because a list can contain \emph{any type} of data, assuming it is homogenous da
 \end{example}
 
 \begin{example}
-   \(\ralist{}{\ralist{}{\bool}}\) is the type of lists that contain lists with values of type \bool. A concrete example would be \([[1;2];[3;4];[5;6]]\).
+   \(\ralist{}{\ralist{}{\bool}}\) is the type of lists that contain lists with values of type \bool.
 \end{example}
-\todo{Change notation}
 
 \begin{example}
-   A function \(\lambda x.x+1\) has the type \(\rafunc{\typeint}{\typeint}{}{}\).
+   A function \(f(x) = x+1\) has the type \(f :: \rafunc{\typeint}{\typeint}{}{}\).
 \end{example}
 \todo{Introduce lambda expression in preliminaries}
 
 \begin{example}
-   A function \(\lambda l. \text{fold add  0  l}\), that sums integers in a list, has the type \(\rafunc{\ralist{}{\typeint}}{\typeint}{}{}\).
+   A function \(sum\), that sums integers in a list has the type \(\rafunc{\ralist{}{\typeint}}{\typeint}{}{}\).
 \end{example}
 
 We want to infer resource-bounds for programs. In order for the inference to be computationally tractable, we constrain the use of certain language features. Most notably, we enforce that functions on lists only recur on the tail of the list. As a result, recursive function calls \emph{will terminate}, eventually.
@@ -64,11 +63,11 @@ We introduce evaluation rules, which are nuanced when we evaluate a list, becaus
 
 Since we introduced lists and recursion into our programming language, this has a profound impact on the relation between input and resource demands. Previously the values of any type in our type system had no \emph{structural implication} for resource demands. As lists can inhabit any (finite) length, we need to find a general approach to relating lists with resource demands. 
 
-Let us build an intuition for the interplay of resource demands and lists of variable length, by informally working through an example function. For this consider the function \(add1\) in \cref{code:add1}.
+Let us build an intuition for the interplay of resource demands and lists of variable length, by informally working through an example function. For this consider the function \(add1\) in \cref{code:add1}, which increments every entry in the list.
 
 Given a non-empty list \(l\), we execute the body of the second match condition. There, we tick and increment the head of the list. Afterward we call the function recursively on the tail. Thus, we have paid \(2\) resources for the head of the list, plus, the cost of calling the function on the tail, which is not yet determined.
 
-We can model this cost as a function of the list, recursively. However, as we do not know how to handle an empty list yet, this is only a partial definition.
+We can model this cost as a function of the list. However, as we do not know how to handle an empty list yet, this is only a partial definition.
 
 \[
    Q(l) = \begin{cases*}
@@ -137,6 +136,7 @@ Next, we define an evaluation rule for non-empty lists. Here, we need to extract
 For the latter rule we define the concrete value of the list \(l\) as a tuple \((v_x, v_{xs})\). Where \(v_x\) is the value contained in the head of the list, and \(v_{xs}\) points to the tail. 
 
 To define recursive functions we are currently missing function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_f\) as the argument name used in the definition of \(f\). 
+\todo{What about functions with multiple arguments?}
 
 \[
    \inference[(E:App)]
@@ -198,21 +198,11 @@ Our definition of the potential function is even more flexible - we are able to 
    \]
 \end{corollary}
 
-Whenever we write programs, we might use a list in multiple instructions. In order to prevent inconsistencies with respect to the resulting potential, we introduce a sharing relation. Intuitively, this relation ensures that the overall potential of the list is precisely the sum of the potentials assigned to the occurrences.
-
-\begin{definition}[Sharing Relation]
-   Let \(A\) be a type from \cref{def:type-system-6}, and \(p, p_1, p_2 \in \mathbb{N}\).
-   \begin{align*}
-      A &\shares (A, A)                                           &\text{if } A \in \{\unit, \typeint, \bool\}\\
-      \ralist{p}{A} &\shares (\ralist{p_1}{A}, \ralist{p_2}{A})   &\text{if } p = p_1 + p_2 
-   \end{align*}
-\end{definition}
-\todo{Doesnt align correctly}
-\todo{Notation for types? Something like \(A \in \mathbb{T}\)?}
+We have defined potentials for all types \(A \in \type\). This allows us to reason about the potential of a \emph{context}; Which is the summed potentials of every variable contained in it. The potential of contexts will be central to our proof of soundness in \cref{sec:soundness-6}.
 
 \section{Inference Rules}
 
-We start by introducing two rules associated to the two list constructors. 
+We start by introducing two rules associated to the two list constructors. An empty list can be constructed freely, with no constraints on its potential. On the other hand, constructing a list from an element and another, compatible, list requires us to propagate the potential. The tail \(xs\) of the list is assumed to have potential \(p\), as result, the list \(\cons{x}{xs}\) also has potential \(p\). 
 
 \[
    \inference[(T:Nil)]
@@ -224,7 +214,9 @@ We start by introducing two rules associated to the two list constructors.
    {\typing{\Gamma;x : A; xs : \ralist{p}{A}}{cons(x, xs)}{\ralist{p}{A}}}
 \]
 
-In order to type expression that pattern match on lists, we introduce a rule (T:MatchList). 
+In order to type expression that pattern match on lists, we introduce a rule (T:MatchList). There are a couple of nuances that we want to explain further. Firstly, the return type of both expressions is assumed to be the same. If we want to have a return type that may be distinct for both respective cases, this would require dependent types. 
+
+The potential \(p\) of the list \(l\), which is matched on, is defined as the initial resource cost specific to destructuring the list into head and tail. The expression \(e_1\) has a resource demand of \((q_0, q_1)\), whereas the evaluation of \(e_2\) has a resource demand of \((q_0 + p, q_1)\). Thus, the initial cost for an element of the list is precisely \(p\).  
 \todo{Motivate the rule a bit}
 
 \[
@@ -233,41 +225,21 @@ In order to type expression that pattern match on lists, we introduce a rule (T:
    {\typing{\Gamma;l : \ralist{p}{A}}{\listmatch{l}{e_1}{e_2}}{\ratype{B}{q_0}{q_1}}}
 \]
 
-Next, we introduce an inference rule for function application. For the rule to be valid, we must ensure that the value \(x\) applied to the function \(f\) has a type that matches the input of \(f\). Furthermore, the type of \(f x\) is then determined by the function \(f\). For resource-aware types, we compose the cost similar to a let expression. 
+Next, we introduce an inference rule for function application. First, the input type of the function \(f\) needs to align with the variables that are applied. Furthermore, the resource demands of the input variables, as well as the resource demand of the function, need to be propagated - this is similar to propagating values for let expression. 
 
 \[
    \inference[(T:Application)]
-   {\typing{\Gamma}{f}{\rafunc{A}{B}{p_0}{p_1}} \qquad \typing{\Gamma}{x}{\ratype{A}{q_0}{q_1}}}
-   {\typing{\Gamma}{f x}{\ratype{B}{r_0}{r_1}}}
-   \qquad
+   {\typing{\Gamma}{f}{A \to \dots \to B \to \ratype{C}{p_0}{p_1}}}
+   {\typing{\Gamma;x_1:\ratype{A}{q_1}{q_1'};\dots;x_k:\ratype{B}{q_k}{q_k'}}{f x}{\ratype{C}{r_0}{r_1}}}
+\]
+
+\[
    \begin{aligned}
-      \text{where }  & r_0 = p_0 - p_1 + \max(p_1, q_0)\\
-                     & r_1 = q_1 - q_0 + \max(p_1, q_0)
+      \text{where }  & (r_0, r_1) = \left( \prod_{i = 1}^k (q_i, q_i') \right) \cdot (p_0, p_1)\\
    \end{aligned}
 \]
 
-\todo{(T:Share) purposefully left out for now.}
-
-\[
-   \label{def:t-let-6}
-   \inference[(T:let)]
-   {
-      \typing
-      {\Gamma_1}
-      {e_1}
-      {\ratype{A}{p_0}{m}} 
-         \qquad 
-      \typing
-      {\Gamma_2}
-      {e_2}
-      {\ratype{B}{m}{q_1}}
-         \qquad 
-      \Gamma_1 \cap \Gamma_2 = \emptyset
-   }
-   {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
-\]
-
-To illustrate how the newly introduced inference rules orchestrate together, we perform exemplary type derivations for selected examples.
+The rule (T:Application) allows us to type recursive functions. Most importantly, the type of \(x\) and the input type of \(f\) are then inferred to be the same. For recursive calls on a list, we assume that they recur only on the tail \(xs\). Then, the tail has a potential annotation, which is propagated to the function signature, as we assume that the types match. This will be important in the coming examples, as this allows us to type recursive functions.
 
 \subsection{Example Type Derivations}
 
@@ -278,13 +250,11 @@ We introduce examples of varying complexity, to illustrate the nuances of type d
 
 The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, let us briefly explain key parts of the derivation:
 
-\begin{itemize}
-   \item At the top, we labelled a premise using "Recursive Call", because we again apply the function \(add1\) to the tail (\(xs\)) of our initial list. We, therefore, can stop the derivation at this point without loss of information. We already collected the necessary constraints.
+At the top, we labelled a premise using "Recursive Call", because we again apply the function \(add1\) to the tail (\(xs\)) of our initial list. We, therefore, can stop the derivation at this point without loss of information. We already collected the necessary constraints.
 
-   \item In the second line, we typed the let expression with \(\ratype{\ralist{0}{\typeint}}{2}{0}\). This is the result of two facts: We did not collect any constraints that impose a potential on the resulting list. And, the inference rule for let expression requires us to consider the resource cost of the tick expression. 
+In the second line, we typed the let expression with \(\ratype{\ralist{0}{\typeint}}{2}{0}\). This is the result of two facts: We did not collect any constraints that impose a potential on the resulting list. And, the inference rule for let expression requires us to consider the resource cost of the tick expression. 
 
-   \item Lastly, we derive a potential of \(2\) for the input list \(l\). The expression that is evaluated for an empty list has no cost associated. For a non-empty list, we have an initial cost of 2. By definition of the (T:MatchList) rule, the potential \(p\) is precisely the difference in the two respective costs.
-\end{itemize}
+Lastly, we derive a potential of \(2\) for the input list \(l\). The expression that is evaluated for an empty list has no cost associated. For a non-empty list, we have an initial cost of 2. By definition of the (T:MatchList) rule, the potential \(p\) is precisely the difference in the two respective costs.
 
 \begin{sidewaysfigure}
 \begin{figure}[H]
@@ -355,7 +325,7 @@ The associated type derivation can be found in \cref{fig:type-derivation-sum}. I
             &
             \inference
             {
-               \text{Recursive Call}
+               \typing{\Gamma}{sum}{\ralist{p}{\typeint} \to \typeint \to \typeint}
             }
             {
                \typing
@@ -436,7 +406,7 @@ Thus, the resource-annotated signature is:
 \end{example}
 \todo{@AP: Enough examples?}
 
-\section{Soundness}
+\section{Soundness}\label{sec:soundness-6}
 \begin{itemize}
    \item Explain how introduction of potential alters soundness proof.
 \end{itemize}
