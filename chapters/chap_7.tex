@@ -407,9 +407,19 @@ Thus, the resource-annotated signature is:
 \todo{@AP: Enough examples?}
 
 \section{Soundness}\label{sec:soundness-6}
-\begin{itemize}
-   \item Explain how introduction of potential alters soundness proof.
-\end{itemize}
+
+The introduction of potentials has a profound effect on the proof of soundness. Previously, the proof centered around inequalities on resource demands - this does not suffice. The \emph{effective cost} that is modelled by type inference is composed of resource demands and the potential of the context.
+
+\begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
+   Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A \in \type\), \((p_0, p_1), (q_0, q_1) \in \demand\) and an expression \(e\) that evaluates to the value \(v\). 
+
+   \begin{center}
+   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{}{}\) with \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : A)) \relaxation (p_0, p_1)\).
+   \end{center}
+\end{theorem}
+
+\begin{proof}
+\end{proof}
 
 \section{Questions}
 
