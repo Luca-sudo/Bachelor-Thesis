@@ -1,5 +1,4 @@
 \chapter{Preliminaries} \label{chap:preliminaries}
-
 \begin{itemize}
 	\item Amortized analysis potential method
 	\item Type Theory basics
@@ -14,4 +13,26 @@
    \item Linear programming, and how it relates to the thesis
    \item 
 \end{itemize}
+
+\section{Amortized Analysis}
+
+Analysis of algorithms centers around two characteristics: correctness and cost. Especially the analysis of costs is a vast field with various approaches including, but not limited to, worst-case analysis, average-case analysis and amortized analysis - with each serving a nuanced purpose. Worst-case analysis is familiar to most computer science students, as it is subject of courses taught throughout their bachelor. While it is useful to reason about the worst-case performance of algorithms, it is potentially to pessimistic when compared against concrete applications. 
+\todo{Add reference to example}
+
+Average-case analysis provides a paradigm shift. Instead of examining \emph{only} the worst-case, the algorithm is analyzed with respect to the probability distribution of the respective inputs. It thus represents a more nuanced view of the problem domain, taking into account the varying performance and the probability for the input. 
+
+Amortized analysis approaches the question of cost differently. Instead of evaluating the cost ofa single operation, it considers the cost of a \emph{sequence} of operations. This may provide an analysis that is more akin to the concrete usage of algorithms - rarely is an algorithm executed once.
+
+To illustrate the profound difference, consider a list data structure that is implemented with an underlying array. Whenever an insert operation fills the array, it doubles in size. Worst-case analysis would ascribe linear cost (\(\mathcal{O}(n)\), where \(n\) is the length of the list) to an insert operation, because the worst-case entails resizing the array. Amortized analysis on the other hand would analyze a sequence of \(n\) insert operations.
+
+We assume that inserting into an array takes constant time, if the array has free space. Then, inserting \(n + 1\) elements into an array of size \(n\) requires \(n\) constant time inserts, as well as one resizing of the array, which requires \(\mathcal{O}(n)\) time. Averaged out over \(n + 1\) operations, the insert operation requires only constant time. 
+
+While there are various approaches to amortized analysis, we use the potential method \todo{reference} throughout this thesis. In the above example, we allow the list to store a potential, depending on it's size, which can be used to amortize more expensive operations. For this, we define a potential function \(\Phi(l) = 2\cdot |l| - N\), where \(|l|\) refers to the number of elements stored in the list, and \(N\) refers to the maximum capacity of \(l\). The amortized cost of any operation is composed of the actual cost of the operation and the change in potential.
+
+Assuming \(|l| < N\), inserting an element in the list has an actual constant cost, and the potential of the list is incremented by \(2\). As a result, the amortized cost, which is the sum of actual cost and change in potential, is also constant. 
+
+Assuming \(|l| = N\), the array has to double in size. The resulting potential after insertion is thus \(2\), as \(|l| = N + 1\). Prior to insertion, the potential was \(|l|\), as \(|l| = N \implies 2 \cdot |l| - N = |l|\). Thus, a potential linear in the size of the list is freed, which is used to amortize the actual cost of insertion - yielding an amortized constant cost.
+
+
+
 
