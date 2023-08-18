@@ -408,7 +408,12 @@ Thus, the resource-annotated signature is:
 
 \section{Soundness}\label{sec:soundness-6}
 
-The introduction of potentials has a profound effect on the proof of soundness. Previously, the proof centered around inequalities on resource demands - this does not suffice. The \emph{effective cost} that is modelled by type inference is composed of resource demands and the potential of the context.
+The introduction of potentials has a profound effect on the proof of soundness. Previously, the proof centered around inequalities on resource demands - this does not suffice. The \emph{effective cost} that is modelled by type inference is composed of resource demands and the potential of the context. This matches the notion of amortized cost, as introduced in \dots
+\todo{Ref to preliminaries talking about amortized cost}
+
+This forces us to embellish the inequalities required to hold for soundness. Consider that evaluation and typing judgements have the following form:  \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\). In order to define sound resource inequalities which account for potentials, we reconsider initial and residual resources. The amortized \emph{initial} cost of an operation is composed of the concrete initial resources \emph{and} the potential of the context in which the operation is performed. Thus the initial resources are given by \(p_0 + \Phi(\Gamma)\). 
+
+In the case of residual resources, a similar line of thought holds. Here, we additionally account for the potential of the returned value \(v\), which yields \(q_1 + \Phi(v : A)\). With both initial and residual resources defined, we express soundness as a relaxation \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : A)) \relaxation (p_0, p_1)\), yielding two inequalities \(q_0 + \Phi(\Gamma) \geq p_0\) and \((q_0 - q_1) + (\Phi(\Gamma) - \Phi(v : A)) \geq p_0 - p_1\).
 
 \begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
    Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A \in \type\), \((p_0, p_1), (q_0, q_1) \in \demand\) and an expression \(e\) that evaluates to the value \(v\). 
