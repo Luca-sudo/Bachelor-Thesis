@@ -349,7 +349,6 @@ This results in a resource-aware type of the following form:
 \[
    sum :: \rafunc{\rafunc{\ralist{3}{\typeint}}{\typeint}{}{}}{\typeint}{}{}
 \]
-\todo{Explain currying?}
 \end{example}
 
 \begin{example}
@@ -396,7 +395,10 @@ Thus, the resource-annotated signature is:
 \]
 
 \end{example}
-\todo{@AP: Enough examples?}
+
+\begin{remark}
+   We assumed that the function \(f\) has resource demand \((q_0, q_1)\). Thus, the above typing \emph{does not} offer a general resource-aware typing for any function.
+\end{remark}
 
 \section{Soundness}\label{sec:soundness-6}
 
@@ -421,9 +423,4 @@ In the case of residual resources, a similar line of thought holds. Here, we add
 \end{proof}
  
 \section{Questions}
-
-\begin{itemize}
-   \item Suppose we have a function \emph{map}, with the signature \((A \to B) \to L(A) \to L(B)\). Where and how to attribute cost?
-   \item Should we introduce the share rule? Would constraint us to a linear system?
-\end{itemize}
 

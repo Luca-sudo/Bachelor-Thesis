@@ -4,44 +4,44 @@ import Mathlib.Tactic.Linarith
 abbrev Resource := {r: Int // r ≥ 0}
 
 
---Needed to instantiate ResourcePairs
+--Needed to instantiate ResourceDemands
 instance : OfNat Resource n where
   ofNat := { val := n, property := by linarith}
 
-abbrev ResourcePair := Resource × Resource
+abbrev ResourceDemand := Resource × Resource
 
-namespace ResourcePair
+namespace ResourceDemand
 
 --Initial resources
-def init : ResourcePair → Resource := Prod.fst
+def init : ResourceDemand → Resource := Prod.fst
 
 --Residual resources
-def resid : ResourcePair → Resource := Prod.snd 
+def resid : ResourceDemand → Resource := Prod.snd 
 
 --Concrete Resource consumption, definition ... in thesis
 @[simp, reducible]
-def consumption (p : ResourcePair) : Int := p.init - p.resid 
+def consumption (p : ResourceDemand) : Int := p.init - p.resid 
 
 --Resource disparity, definition ... in thesis
 @[simp, reducible]
-def disparity (p q : ResourcePair) : Resource := max p.resid q.init 
+def disparity (p q : ResourceDemand) : Resource := max p.resid q.init 
 
 --Equality of resource pairs
 @[simp, reducible]
-def equal (p q: ResourcePair) := p.init = q.init ∧ p.consumption = q.consumption
+def equal (p q: ResourceDemand) := p.init = q.init ∧ p.consumption = q.consumption
 
 --Neutral element in Resource Pairs
-def unit : ResourcePair := (0, 0)
+def unit : ResourceDemand := (0, 0)
 
 --Multiplication of resource pairs
 @[simp, reducible]
-def mult (p q : ResourcePair) : ResourcePair := 
+def sequence (p q : ResourceDemand) : ResourcePair := 
   let r := {val := p.init.val - p.resid + p.disparity q, property := by sorry}
   let r':= {val := q.resid.val - q.init + p.disparity q, property := by sorry}
   (r, r')
 
 -- Relaxation relation
-def relaxation_of (p q : ResourcePair) : Bool 
+def relaxation_of (p q : ResourceDemand) : Bool 
   := (p.init ≥ q.init) ∧ (p.consumption ≥ q.consumption) 
 
 infix:50 "≽" => relaxation_of
@@ -49,11 +49,11 @@ infix:50 "≽" => relaxation_of
 infix:50 "⬝" => mult
 
 --Relaxation is reflexive
-theorem relaxation_reflexive (p : ResourcePair) : p ≽ p := by
+theorem relaxation_reflexive (p : ResourceDemand) : p ≽ p := by
   simp [relaxation_of]
 
 --Relaxation is transitive
-theorem relaxation_transitive (p q r: ResourcePair) : p ≽ q → q ≽ r → p ≽ r := by
+theorem relaxation_transitive (p q r: ResourceDemand) : p ≽ q → q ≽ r → p ≽ r := by
   simp [relaxation_of]
   intros H_p H_p' H_q H_q'
   apply And.intro
@@ -61,7 +61,7 @@ theorem relaxation_transitive (p q r: ResourcePair) : p ≽ q → q ≽ r → p 
   linarith
   
   --Relaxation is antisymmetric
-theorem relaxation_antisymmetric (p q :ResourcePair) : p ≽ q → q ≽ p → p.equal q := by
+theorem relaxation_antisymmetric (p q :ResourceDemand) : p ≽ q → q ≽ p → p.equal q := by
   simp [relaxation_of]
   intros H_p H_p' H_q H_q'
   apply And.intro
@@ -87,19 +87,19 @@ theorem relaxation_antisymmetric (p q :ResourcePair) : p ≽ q → q ≽ p → p
 #eval equal (4, 2) (4, 3) -- false
 
 --(0, 0) is left unit under resource multiplication
-theorem left_unit (p : ResourcePair) : equal (unit ⬝ p)  p := by
+theorem left_unit (p : ResourceDemand) : equal (unit ⬝ p)  p := by
    sorry
 
 --(0, 0) is right unit under resource multiplication
-theorem right_unit (p: ResourcePair) : equal (p ⬝ unit) p := by
+theorem right_unit (p: ResourceDemand) : equal (p ⬝ unit) p := by
   sorry
 
---ResourcePair multiplication is associative
-theorem associative (p q r : ResourcePair) : equal (p ⬝ (q ⬝ r)) ((p ⬝ q) ⬝ r) := by
+--ResourceDemand multiplication is associative
+theorem associative (p q r : ResourceDemand) : equal (p ⬝ (q ⬝ r)) ((p ⬝ q) ⬝ r) := by
   sorry
    
 
-end ResourcePair
+end ResourceDemand
 
 namespace LetTick
 
@@ -110,26 +110,26 @@ inductive Prog :=
 inductive BaseType :=
   | Unit
 
-def RAType := BaseType × ResourcePair
+def RAType := BaseType × ResourceDemand
 
 --Evaluation judgement
-inductive Evaluation : Prog → ResourcePair → Prop :=
+inductive Evaluation : Prog → ResourceDemand → Prop :=
   | e_tick_pos (k : Int) (pos : k ≥ 0):
     Evaluation (.tick k) (⟨k, pos⟩, 0) 
   | e_tick_neg (k : Int) (neg: k < 0):
     Evaluation (.tick (abs k)) (⟨(abs k), abs_nonneg k⟩, 0)
-  | e_let {e_1 e_2 : Prog} {r_1 r_2 : ResourcePair} (eval_e_1 : Evaluation e_1 r_1) (eval_e_2 : Evaluation e_2 r_2)
+  | e_let {e_1 e_2 : Prog} {r_1 r_2 : ResourceDemand} (eval_e_1 : Evaluation e_1 r_1) (eval_e_2 : Evaluation e_2 r_2)
     : Evaluation (.letexp e_1 e_2) (r_1.mult r_2)
 
 --Typing judgement
-inductive Typing : Prog → BaseType → ResourcePair → Prop :=
-  | t_tick (k : Int) (t : BaseType) (r : ResourcePair) (suff_res : r.init ≥ k + r.resid) :
+inductive Typing : Prog → BaseType → ResourceDemand → Prop :=
+  | t_tick (k : Int) (t : BaseType) (r : ResourceDemand) (suff_res : r.init ≥ k + r.resid) :
     Typing (.tick k) t r
-  | t_let {e_1 e_2 : Prog} {r_1 r_2 : ResourcePair} {t_1 t_2 : BaseType} (e_1types : Typing e_1 t_1 r_1) (e_2Types : Typing e_2 t_2 r_2) (suff_res : r_1.resid = r_2.init) :
+  | t_let {e_1 e_2 : Prog} {r_1 r_2 : ResourceDemand} {t_1 t_2 : BaseType} (e_1types : Typing e_1 t_1 r_1) (e_2Types : Typing e_2 t_2 r_2) (suff_res : r_1.resid = r_2.init) :
     Typing (.letexp e_1 e_2) t_2 (r_1.init, r_2.resid)
 
 --Proof of soundness. Theorem 3.5
-theorem soundness (p : Prog) (r_1 r_2 : ResourcePair) (t : BaseType) 
+theorem soundness (p : Prog) (r_1 r_2 : ResourceDemand) (t : BaseType) 
   : Evaluation p r_1 → Typing p t r_2 → r_2 ≽ r_1 := by sorry
   
 end LetTick
