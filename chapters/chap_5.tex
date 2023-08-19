@@ -172,7 +172,6 @@ Let us first sketch the structure of our soundness proof:
 
 If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
 The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The initial resources of the type are not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, by using the relaxation relation defined in \cref{def:relaxation}, yielding the following theorem:
-\todo{Cref: Refs definition as theorem}
 
 \begin{theorem}[Soundness of typing for let-tick language]
    Let e be an expression in our programming language, and let \((q_0, q_1), (p_0, p_1) \in \resource\). 

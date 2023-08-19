@@ -76,7 +76,6 @@ In most programming settings, we start with an empty environment and incremental
 \end{definition}
 
 Having all of these definitions in place, we can now update the definition of an \emph{evaluation judgement}. Previously, we did not have variables in any expression. As a result, the expressions were evaluated as is, irrespective of an environment, as there was no state to keep track of. As we now evaluate expressions with respect to \nameref{def:environment}s, we need to update \cref{def:evaluation-judgement} to use environments:
-\todo{cref ref definition as theorem}
 
 \begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
    Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1) \in \resource\). We then write the following for the evaluation judgement with respect to an environment:

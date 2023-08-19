@@ -53,14 +53,14 @@ This yields two cases for the resulting resource demand:
 We can, however, simplify the multiplication of resource demands by merging the two cases. Consider that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the initial resources for both cases. Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) precisely matches the residual resources for both cases. 
 This yields the following definition:
 
-\begin{definition}[Multiplying resource demands]
+\begin{definition}[Sequencing resource demands]
    \label{def:multiplying-pairs}
    Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, as introduced above. We then define:
-   \[(p_0, p_1) \cdot (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]
+   \[(p_0, p_1) \sequence (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]
 \end{definition}
 
 \begin{example}
-   For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \cdot (5, 0) = (7,0)\).
+   For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \sequence (5, 0) = (7,0)\).
 \end{example}
  
 As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call it the \emph{disparity} of two resource demands.
@@ -70,7 +70,9 @@ As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call i
    Let \((p_0, p_1), (q_0, q_1) \in \demand\), we define the \emph{disparity} of these resource demands as \(\max(p_1, q_0)\).
 \end{definition}
 
-\todo{Talk about the fact that it forms monoid?}
+\begin{remark}
+   We remark that resource demands form a \emph{monoid} under sequential evaluation.
+\end{remark}
 
 
 \section{Comparing Resource Pairs}
@@ -112,18 +114,7 @@ Most notably, relaxation defines a partial ordering on the set of resource deman
    \end{enumerate}
 \end{definition}
 
-Before we can show that resource demands form a partial order under relaxation, we need to define equality for resource demands. Intuitively two resource demands are equal, if the respective initial cost is equal and the resource consumption is equal. Note that this is equivalent to the following definition:
-
-\begin{definition}[Equality of Resource Pairs]
-   Let \((p_0, p_1), (q_0, q_1) \in \resource\), then: 
-   \[
-      (p_0, p_1) = (q_0, q_1) :\iff p_0 = q_0 \wedge p_1 = q_1
-   \]
-\end{definition}
-
-\begin{example}
-   \((4, 2) \neq (4, 3)\), as \(3 \neq 2\).
-\end{example}
+Before we can show that resource demands form a partial order under relaxation, we need to define equality for resource demands. Intuitively two resource demands are equal, if the respective initial cost is equal and the resource consumption is equal. 
 
 \begin{lemma}
    The relaxation relation \(\relaxation\) defines a partial ordering on the set of resource demands.

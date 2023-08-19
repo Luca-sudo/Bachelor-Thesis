@@ -1,20 +1,8 @@
 \chapter{Preliminaries} \label{chap:preliminaries}
-\begin{itemize}
-	\item Amortized analysis potential method
-	\item Type Theory basics
-	   \begin{itemize}
-		\item Judgements 
-		\item Context
-		\item Universe
-		\item Inference rules?
-	   \end{itemize}
-   \item Linear type systems: what it is and why we want it for this thesis.
-   \item Functional Programming constraints (For those that only ever programmed imperatively)
-   \item Linear programming, and how it relates to the thesis
-   \item 
-\end{itemize}
 
-\section{Amortized Analysis}
+There are various concepts underpinning AARA, which we introduce briefly in this section. Amortized analysis (\cref{sec:amortized-analysis}) provides a foundational notion of cost. Type theoretic notions (\cref{sec:type-theory}) allow reasoning about resource demands of programs without executing them. Furthermore, we need to solve a system of linear constraints, to retrieve appropriate resource bounds for programs. This requires linear programming, which we introduce in \cref{sec:linear-programming}. 
+
+\section{Amortized Analysis}\label{sec:amortized-analysis}
 
 Analysis of algorithms centers around two characteristics: correctness and cost. Especially the analysis of costs is a vast field with various approaches including, but not limited to, worst-case analysis, average-case analysis and amortized analysis - with each serving a nuanced purpose. Worst-case analysis is familiar to most computer science students, as it is subject of courses taught throughout their bachelor. While it is useful to reason about the worst-case performance of algorithms, it is potentially too pessimistic when compared against concrete applications. 
 \todo{Add reference to example}
@@ -33,7 +21,7 @@ Assuming \(|l| < N\), inserting an element in the list has an actual constant co
 
 Assuming \(|l| = N\), the array has to double in size. The resulting potential after insertion is thus \(2\), as \(|l| = N + 1\). Prior to insertion, the potential was \(|l|\), as \(|l| = N \implies 2 \cdot |l| - N = |l|\). Thus, a potential linear in the size of the list is freed, which is used to amortize the actual cost of insertion - yielding an amortized constant cost.
 
-\section{Type Theory}
+\section{Type Theory}\label{sec:type-theory}
 
 Most computer scientists are exposed to Zermelo-Fraenkel set theory (ZFC) throughout mathematics courses during their studies. Type theory, a foundational concept in computer science and formal logic, offers a paradigm shift, compared to ZFC. Differing from ZFC in several fundamental ways, type theory provides an alternative framework that focuses on the classification and interaction of values based on their \emph{types}.
 
@@ -59,11 +47,17 @@ Substructural type systems impose restrictions on the usage of variables and res
 
 \subsection{Further Reading}
 
-For readers interested in type theory and programming language theory, we recommend \cite{pierce_types_2002}.
+For readers interested in type theory and programming language theory, we recommend \cite{pierceTypesProgrammingLanguages2002}.
 
-For readers interested in type theory with a focus on formal proofs, we recommend \cite{nederpelt_type_2014}.
+For readers interested in type theory with a focus on formal proofs, we recommend \cite{nederpeltTypeTheoryFormal2014}.
 
-\section{Purely Functional Programming}
+\section{Linear Programming}\label{sec:linear-programming}
+
+Linear programming \cite{LinearProgramming2023} is a special kind of optimization problem \cite{OptimizationProblem2022}. Given a set of \emph{linear} inequalities, we need to find the best solution. Linear programming is a difficult problem - it is in \textbf{NP} \cite[page~56]{aroraComputationalComplexityModern2009}. 
+
+While performing AARA, some type rules introduce numeric constraints. Those are emitted during type derivation, by specific inference rules. Upon completion of type derivation, all constraints are collected and solved using linear programming. The illustrative examples we choose throughout the thesis emit only a small amount of constraints, which permits solving by hand. When automatizing this procedure, applications utilize an \emph{LP-solver} backend.
+
+\section{Purely Functional Programming}\label{sec:functional-programming}
 
 In this thesis, we constrain ourselves to introducing purely functional programming languages, for a couple of reasons. Reasoning about such programs avoids obstacles common in imperative programming languages, such as mutation. Furthermore, we can write concise code, which allows us to focus on introducing and motivating concepts more thoroughly. For the reader who has only a vague idea of what constitutes purely functional programming, we introduce the key characteristics, at times comparing them to imperative programming for illustration.
 
@@ -91,3 +85,6 @@ One of the hallmarks of functional programming is its compositionality and high 
 
 Writing imperative code, it is common for function calls to modify some global state. Whether incrementing a counter, writing to a log, etc. - those are \emph{side effects}. A \emph{purely} functional programming language prohibits side effects, which has advantages and disadvantages. As side effects are common sources of bugs, eliminating them potentially makes code less error-prone. Conversely, this requires the introduction of new tools to handle side effects. However, of paramount significance to this thesis is that the absence of side effects and global state simplifies the elucidation of resource requirements. 
 
+\subsection{Further Reading}
+
+For a thorough introduction into functional programming, we recommend \cite{allenHaskellProgrammingFirst2016}. It uses the Haskell programming language \cite{HaskellLanguage}.
