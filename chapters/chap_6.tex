@@ -230,14 +230,18 @@ Defining the type rule for the \(\tick{}\) is straightforward, we add a context 
    {\typing{\Gamma}{\tick{k}}{\ratype{\unit}{q_0}{q_1}}}
 \]
 
-As the sub-expressions of the let expression might have different contexts, we need to account for that as well. To permit a consistent formulation of the type rule, we need to add an assumption: the two contexts need to be \emph{disjoint}. This will allow us to avoid any typing inconsistencies that could arise from mismatched types between the two contexts. 
-For this, a variable \(x\) could be present in both contexts \(\Gamma_1\) and \(\Gamma_2\), with differnt types assigned to the variable:
+\begin{remark}
+   As the sub-expressions of the let expression might have different contexts, we need to account for that as well. To permit a consistent formulation of the type rule, we need to add an assumption: the two contexts need to be \emph{disjoint}. This will allow us to avoid any typing inconsistencies that could arise from mismatched types between the two contexts. 
+   For this, a variable \(x\) could be present in both contexts \(\Gamma_1\) and \(\Gamma_2\), with different types assigned to the variable:
 
-\[
-   \typing{\Gamma_1}{x}{A} \qquad \typing{\Gamma_2}{x}{B}
-\]
+   \[
+      \typing{\Gamma_1}{x}{A} \qquad \typing{\Gamma_2}{x}{B}
+   \]
 
-This is prevented, by demanding that the contexts are \emph{disjoint}. While this makes the rule less flexible, we avoid cases where the application of (T:let) would yield a possibly ill-typed judgement; If the variable \(x\) is present in both contexts, altering the type of that variable may construe the resulting typing of the expression.
+   This is prevented, by demanding that the contexts are \emph{disjoint}. While this makes the rule less flexible, we avoid cases where the application of (T:let) would yield a possibly ill-typed judgement; If the variable \(x\) is present in both contexts, altering the type of that variable may construe the resulting typing of the expression.
+\end{remark}
+
+This leads to the following formulation of the rule (T:Let), that uses \emph{disjoint} contexts.
 
 \[
    \inference[(T:let)]

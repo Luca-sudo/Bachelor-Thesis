@@ -1,12 +1,5 @@
 \chapter{Introducing Lists}
 
-Questions:
-\begin{itemize}
-   \item How to Propagate potential? E.g.: addL(addL(l)), where addL :: \(L(Int) \to L^5(Int)\)? Resulting type should be \(L^{10}(Int)\)?
-   \item Same for resource pairs. Possible solution: Push cost to return type.
-   \item How to best combine potential and resource pair in notation? 
-\end{itemize}
-
 In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce function application, which introduces recursion into our programming language. 
 
 \begin{definition}[list-tick language]
@@ -226,16 +219,15 @@ The potential \(p\) of the list \(l\), which is matched on, is defined as the in
 \]
 
 Next, we introduce an inference rule for function application. First, the input type of the function \(f\) needs to align with the variables that are applied. Furthermore, the resource demands of the input variables, as well as the resource demand of the function, need to be propagated - this is similar to propagating values for let expression. 
+\todo{Rephrase with currying in mind. Is now introduced}
 
 \[
    \inference[(T:Application)]
-   {\typing{\Gamma}{f}{A \to \dots \to B \to \ratype{C}{p_0}{p_1}}}
-   {\typing{\Gamma;x_1:\ratype{A}{q_1}{q_1'};\dots;x_k:\ratype{B}{q_k}{q_k'}}{f x}{\ratype{C}{r_0}{r_1}}}
-\]
-
-\[
+   {\typing{\Gamma}{f}{A \to \ratype{B}{q_0}{q_1}}}
+   {\typing{\Gamma;x_1:\ratype{A}{p_0}{p_1}}{f x}{\ratype{B}{r_0}{r_1}}}
+   \qquad
    \begin{aligned}
-      \text{where }  & (r_0, r_1) = \left( \prod_{i = 1}^k (q_i, q_i') \right) \sequence (p_0, p_1)\\
+      \text{where }  & (r_0, r_1) = (p_0, p_1) \sequence (q_0, q_1)
    \end{aligned}
 \]
 
