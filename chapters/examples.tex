@@ -4,8 +4,7 @@
    \begin{minted}{ocaml}
       def add1 l = match l with 
 	 | nil -> nil
-	 | cons(x, xs) -> let _ = tick 1 in 
-			  let x' = x + 1 in
+	 | cons(x, xs) -> let _ = tick 1 in			  let x' = x + 1 in
 			  let xs' = add1 xs in
 			  cons(x', xs')
    \end{minted}

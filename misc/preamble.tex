@@ -42,6 +42,7 @@
 % Custom packages
 \usepackage{amsthm}
 
+
 % Custom commands
 \newcommand{\shares}{\curlyveedownarrow}
 \newcommand{\subtype}{<:}
@@ -134,13 +135,6 @@
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
 
-\theoremstyle{definition}
-\newtheorem{theorem}{Theorem}[chapter]
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
-\newtheorem*{remark}{Remark}
 
 
 % Corporate Design
@@ -208,9 +202,17 @@
 
 % Hyperlinks and menu for your document
 \usepackage[breaklinks,hyperindex,colorlinks,anchorcolor=black,citecolor=black,filecolor=black,linkcolor=black,menucolor=black,urlcolor=black,pdftex]{hyperref} % pagebackref: Add page number to the references where they can be found
-\usepackage{cleveref}
+\usepackage[capitalize]{cleveref}
 \usepackage{nameref}
 \usepackage{stackengine}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem*{remark}{Remark}
 
 % Glossary
 \usepackage[sort=none,symbols,nogroupskip]{glossaries-extra}
@@ -252,6 +254,8 @@
 \glsxtrnewsymbol[description={List Constructor}]{cons}{\cons{x}{xs}}
 \glsxtrnewsymbol[description={Nil Constructor}]{nil}{\listnil}
 
+% Glossary acronyms
+\newacronym{aara}{AARA}{Automatic Amortized Resource Analysis}
 
 % DO NOT LOAD ANY OF YOUR PACKAGES BEYOND THIS PACKAGE
 

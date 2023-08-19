@@ -34,5 +34,33 @@ Assuming \(|l| < N\), inserting an element in the list has an actual constant co
 Assuming \(|l| = N\), the array has to double in size. The resulting potential after insertion is thus \(2\), as \(|l| = N + 1\). Prior to insertion, the potential was \(|l|\), as \(|l| = N \implies 2 \cdot |l| - N = |l|\). Thus, a potential linear in the size of the list is freed, which is used to amortize the actual cost of insertion - yielding an amortized constant cost.
 
 
+\section{Purely Functional Programming}
+
+In this thesis, we constrain ourselves to introducing purely functional programming languages, for a couple of reasons. Reasoning about such programs avoids obstacles common in imperative programming languages, such as mutation. Furthermore, we can write concise code, which allows us to focus on introducing and motivating concepts more thoroughly. For the reader who has only a vague idea of what constitutes purely functional programming, we introduce the key characteristics, at times comparing them to imperative programming for illustration.
+
+\subsection{Immutability}
+
+At its core, functional programming centers around the concept of treating computation as the evaluation of mathematical functions. Those functions are commonly referred to as "black boxes", which given some input produce some output. Compared to imperative programming, where computation comprises sequential manipulation of state, functional programming regards data as immutable. This provides advantages, especially for parallel and concurrent computations, as race conditions and deadlocks are eliminated. This is achieved at the expense of memory and performance, as partially mutating large data structures requires less resources and computation than reconstructing the entire data structure.
+
+\subsection{Type Signatures}
+
+There are two parts to defining a function in a mathematical setting. First, we need to define how individual values are mapped. Secondly, we need to define the domain and co-domain of the function - these are the sets of values the function allows as input or output, respectively. In functional programming, functions also have an associated domain and co-domain. Assuming that the type of integers is denoted \(\typeint\), a function that given an integer increments and returns it, has a \emph{type signature} \(\typeint \to \typeint\).  
+
+Functions can take multiple arguments - of possibly distinct types. To model type signatures with multiple arguments we use \emph{currying}. Consider a function add that returns the sum of two integers. One possible way of defining the domain is using the cartesian product. Thus, the domain could be \(\typeint \times \typeint\). \emph{Currying} the function then means converting a \(k\)-ary function into a sequence of \emph{unary} functions. In the above example, this results in the following type signature: \(\typeint \to \typeint \to \typeint\). Thus, the function first takes an integer, followed by the second integer. 
+
+\todo{Illustration for currying that example}
+
+\subsection{Higher-Order Functions}
+
+One of the hallmarks of functional programming is its compositionality and high level of abstraction. Treating computation as functions facilitates compositionality, as functions can - under certain conditions - be composed easily. Thus, one can construct complex computation from a set of primitive functions, by composing them in intricate ways. Because functions are integral to functional programming, they are treated equally to any other data; Functions can, therefore, be passed to, and returned from, functions. Functions that take or return other functions are called \emph{higher-order} functions. As a canonical example, we illustrate the higher-order function map.
+
+Map is a function that operates on lists, taking a function \(f\) and a list \(l\) as its input. The function \(f\) is then applied to every element in the list. 
+
+\todo{Illustration of map}
+
+
+
+
+
 
 

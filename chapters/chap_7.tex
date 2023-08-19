@@ -415,6 +415,8 @@ This forces us to embellish the inequalities required to hold for soundness. Con
 
 In the case of residual resources, a similar line of thought holds. Here, we additionally account for the potential of the returned value \(v\), which yields \(q_1 + \Phi(v : A)\). With both initial and residual resources defined, we express soundness as a relaxation \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : A)) \relaxation (p_0, p_1)\), yielding two inequalities \(q_0 + \Phi(\Gamma) \geq p_0\) and \((q_0 - q_1) + (\Phi(\Gamma) - \Phi(v : A)) \geq p_0 - p_1\).
 
+
+
 \begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
    Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A \in \type\), \((p_0, p_1), (q_0, q_1) \in \demand\) and an expression \(e\) that evaluates to the value \(v\). 
 
@@ -425,7 +427,7 @@ In the case of residual resources, a similar line of thought holds. Here, we add
 
 \begin{proof}
 \end{proof}
-
+ 
 \section{Questions}
 
 \begin{itemize}
