@@ -150,7 +150,7 @@ To define recursive functions we are currently missing function application. We 
 
 Our goal is to introduce type rules that allow us to assign resource costs to lists. Previously, we assigned a resource-pair (\cref{def:resource-pair}) to the resulting type; This is not feasible for lists, as the cost of evaluating an expression featuring a list depends on the length of the list. For this, we introduced recurrence relations to model resource demands that respect the length of a list. The type rule analogue to recurrence relations are \emph{potentials}. Intuitively, we assign a potential to a list, which corresponds to a cost for each list element. Having introduced potentials, we will define resource-aware lists, which forces us to consider how potentials can be composed and shared.
 
-\subsection{Resource-Aware Lists}
+\subsection{Resource-Aware Lists}\label{sec:resource-aware-lists}
 
 We start by defining the type of resource-aware lists, the potential function, notation for the length of a list and deriving potential for lists with base types. For this, we start by defining resource-aware lists:
 
@@ -241,7 +241,7 @@ Next, we introduce an inference rule for function application. First, the input 
 
 The rule (T:Application) allows us to type recursive functions. Most importantly, the type of \(x\) and the input type of \(f\) are then inferred to be the same. For recursive calls on a list, we assume that they recur only on the tail \(xs\). Then, the tail has a potential annotation, which is propagated to the function signature, as we assume that the types match. This will be important in the coming examples, as this allows us to type recursive functions.
 
-\subsection{Example Type Derivations}
+\subsection{Example Type Derivations}\label{sec:example-type-derivations}
 
 We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists. 
 

@@ -16,23 +16,52 @@
 
 \section{Amortized Analysis}
 
-Analysis of algorithms centers around two characteristics: correctness and cost. Especially the analysis of costs is a vast field with various approaches including, but not limited to, worst-case analysis, average-case analysis and amortized analysis - with each serving a nuanced purpose. Worst-case analysis is familiar to most computer science students, as it is subject of courses taught throughout their bachelor. While it is useful to reason about the worst-case performance of algorithms, it is potentially to pessimistic when compared against concrete applications. 
+Analysis of algorithms centers around two characteristics: correctness and cost. Especially the analysis of costs is a vast field with various approaches including, but not limited to, worst-case analysis, average-case analysis and amortized analysis - with each serving a nuanced purpose. Worst-case analysis is familiar to most computer science students, as it is subject of courses taught throughout their bachelor. While it is useful to reason about the worst-case performance of algorithms, it is potentially too pessimistic when compared against concrete applications. 
 \todo{Add reference to example}
 
 Average-case analysis provides a paradigm shift. Instead of examining \emph{only} the worst-case, the algorithm is analyzed with respect to the probability distribution of the respective inputs. It thus represents a more nuanced view of the problem domain, taking into account the varying performance and the probability for the input. 
 
-Amortized analysis approaches the question of cost differently. Instead of evaluating the cost ofa single operation, it considers the cost of a \emph{sequence} of operations. This may provide an analysis that is more akin to the concrete usage of algorithms - rarely is an algorithm executed once.
+Amortized analysis approaches the question of cost differently. Instead of evaluating the cost of a single operation, it considers the cost of a \emph{sequence} of operations. This may provide an analysis that is more akin to the concrete usage of algorithms - rarely is an algorithm executed once.
 
 To illustrate the profound difference, consider a list data structure that is implemented with an underlying array. Whenever an insert operation fills the array, it doubles in size. Worst-case analysis would ascribe linear cost (\(\mathcal{O}(n)\), where \(n\) is the length of the list) to an insert operation, because the worst-case entails resizing the array. Amortized analysis on the other hand would analyze a sequence of \(n\) insert operations.
 
 We assume that inserting into an array takes constant time, if the array has free space. Then, inserting \(n + 1\) elements into an array of size \(n\) requires \(n\) constant time inserts, as well as one resizing of the array, which requires \(\mathcal{O}(n)\) time. Averaged out over \(n + 1\) operations, the insert operation requires only constant time. 
 
-While there are various approaches to amortized analysis, we use the potential method \todo{reference} throughout this thesis. In the above example, we allow the list to store a potential, depending on it's size, which can be used to amortize more expensive operations. For this, we define a potential function \(\Phi(l) = 2\cdot |l| - N\), where \(|l|\) refers to the number of elements stored in the list, and \(N\) refers to the maximum capacity of \(l\). The amortized cost of any operation is composed of the actual cost of the operation and the change in potential.
+While there are various approaches to amortized analysis, we use the potential method, which is introduced in \cref{sec:resource-aware-lists}, to allow elucidation of resource bounds respecting variable list sizes. In the above example, we allow the list to store a potential, depending on it's size, which can be used to amortize more expensive operations. For this, we define a potential function \(\Phi(l) = 2\cdot |l| - N\), where \(|l|\) refers to the number of elements stored in the list, and \(N\) refers to the maximum capacity of \(l\). The amortized cost of any operation is composed of the actual cost of the operation and the change in potential.
 
 Assuming \(|l| < N\), inserting an element in the list has an actual constant cost, and the potential of the list is incremented by \(2\). As a result, the amortized cost, which is the sum of actual cost and change in potential, is also constant. 
 
 Assuming \(|l| = N\), the array has to double in size. The resulting potential after insertion is thus \(2\), as \(|l| = N + 1\). Prior to insertion, the potential was \(|l|\), as \(|l| = N \implies 2 \cdot |l| - N = |l|\). Thus, a potential linear in the size of the list is freed, which is used to amortize the actual cost of insertion - yielding an amortized constant cost.
 
+\section{Type Theory}
+
+Most computer scientists are exposed to Zermelo-Fraenkel set theory (ZFC) throughout mathematics courses during their studies. Type theory, a foundational concept in computer science and formal logic, offers a paradigm shift, compared to ZFC. Differing from ZFC in several fundamental ways, type theory provides an alternative framework that focuses on the classification and interaction of values based on their \emph{types}.
+
+While ZFC revolves around sets as its central objects, type theory revolves around the notion of types, which categorize values into different groups. Most readers are already familiar with types, as they are ubiquitous in programming. In C for example, the user has to define the type of a variable upon initialization. It is not possible to assign a string of characters to a variable of type \typeint.
+
+\subsection{Inference Rules}
+
+Type judgements are a fundamental concept in type theory, indicating that an expression has a certain type. To state that the variable \(x\) has type \(\typeint\), we write \(x : \typeint\). One may think of a typing judgement as an analogue to the \(\in\) operator in ZFC. Fundamentally, \emph{type systems} provide rules to reason about types of complex expressions.
+
+These rules are called \emph{inference rules} and allow us to assign types to expressions, given the required \emph{premises} hold. Premises can be, among many, constraints and typing judgements themselves. The most common notation for inference rules looks like this: 
+
+\[
+   \inference[(Name)]
+   {Premise_1 \quad Premise_2}
+   {Conclusion}
+\]
+
+Expressions are typed by sequential application of defined inference rules. The visual representation generated by such sequential application is called a \emph{type derivation}. In \cref{sec:example-type-derivations} we provide type derivations for select examples.
+
+\subsection{Linear Type Systems}
+
+Substructural type systems impose restrictions on the usage of variables and resources. As such, \emph{linear type systems} are a special kind of substructural type system - variables can be used \emph{exactly} once. This abolishes certain classes of errors, such as dangling pointers. For AARA, it streamlines certain correctness proofs and simplifies assignation of potentials to list, as lists cannot be used multiple times.
+
+\subsection{Further Reading}
+
+For readers interested in type theory and programming language theory, we recommend \cite{pierce_types_2002}.
+
+For readers interested in type theory with a focus on formal proofs, we recommend \cite{nederpelt_type_2014}.
 
 \section{Purely Functional Programming}
 
@@ -50,17 +79,15 @@ Functions can take multiple arguments - of possibly distinct types. To model typ
 
 \todo{Illustration for currying that example}
 
+In \cref{sec:code-examples}, we provide example functions used throughout the thesis, along with their type signatures.
+
 \subsection{Higher-Order Functions}
 
-One of the hallmarks of functional programming is its compositionality and high level of abstraction. Treating computation as functions facilitates compositionality, as functions can - under certain conditions - be composed easily. Thus, one can construct complex computation from a set of primitive functions, by composing them in intricate ways. Because functions are integral to functional programming, they are treated equally to any other data; Functions can, therefore, be passed to, and returned from, functions. Functions that take or return other functions are called \emph{higher-order} functions. As a canonical example, we illustrate the higher-order function map.
-
-Map is a function that operates on lists, taking a function \(f\) and a list \(l\) as its input. The function \(f\) is then applied to every element in the list. 
+One of the hallmarks of functional programming is its compositionality and high level of abstraction. Treating computation as functions facilitates compositionality, as functions can - under certain conditions - be composed easily. Thus, one can construct complex computation from a set of primitive functions, by composing them in intricate ways. Because functions are integral to functional programming, they are treated equally to any other data; Functions can, therefore, be passed to, and returned from, functions. Functions that take or return other functions are called \emph{higher-order} functions. For a canonical example, consider the function \(map\), found in \cref{fig:code-map}.
 
 \todo{Illustration of map}
 
+\subsection{Purity}
 
-
-
-
-
+Writing imperative code, it is common for function calls to modify some global state. Whether incrementing a counter, writing to a log, etc. - those are \emph{side effects}. A \emph{purely} functional programming language prohibits side effects, which has advantages and disadvantages. As side effects are common sources of bugs, eliminating them potentially makes code less error-prone. Conversely, this requires the introduction of new tools to handle side effects. However, of paramount significance to this thesis is that the absence of side effects and global state simplifies the elucidation of resource requirements. 
 
