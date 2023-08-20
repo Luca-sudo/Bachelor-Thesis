@@ -49,8 +49,7 @@ First, we need a rule that allows us to combine two expression into a let expres
    {\evals{}{\letexp{}{e_1}{e_1}}{()}{r_0}{r_1}}
    \qquad
    \begin{aligned}
-      \text{where }  &r_0 = p_0 - p_1 + \max(p_1, q_0)\\
-                     &r_1 = q_1 - q_0 + \max(p_1, q_0) 
+      \text{where }  &(r_0, r_1) = (p_0, p_1) \sequence (q_0, q_1) 
    \end{aligned}
 \]
 
@@ -59,13 +58,11 @@ Similarly, we now define a rule for the \<tick> instruction. The expression \<ti
 \[
    \inference[\((E:tick_{+})\)]
    {q \geq 0}
-   {\evals{}{\tick{q}}{()}{q}{}}
-\]
-
-\[
+   {\evals{}{\tick{q}}{()}{q}{0}}
+   \qquad
    \inference[\((E:tick_{-})\)]
    {q < 0}
-   {\evals{}{\tick{q}}{()}{}{|q|}}
+   {\evals{}{\tick{q}}{()}{0}{|q|}}
 \]
 
 In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. 

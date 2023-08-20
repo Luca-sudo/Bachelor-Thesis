@@ -8,6 +8,10 @@ package «Aara» {
   -- add package configuration options here
 }
 
+lean_lib Resources where
+  roots := #[`Resources]
+
+
 lean_lib «Aara» {
   -- add library configuration options here
 }

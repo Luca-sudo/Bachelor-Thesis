@@ -55,7 +55,7 @@ For readers interested in type theory with a focus on formal proofs, we recommen
 
 Linear programming \cite{LinearProgramming2023} is a special kind of optimization problem \cite{OptimizationProblem2022}. Given a set of \emph{linear} inequalities, we need to find the best solution. Linear programming is a difficult problem - it is in \textbf{NP} \cite[page~56]{aroraComputationalComplexityModern2009}. 
 
-While performing AARA, some type rules introduce numeric constraints. Those are emitted during type derivation, by specific inference rules. Upon completion of type derivation, all constraints are collected and solved using linear programming. The illustrative examples we choose throughout the thesis emit only a small amount of constraints, which permits solving by hand. When automatizing this procedure, applications utilize an \emph{LP-solver} backend.
+While performing AARA, some type rules introduce numeric constraints. Those are emitted, during type derivation, by specific inference rules. Upon completion of type derivation, all constraints are collected and solved using linear programming. The illustrative examples we choose throughout the thesis emit only a small amount of constraints, which permits solving by hand. When automatizing this procedure, applications utilize an \emph{LP-solver} backend.
 
 \section{Purely Functional Programming}\label{sec:functional-programming}
 
