@@ -70,9 +70,14 @@ As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call i
    Let \((p_0, p_1), (q_0, q_1) \in \demand\), we define the \emph{disparity} of these resource demands as \(\max(p_1, q_0)\).
 \end{definition}
 
-\begin{remark}
-   We remark that resource demands form a \emph{monoid} under sequential evaluation.
-\end{remark}
+\begin{theorem}
+   Resource demands form a \emph{monoid} under sequencing.
+\end{theorem}
+
+\begin{proof}
+   We provide a proof script in lean.
+   \inputminted{lean}{formal-proofs/Resources/Monoid.lean}
+\end{proof}
 
 
 \section{Comparing Resource Pairs}
@@ -122,9 +127,11 @@ Before we can show that resource demands form a partial order under relaxation, 
    The relaxation relation \(\relaxation\) defines a partial ordering on the set of resource demands.
 \end{lemma}
 
+\newpage
+
 \begin{proof}
-   We provide a proof script in lean.
-   \inputminted{lean}{formal-proofs/Resources/Monoid.lean}
+   We provide a lean proof script.
+   \inputminted{lean}{formal-proofs/Resources/Relaxation_PO.lean}
 \end{proof}
 
 It is important to note that, for any two resource pairs, one \emph{need not} be a relaxation of the other. Therefore, relaxation does not define a total order - as the following example shows.

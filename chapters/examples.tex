@@ -1,18 +1,18 @@
 \chapter{Unit Test Functions}\label{sec:code-examples}
 
-\begin{figure}[H]
+\begin{figure}[H] \label{fig:code-add1}
    \begin{minted}{ocaml}
       def add1 l = match l with 
 	 | nil -> nil
-	 | cons(x, xs) -> let _ = tick 1 in			  let x' = x + 1 in
+	 | cons(x, xs) -> let _ = tick 1 in			  
+			  let x' = x + 1 in
 			  let xs' = add1 xs in
 			  cons(x', xs')
    \end{minted}
    \caption{add1 :: \(\ralist{}{\typeint} \to \ralist{}{\typeint}\)}
-\label{fig:code-add1}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[H] \label{fig:code-sum}
    \begin{minted}{ocaml}
       def sum l n = match l with 
 	 | nil -> n
@@ -21,10 +21,9 @@
 			  sum xs x'
    \end{minted}
    \caption{sum :: \(\ralist{}{\typeint} \to \typeint \to \typeint\)}
-\label{fig:code-sum}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[H] \label{fig:code-map}
    \begin{minted}{ocaml}
       def map f l = match l with
 	 | nil -> nil
@@ -33,10 +32,9 @@
 			  conx(x', xs')
    \end{minted}
    \caption{map :: \((A \to B) \to \ralist{}{A} \to \ralist{}{B}\)}
-\label{fig:code-map}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[H] \label{fig:code-fold}
    \begin{minted}{ocaml}
       def fold op l acc = match l with
 	 | nil -> acc
@@ -44,6 +42,5 @@
 			  fold op xs acc'
       \end{minted}
    \caption{fold :: \((A \to B \to B) \to \ralist{}{A} \to B \to B\)}
-\label{fig:code-fold}
 \end{figure}
 

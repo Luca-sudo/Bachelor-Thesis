@@ -44,7 +44,8 @@
 
 % For minted to properly display symbols in lean scripts
 \DeclareUnicodeCharacter{25B9}{\sequence}
-
+\DeclareUnicodeCharacter{227D}{\relaxation}
+\DeclareUnicodeCharacter{2227}{\ensuremath{\wedge}}
 
 % Custom commands
 \newcommand{\shares}{\curlyveedownarrow}
@@ -65,6 +66,11 @@
 
 % Typing judgement. Arguments: Context, expression, type.
 \newcommand{\typing}[3]{#1 \vdash #2 : #3}
+
+% Highlights background color, inidcating that this is examined in the next step
+\newcommand{\typingHighlight}[1]{\tikz[baseline]{\node[fill=blue!30, rectangle, anchor=base]{\ensuremath{#1}}}}
+
+\newcommand{\constraintHighlight}[1]{\tikz[baseline]{\node[fill=green!30, rectangle, anchor=base]{\ensuremath{#1}}}}
 
 % Programming language constructs as defined in the respective chapters.
 \newcommand{\letexp}[3]{\mathbf{let}~#1 = #2~\mathbf{in}~#3}

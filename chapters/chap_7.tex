@@ -238,63 +238,113 @@ The rule (T:Application) allows us to type recursive functions. Most importantly
 We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists. 
 
 \begin{example}
-   For our first example, consider a function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}.
+   For our first example, consider a function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}. We derive a resource-annotated type stepwise, for sake of illustration. For this, we write \(e_1\) as an abbreviation for the body of the \(\cons{x}{xs}\) match. 
 
-The resulting type derivation is displayed in \cref{fig:type-derivation-add1}, let us briefly explain key parts of the derivation:
+   Application of (T:MatchList) yields two premises. We close the first premise by applying (T:Nil).
 
-At the top, we labelled a premise using "Recursive Call", because we again apply the function \(add1\) to the tail (\(xs\)) of our initial list. We, therefore, can stop the derivation at this point without loss of information. We already collected the necessary constraints.
-
-In the second line, we typed the let expression with \(\ratype{\ralist{0}{\typeint}}{2}{0}\). This is the result of two facts: We did not collect any constraints that impose a potential on the resulting list. And, the inference rule for let expression requires us to consider the resource cost of the tick expression. 
-
-Lastly, we derive a potential of \(2\) for the input list \(l\). The expression that is evaluated for an empty list has no cost associated. For a non-empty list, we have an initial cost of 2. By definition of the (T:MatchList) rule, the potential \(p\) is precisely the difference in the two respective costs.
-
-\begin{sidewaysfigure}
-\begin{figure}[H]
-   \[
-      \hspace*{-1.5cm}
-      \inference
+\[
+   \inference[(T:MatchList)]
       {
-         \typing{\Gamma}{\listnil}{\ralist{p}{A}} 
-         &
-         \inference
+         \inference[(T:Nil)]
          {
-            \typing{\Gamma}{\tick{2}}{\ratype{\unit}{2}{0}}
-            &
-            \inference
-            {
-               \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
-               &
-               \inference
-               {
-                  \typing{\Gamma;xs:\ralist{p}{A}}{add1~xs}{\ralist{q}{\typeint}}
-                  &
-                  \typing{\Gamma;x':\typeint;xs':\ralist{p}{\typeint}}{\cons{x'}{xs'}}{\ralist{q}{\typeint}}  
-               }
-               {
-                  \typing{\Gamma;x':\typeint:xs:\ralist{p}{A}}{e_1''}{\ralist{q}{\typeint}}
-               }
-            }
-            {
-               \typing{\Gamma;x:A;xs:\ralist{p}{A}}{e_1'}{\ralist{q}{\typeint}}
-            }
          }
          {
-            \typing{\Gamma;x:A;xs:\ralist{p}{A}}{e_1}{\ratype{\ralist{q}{\typeint}}{2}{0}}
+            \typing{\Gamma}{l}{\ralist{p}{A}}
          }
+         \quad
+         \typingHighlight{\typing{\Gamma;x:A;xs:\ralist{p}{A}}{e_1}{\ratype{B}{p_0}{p_1}}}
       }
       {
-         \typing{\Gamma;l : \ralist{2}{\typeint}}{\listmatch{l}{\listnil}{e_1}}{\ralist{0}{\typeint}}
+         \typing{\Gamma;l : \ralist{p}{A}}{\listmatch{l}{\listnil}{e_1}}{B}
       }
-   \]
-   \caption{Type derivation of the add1 function.}
-   \label{fig:type-derivation-add1}
-\end{figure}
-\end{sidewaysfigure}
-\todo{Make it pretty and fit on page without flipping}
+\]
+
+Applying (T:Let) splits \(e_1\) up into a tick expression plus the remaining expression, abbreviated \(e_2\). Applying (T:Tick) closes the left branch of the derivation.
+
+\[
+   \inference[(T:Let)]
+   {
+      \inference[(T:Tick)]
+      {
+      }
+      {
+         \typing{\Gamma}{\tick{1}}{\ratype{\unit}{1}{0}}
+      }
+      \quad
+      \typingHighlight{\typing{\Gamma;x:A;xs:\ralist{p}{A}}{e_2}{\ratype{B}{q_0}{q_1}}}
+   }
+   {
+      \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{1}}{e_2}}{\ratype{B}{p_0}{p_1}}
+   }
+\]
+\begin{align*}
+   \constraintHighlight{\text{where } (p_0, p_1) = (1, 0) \sequence (q_0, q_1)}
+\end{align*}
+
+Again, we apply (T:Let), yielding \(x + 1\) and the sub-expression \(e_3\). Applying the rule (T:Op), we infer that \(x : \typeint\). Thus, \(xs : \ralist{p}{\typeint}\) as well.
+
+\[
+   \inference[(T:Let)]
+   {
+      \inference[(T:Op)]
+      {
+      }
+      {
+         \typing{\Gamma;x:\typeint}{x + 1}{\typeint}
+      }
+      \quad
+      \typingHighlight{\typing{\Gamma;x':\typeint;xs:\ralist{p}{\typeint}}{e_3}{\ratype{B}{q_0}{q_1}}}
+   }
+   {
+      \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{x'}{x + 1}{e_3}}{\ratype{B}{q_0}{q_1}}
+   }
+\]
+
+The final application of (T:Let) generates two premises. The first being the recursive function call on \(xs\), and the second being the construction of the final list. We infer that \(B = \ralist{q}{\typeint}\), resulting from the application of (T:Cons), from which the return type is propagated. 
+
+Furthermore, \(q_0 = 0 = q_1\), as neither sub-expressions have any resource demand.
+
+\[
+   \hspace*{-2cm}
+   \inference[(T:Let)]
+   {
+      \typingHighlight{\typing{\Gamma;xs:\ralist{p}{\typeint}}{add1~xs}{\ralist{q}{\typeint}}}
+      \inference[(T:Cons)]
+      {}
+      {
+         \typing{\Gamma;x':\typeint;xs':\ralist{q}{\typeint}}{\cons{x'}{xs'}}{\ralist{q}{\typeint}}
+      }
+   }
+   {
+      \typing{\Gamma;x':\typeint;xs:\ralist{p}{\typeint}}{\letexp{xs'}{add1~xs}{\cons{x'}{xs'}}}{\ralist{q}{\typeint}}
+   }
+\]
+\begin{align*}
+   \constraintHighlight{\text{where } (q_0, q_1) = (0, 0)}
+\end{align*}
+
+As a last step, we need to type the recursive function call. The rule (T:Application) allows us to do that. Throughout the previous steps, we derived that the input has type \(\ralist{p}{\typeint}\) and the return type is \(\ralist{q}{\typeint}\). 
+
+\[
+   \inference[(T:Application)]
+   {
+      \typing{\Gamma}{add1}{\ralist{p}{\typeint} \to \ralist{q}{\typeint}}
+   }
+   {
+      \typing{\Gamma;xs:\ralist{p}{\typeint}}{add1~xs}{\ralist{q}{\typeint}}
+   }
+\]
+
+This concludes the type derivation. Next, we need to collect all constraints and infer optimal values for the potentials of input and output, \(p\) and \(q\) respectively. For this, we need the resource demand of \(e_1\), which we get by combining the constraints highlighted in green. 
+
+\[
+   (p_0, p_1) = (1, 0) \implies p = 1
+\]
 
 The resulting resource-aware type for \(add1\) is, therefore:
+
 \[
-   add1 :: \rafunc{\ralist{2}{\typeint}}{\ralist{}{\typeint}}{}{}
+   add1 :: \rafunc{\ralist{1}{\typeint}}{\ralist{}{\typeint}}{}{}
 \]
 \end{example}
 
