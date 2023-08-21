@@ -86,6 +86,10 @@ Having all of these definitions in place, we can now update the definition of an
 	
 \end{definition}
 
+\begin{remark}
+   Note that the evaluation of an expression \(e\) depends on the environment, due to the ambiguity of variable names. Thus, both the return value \(v\) and the resource demand \((p_0, p_1)\) can differ for disparate environments. 
+\end{remark}
+
 \subsection{Evaluation Rules}
 
 Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. We start with the rule (E:var), which provides an explicit handle for resolving variable names to their values. In order for the rule to be consistent, we must enforce that the variable we want to resolve is defined in the current environment. 
@@ -125,29 +129,15 @@ The last rule missing is (E:let). Here, we need to carefully weave the value tha
    \inference[(E:let)]
    {\evals{E}{e_1}{v_1}{p_0}{p_1} \qquad \evals{\envaugment{E}{x}{v_1}}{e_2}{v_2}{q_0}{q_1}}
    {\evals{E}{\letexp{x}{e_1}{e_2}}{v_2}{r_0}{r_1}}%
-   \qquad
-   \begin{aligned}
-      \text{where }  &r_0 = p_0 - p_1 + \max(p_1, q_0)\\
-      \text{and }    &r_1 = q_1 - q_0 + \max(p_1, q_0) 
-   \end{aligned}
 \]
+\begin{align*}
+   \text{where }  &(r_0, r_1) = (p_0, p_1) \sequence (q_0, q_1)
+\end{align*}
 
 
 \section{Type Rules}\label{sec:type-rules-5}
 
-In the previous chapter, the programming language at hand only produced values of a singular type \textbf{unit}. For this programming language, we introduced two new types which forces us to reconsider the type we assign to \emph{sequential expressions}. For this, we note two facts: (1) The resource-consumption assigned to a sequential operation is invariant of the type the operation returns. (2) The result of the first expression is consumed by the second expression, and, therefore, the result of the sequential evaluation is defined by the return type of the second expression. This motivates the following, updated definition:
-
-\begin{definition}
-   Let \(e_1 : \ratype{A}{p_0}{p_1}\) and \(e_2 : \ratype{B}{q_0}{q_1}\) be two expressions, where \(A\) and \(B\) are types from \cref{def:type-system-5}. Sequential evaluation of \(e_1, e_2\) then yields the type:
-   \[
-      \letexp{x}{e_1}{e_2} : \ratype{B}{r_0}{r_1}
-      \qquad
-      \begin{aligned}
-	 \text{where }	&r_0 = p_0 - p_1 + \max(p_1, q_0) \\
-			&r_1 = q_1 - q_0 + \max(p_1, q_0)
-      \end{aligned}
-   \]
-\end{definition}
+To type expressions with variables, knowledge of a variable's type is paramount. This necessitates the definition of \emph{contexts} (\cref{def:context}), along with ergonomic notations. The introduction of contexts requires extending \emph{typing judgements} (\cref{def:type-judgement-context}). With these in place, we define the \emph{inference rules} (\cref{sec:inference-rules-letvar}) that are context-aware.
 
 \subsection{Contexts}
 
@@ -200,7 +190,8 @@ In order to define a type rule for let expressions, we need to define when two c
    \]
 \end{definition}
 
-\subsection{Inference Rules}
+
+\subsection{Inference Rules}\label{sec:inference-rules-letvar}
 
 Let us start by introducing the rule (T:var), which allows us to add a variable and its associated type into a context.
 
