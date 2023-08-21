@@ -73,10 +73,10 @@
 \newcommand{\constraintHighlight}[1]{\tikz[baseline]{\node[fill=green!30, rectangle, anchor=base]{\ensuremath{#1}}}}
 
 % Programming language constructs as defined in the respective chapters.
-\newcommand{\letexp}[3]{\mathbf{let}~#1 = #2~\mathbf{in}~#3}
-\newcommand{\tick}[1]{\mathbf{tick}~#1}
-\newcommand{\true}{\mathbf{true}}
-\newcommand{\false}{\mathbf{false}}
+\newcommand{\letexp}[3]{\ensuremath{\mathbf{let}~#1 = #2~\mathbf{in}~#3}}
+\newcommand{\tick}[1]{\ensuremath{\mathbf{tick}~#1}}
+\newcommand{\true}{\ensuremath{\mathbf{true}}}
+\newcommand{\false}{\ensuremath{\mathbf{false}}}
 
 % The set of all variable names.
 \newcommand{\Var}{Var}
@@ -143,6 +143,9 @@
 
 % Set of types.
 \newcommand{\type}{\ensuremath{\mathbb{T}}}
+
+% Function abstraction
+\newcommand{\func}{\ensuremath{\textbf{def}}}
 
 \reservestyle{\command}{\textbf}
 \command{let, in, tick}
@@ -227,45 +230,80 @@
 \newtheorem*{remark}{Remark}
 
 % Glossary
-\usepackage[sort=none,symbols,nogroupskip]{glossaries-extra}
+\usepackage[record, style=alttreegroup, nomain, symbols]{glossaries-extra}
 
 % Symbols. To be used by glossaries package.
+
+% Resources
 \glsxtrnewsymbol
-  [description={Unit Type}]
+  [description={Set of resources}, group={resources}]
+  {resources}
+  {\resource}
+\glsxtrnewsymbol
+[description={Resource Demands}, group={resources}]
+  {resource demands}
+  {\demand}
+\glsxtrnewsymbol
+[description={Sequencing Operator}, group={resources}]
+  {sequencing}
+  {\sequence}
+\glsxtrnewsymbol
+  [description={Relaxation Relation}, group={resources}]
+  {relaxation}
+  {\relaxation}
+
+% Types
+\glsxtrnewsymbol
+[description={Set of Types}, group={types}]
+  {set types}
+  {\type}
+\glsxtrnewsymbol
+[description={Unit Type}, group={types}]
   {unit}
   {\(\unit\)}
 \glsxtrnewsymbol
-  [description={Resource-Annotated Type}]
-  {ratype}
-  {\(\ratype{A}{p_0}{p_1}\)}
-\glsxtrnewsymbol
-  [description={The Unit Value}]
+[description={The Unit Value}, group={types}]
   {unitval}
   {\(()\)}
+\glsxtrnewsymbol[description={Type Bool}, group={types}]{int}{\bool}
+\glsxtrnewsymbol[description={Type Int}, group={types}]{bool}{\typeint}
 \glsxtrnewsymbol
-  [description={Evaluation Judgement}]
-  {evaljudgement}
-  {\(\vDash\)}
-\glsxtrnewsymbol[description={Evaluation}]{evaluation}{\(\evals{E}{e}{v}{p_{0}}{p_{1}}\)}
-\glsxtrnewsymbol[description={Typing Judgement}]{typejudgement}{\(\vdash\)}
-\glsxtrnewsymbol[description={Type Product}]{typeproduct}{\(\ltimes\)}
-\glsxtrnewsymbol[description={Environment}]{environment}{\(E\)}
-\glsxtrnewsymbol[description={Get the value of a variable}]{value from environment}{\(E(x)\)}
-\glsxtrnewsymbol[description={Set of Variable Names}]{var}{\(\Var\)}
-\glsxtrnewsymbol[description={Set of Values}]{vals}{\(\Vals\)}
-\glsxtrnewsymbol[description={Partial Function}]{partialfunction}{\(\partialto\)}
-\glsxtrnewsymbol[description={Map x to y in Environment E}]{envaugment}{\(\envaugment{E}{x}{y}\)}
-\glsxtrnewsymbol[description={x is defined in Environment E}]{def in env}{\(\contains{E}{x}\)}
-\glsxtrnewsymbol[description={Type Bool}]{int}{\bool}
-\glsxtrnewsymbol[description={Type Int}]{bool}{\typeint}
-\glsxtrnewsymbol[description={Type Context}]{context}{\(\Gamma\)}
-\glsxtrnewsymbol[description={Disjoint Contexts}]{disjoint contexts}{\(\Gamma_1 \cap \Gamma_2 = \emptyset\)}
-\glsxtrnewsymbol[description={Union of Contexts}]{context union}{\(\Gamma_1;\Gamma_2\)}
-\glsxtrnewsymbol[description={Sequential Evaluation of Expressions}]{seqeval}{\(e_1;e_2\)}
-\glsxtrnewsymbol[description={List Type}]{listtype}{\(\ralist{q}{A}\)}
-\glsxtrnewsymbol[description={List Constructor}]{cons}{\cons{x}{xs}}
-\glsxtrnewsymbol[description={Nil Constructor}]{nil}{\listnil}
+  [description={Resource-Aware Type}, group={types}]
+  {ratype}
+  {\(\ratype{A}{p_0}{p_1}\)}
+\glsxtrnewsymbol[description={Resource-Aware Function}, group={types}]{rafunc}{\(\rafunc{A}{B}{p_0}{p_1}\)}
+\glsxtrnewsymbol[description={List Type with Potential}, group={types}]{listtype}{\(\ralist{q}{A}\)}
+\glsxtrnewsymbol[description={Type Context}, group={types}]{context}{\(\Gamma\)}
+\glsxtrnewsymbol[description={Disjoint Contexts}, group={types}]{disjoint contexts}{\(\Gamma_1 \cap \Gamma_2 = \emptyset\)}
+\glsxtrnewsymbol[description={Union of Contexts}, group={types}]{context union}{\(\Gamma_1;\Gamma_2\)}
+\glsxtrnewsymbol[description={Augmenting a Context}, group={types}]{context augment}{\(\Gamma;x : A\)}
+\glsxtrnewsymbol[description={Typing Judgement}, group={types}]{typejudgement}{\(\typing{\Gamma}{e}{A}\)}
 
+
+% Evaluation
+\glsxtrnewsymbol[description={Environment}, group={evaluation}]{environment}{\(E\)}
+\glsxtrnewsymbol[description={Value of x}, group={evaluation}]{value from environment}{\(E(x)\)}
+\glsxtrnewsymbol[description={Existence of x in E}, group={evaluation}]{def in env}{\(\contains{E}{x}\)}
+\glsxtrnewsymbol[description={Map x to y in E}, group={evaluation}]{envaugment}{\(\envaugment{E}{x}{y}\)}
+\glsxtrnewsymbol[description={Evaluation judgement}, group={evaluation}]{evaluation}{\(\evals{E}{e}{v}{p_{0}}{p_{1}}\)}
+\glsxtrnewsymbol[description={Set of Variable Names}, group={evaluation}]{var}{\(\Var\)}
+\glsxtrnewsymbol[description={Set of Values}, group={evaluation}]{vals}{\(\Vals\)}
+
+% Prog Language syntax
+\glsxtrnewsymbol[description={Let expression}, group={syntax}]{letexp}{\(\letexp{x}{e_1}{e_2}\)}
+\glsxtrnewsymbol[description={Tick}, group={syntax}]{tick}{\tick{k}}
+\glsxtrnewsymbol[description={List Constructor}, group={syntax}]{cons}{\cons{x}{xs}}
+\glsxtrnewsymbol[description={Nil Constructor}, group={syntax}]{nil}{\listnil}
+\glsxtrnewsymbol[description={Function Application}, group={syntax}]{func app}{\(f~x\)}
+\glsxtrnewsymbol[description={Function Abstraction}, group={syntax}]{func abstraction}{\(\func~f~x = e_f\)}
+
+% Glossary group titles
+\renewcommand\glstreegroupheaderfmt[1]{\begingroup\centering \textbf{#1}\par\endgroup}
+\glsfindwidesttoplevelname
+\glsxtrsetgrouptitle{resources}{Resources}
+\glsxtrsetgrouptitle{types}{Typing}
+\glsxtrsetgrouptitle{evaluation}{Evaluation}
+\glsxtrsetgrouptitle{syntax}{PL Syntax}
 % Glossary acronyms
 \newacronym{aara}{AARA}{Automatic Amortized Resource Analysis}
 
