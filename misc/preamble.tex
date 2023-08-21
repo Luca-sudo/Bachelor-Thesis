@@ -236,19 +236,19 @@
 
 % Resources
 \glsxtrnewsymbol
-  [description={Set of resources}, group={resources}]
+  [description={\hyperref[def:resources]{Set of resources}}, group={resources}]
   {resources}
   {\resource}
 \glsxtrnewsymbol
-[description={Resource Demands}, group={resources}]
+[description={\hyperref[def:resource-pair]{Resource Demands}}, group={resources}]
   {resource demands}
   {\demand}
 \glsxtrnewsymbol
-[description={Sequencing Operator}, group={resources}]
+[description={\hyperref[def:multiplying-pairs]{Sequencing Operator}}, group={resources}]
   {sequencing}
   {\sequence}
 \glsxtrnewsymbol
-  [description={Relaxation Relation}, group={resources}]
+[description={\hyperref[def:relaxation]{Relaxation Relation}}, group={resources}]
   {relaxation}
   {\relaxation}
 
@@ -268,16 +268,18 @@
 \glsxtrnewsymbol[description={Type Bool}, group={types}]{int}{\bool}
 \glsxtrnewsymbol[description={Type Int}, group={types}]{bool}{\typeint}
 \glsxtrnewsymbol
-  [description={Resource-Aware Type}, group={types}]
+[description={\hyperref[def:ra-type]{Resource-Aware Type}}, group={types}]
   {ratype}
   {\(\ratype{A}{p_0}{p_1}\)}
 \glsxtrnewsymbol[description={Resource-Aware Function}, group={types}]{rafunc}{\(\rafunc{A}{B}{p_0}{p_1}\)}
-\glsxtrnewsymbol[description={List Type with Potential}, group={types}]{listtype}{\(\ralist{q}{A}\)}
-\glsxtrnewsymbol[description={Type Context}, group={types}]{context}{\(\Gamma\)}
-\glsxtrnewsymbol[description={Disjoint Contexts}, group={types}]{disjoint contexts}{\(\Gamma_1 \cap \Gamma_2 = \emptyset\)}
+\glsxtrnewsymbol[description={\hyperref[def:context]{Type Context}}, group={types}]{context}{\(\Gamma\)}
+\glsxtrnewsymbol[description={\hyperref[def:disjoint-contexts]{Disjoint Contexts}}, group={types}]{disjoint contexts}{\(\Gamma_1 \cap \Gamma_2 = \emptyset\)}
 \glsxtrnewsymbol[description={Union of Contexts}, group={types}]{context union}{\(\Gamma_1;\Gamma_2\)}
-\glsxtrnewsymbol[description={Augmenting a Context}, group={types}]{context augment}{\(\Gamma;x : A\)}
-\glsxtrnewsymbol[description={Typing Judgement}, group={types}]{typejudgement}{\(\typing{\Gamma}{e}{A}\)}
+\glsxtrnewsymbol[description={\hyperref[def:context-augment]{Augmenting a Context}}, group={types}]{context augment}{\(\Gamma;x : A\)}
+\glsxtrnewsymbol[description={\hyperref[def:ra-list]{List Type with Potential}}, group={types}]{listtype}{\(\ralist{q}{A}\)}
+\glsxtrnewsymbol[description={\hyperref[def:list-length]{Length of List}}, group={types}]{listlength}{\(|l|\)}
+\glsxtrnewsymbol[description={\hyperref[def:potential-function]{Potential Function}}, group={types}]{potentialfunction}{\(\Phi\)}
+\glsxtrnewsymbol[description={\hyperref[def:type-judgement-context]{Typing Judgement}}, group={types}]{typejudgement}{\(\typing{\Gamma}{e}{A}\)}
 
 
 % Evaluation
@@ -304,8 +306,7 @@
 \glsxtrsetgrouptitle{types}{Typing}
 \glsxtrsetgrouptitle{evaluation}{Evaluation}
 \glsxtrsetgrouptitle{syntax}{PL Syntax}
-% Glossary acronyms
-\newacronym{aara}{AARA}{Automatic Amortized Resource Analysis}
+
 
 % DO NOT LOAD ANY OF YOUR PACKAGES BEYOND THIS PACKAGE
 

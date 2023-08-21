@@ -236,10 +236,10 @@ The rule (T:Application) allows us to type recursive functions. Most importantly
 
 \subsection{Example Type Derivations}\label{sec:example-type-derivations}
 
-We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists. 
+We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists and acquaint the reader to the newly introduced inference rules.
 
 \begin{example}
-   For our first example, consider a function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}. We derive a resource-annotated type stepwise, for sake of illustration. For this, we write \(e_1\) as an abbreviation for the body of the \(\cons{x}{xs}\) match. 
+   For our first example, consider a function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}. We derive a resource-annotated type stepwise, for sake of illustration. 
 
    Application of (T:MatchList) yields two premises. We close the first premise by applying (T:Nil).
 
