@@ -11,6 +11,8 @@ package «Aara» {
 lean_lib Resources where
   roots := #[`Resources]
 
+lean_lib LetTick where
+  roots := #[`LetTick]
 
 lean_lib «Aara» {
   -- add library configuration options here

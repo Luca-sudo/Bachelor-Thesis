@@ -1,3 +1,6 @@
+import Resources.Definitions
+import LetTick.Language
+
 --Typing judgement
 inductive Typing : Prog → BaseType → ResourceDemand → Prop :=
   | t_tick (k : Int) (t : BaseType) (r : ResourceDemand) (suff_res : r.init ≥ k + r.resid) :

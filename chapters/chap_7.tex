@@ -239,9 +239,10 @@ The rule (T:Application) allows us to type recursive functions. Most importantly
 We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists and acquaint the reader to the newly introduced inference rules.
 
 \begin{example}
-   For our first example, consider a function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}. We derive a resource-annotated type stepwise, for sake of illustration. 
+   For our first example, consider the function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}. We derive a resource-annotated type stepwise, for sake of illustration. 
 
-   Application of (T:MatchList) yields two premises. We close the first premise by applying (T:Nil).
+   \begin{enumerate}[label=Step \Roman*:]
+      \item Application of (T:MatchList) yields two premises. We close the first premise by applying (T:Nil). 
 
 \[
    \inference[(T:MatchList)]
@@ -260,7 +261,12 @@ We introduce examples of varying complexity, to illustrate the nuances of type d
       }
 \]
 
-Applying (T:Let) splits \(e_1\) up into a tick expression plus the remaining expression, abbreviated \(e_2\). Applying (T:Tick) closes the left branch of the derivation.
+For brevity and readability, we denote by \(e_1\) the function body that is executed on a match to cons. Furthermore, we use \(e_2 ~\&~ e_3\) to denote sub-expressions.
+\[
+   e_1 = \letexp{\_}{\tick{1}}{e_2}
+\]
+
+\item Applying (T:Let) splits \(e_1\) up into \(\tick{1}\) and the remaining expression, abbreviated \(e_2\). Applying (T:Tick) closes the left branch of the derivation, allowing us to assign a type to the expression \tick{1}.
 
 \[
    \inference[(T:Let)]
@@ -278,11 +284,12 @@ Applying (T:Let) splits \(e_1\) up into a tick expression plus the remaining exp
       \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{\_}{\tick{1}}{e_2}}{\ratype{B}{p_0}{p_1}}
    }
 \]
-\begin{align*}
-   \constraintHighlight{\text{where } (p_0, p_1) = (1, 0) \sequence (q_0, q_1)}
-\end{align*}
+\begin{align}
+   \text{Where } e_2 = \letexp{x'}{x + 1}{e_3} \nonumber \\
+   \constraintHighlight{\text{and } (p_0, p_1) = (1, 0) \sequence (q_0, q_1)} \label{eqn:add1-first-seq}
+\end{align}
 
-Again, we apply (T:Let), yielding \(x + 1\) and the sub-expression \(e_3\). Applying the rule (T:Op), we infer that \(x : \typeint\). Thus, \(xs : \ralist{p}{\typeint}\) as well.
+   \item Again, we apply (T:Let), yielding \(x + 1\) and the sub-expression \(e_3\). Applying the rule (T:Op), we infer that \(x : \typeint\). Thus, \(xs : \ralist{p}{\typeint}\) as well.
 
 \[
    \inference[(T:Let)]
@@ -300,8 +307,11 @@ Again, we apply (T:Let), yielding \(x + 1\) and the sub-expression \(e_3\). Appl
       \typing{\Gamma;x:A;xs:\ralist{p}{A}}{\letexp{x'}{x + 1}{e_3}}{\ratype{B}{q_0}{q_1}}
    }
 \]
+\[
+   \text{Where } e_3 = \letexp{xs'}{add1~xs}{\cons{x'}{xs'}}
+\]
 
-The final application of (T:Let) generates two premises. The first being the recursive function call on \(xs\), and the second being the construction of the final list. We infer that \(B = \ralist{q}{\typeint}\), resulting from the application of (T:Cons), from which the return type is propagated. 
+   \item The final application of (T:Let) generates two premises. The first being the recursive function call on \(xs\), and the second being the construction of the final list. We infer that \(B = \ralist{q}{\typeint}\), resulting from the application of (T:Cons), from which the return type is propagated. 
 
 Furthermore, \(q_0 = 0 = q_1\), as neither sub-expressions have any resource demand.
 
@@ -320,11 +330,11 @@ Furthermore, \(q_0 = 0 = q_1\), as neither sub-expressions have any resource dem
       \typing{\Gamma;x':\typeint;xs:\ralist{p}{\typeint}}{\letexp{xs'}{add1~xs}{\cons{x'}{xs'}}}{\ralist{q}{\typeint}}
    }
 \]
-\begin{align*}
-   \constraintHighlight{\text{where } (q_0, q_1) = (0, 0)}
-\end{align*}
+\begin{align}
+   \constraintHighlight{\text{where } (q_0, q_1) = (0, 0)} \label{eqn:add1-second-seq}
+\end{align}
 
-As a last step, we need to type the recursive function call. The rule (T:Application) allows us to do that. Throughout the previous steps, we derived that the input has type \(\ralist{p}{\typeint}\) and the return type is \(\ralist{q}{\typeint}\). 
+   \item As a last step, we need to type the recursive function call. The rule (T:Application) allows us to do that. Throughout the previous steps, we derived that the input has type \(\ralist{p}{\typeint}\) and the return type is \(\ralist{q}{\typeint}\). 
 
 \[
    \inference[(T:Application)]
@@ -336,17 +346,12 @@ As a last step, we need to type the recursive function call. The rule (T:Applica
    }
 \]
 
-This concludes the type derivation. Next, we need to collect all constraints and infer optimal values for the potentials of input and output, \(p\) and \(q\) respectively. For this, we need the resource demand of \(e_1\), which we get by combining the constraints highlighted in green. 
-
-\[
-   (p_0, p_1) = (1, 0) \implies p = 1
-\]
-
-The resulting resource-aware type for \(add1\) is, therefore:
+\item As a last step, we collect numeric constraints, introduced in \cref{eqn:add1-first-seq} and \cref{eqn:add1-second-seq}. With these constraints, we can elucidate a resource demand for the expression \(e_1\). The resource demand then identifies the potentials \(p\) and \(q\) of input and output list, respectively. Combining \cref{eqn:add1-first-seq} and \cref{eqn:add1-second-seq}, we get \((p_0, p_1) = (1, 0)\). Thus, the resulting resource-aware type for \(add1\) is:
 
 \[
    add1 :: \rafunc{\ralist{1}{\typeint}}{\ralist{}{\typeint}}{}{}
 \]
+\end{enumerate}
 \end{example}
 
 \begin{example}

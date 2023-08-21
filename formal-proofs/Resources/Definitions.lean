@@ -1,7 +1,7 @@
 import Mathlib.Tactic.Linarith
 
-@[simp, reducible]
-abbrev Resource := Nat
+
+notation "Resource" => Nat
 
 abbrev ResourceDemand := Resource × Resource
 
@@ -24,8 +24,8 @@ def disparity (p q : ResourceDemand) : Resource := max p.resid q.init
 --Multiplication of resource pairs
 @[simp, reducible]
 def sequence (p q : ResourceDemand) : ResourceDemand := 
-  let r := p.init - p.resid + p.disparity q
-  let r':= q.resid - q.init + p.disparity q
+  let r := p.init + p.disparity q - p.resid 
+  let r':= q.resid + p.disparity q - q.init 
   (r, r')
 
 infix:50 "▹" => sequence
@@ -59,5 +59,3 @@ infix:50 "≽" => relaxation_of
 
 
 end ResourceDemand
-
-namespace LetTick
