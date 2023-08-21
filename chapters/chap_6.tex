@@ -179,7 +179,7 @@ Similarly to \cref{sec:environments}, we define how to retrieve the type of a va
 
 In order to define a type rule for let expressions, we need to define when two contexts are \emph{disjoint}. Intuitively, they are disjoint, if any variable is not in both contexts. 
 
-\begin{definition}[Disjoint contexts]
+\begin{definition}[Disjoint contexts]\label{def:disjoint-contexts}
    Let \(\Gamma_1, \Gamma_2\) be contexts. Then, \(\Gamma_1 \cap \Gamma_2 = \emptyset\), if and only if for any variable x it holds that \(\neg(x \in \Gamma_1 \wedge x \in \Gamma_2)\).
 \end{definition}
 
