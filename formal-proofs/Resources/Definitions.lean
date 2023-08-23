@@ -7,9 +7,11 @@ abbrev ResourceDemand := Resource × Resource
 
 namespace ResourceDemand
 
+@[simp, reducible]
 --Initial resources
 def init : ResourceDemand → Resource := Prod.fst
 
+@[simp, reducible]
 --Residual resources
 def resid : ResourceDemand → Resource := Prod.snd 
 
@@ -33,10 +35,12 @@ infix:50 "▹" => sequence
 --Neutral element in Resource Demands
 def unit : ResourceDemand := (0, 0)
 
+@[simp, reducible]
 -- Relaxation relation
 def relaxation_of (p q : ResourceDemand) : Bool 
   := (p.init ≥ q.init) ∧ (p.consumption ≥ q.consumption) 
 
+@[simp, reducible]
 infix:50 "≽" => relaxation_of
 
 --Example 2.5

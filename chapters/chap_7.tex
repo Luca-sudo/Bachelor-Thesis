@@ -13,11 +13,10 @@ In this chapter we introduce lists as a data type. As we will see, this necessit
 	    & q					& \text{(const integer)}\\
             & \cons{x}{xs} ~~| ~~ \listnil      & \text{(list constructor)}\\
             & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
-            & \func~f~x = e_f                   & \text{(function abstraction)}\\
-            & f x                               & \text{(function application)}\\
+            & \func~f~x_1~\dots~x_n = e_f       & \text{(function abstraction)}\\
+            & f~x                               & \text{(function application)}\\
 \end{align*}
 \end{definition}
-\todo{Do I have to add function abstraction here?}
 
 Because a list can contain \emph{any type} of data, assuming it is homogenous data, we introduce generic lists. Similarly, we need to introduce function types, which map values of one type to values of another type. For more concrete examples of list types and function types, we supplement examples below.
 
@@ -38,7 +37,6 @@ Because a list can contain \emph{any type} of data, assuming it is homogenous da
 \begin{example}
    A function \(f(x) = x+1\) has the type \(f :: \rafunc{\typeint}{\typeint}{}{}\).
 \end{example}
-\todo{Introduce lambda expression in preliminaries}
 
 \begin{example}
    A function \(sum\), that sums integers in a list has the type \(\rafunc{\ralist{}{\typeint}}{\typeint}{}{}\).
@@ -47,7 +45,7 @@ Because a list can contain \emph{any type} of data, assuming it is homogenous da
 We want to infer resource-bounds for programs. In order for the inference to be computationally tractable, we constrain the use of certain language features. Most notably, we enforce that functions on lists only recur on the tail of the list. As a result, recursive function calls \emph{will terminate}, eventually.
 
 While this reduces the set of programs that we permit, most problems on lists naturally have a form that matches this constraint. For example, folding operations such as sum (\cref{fig:code-sum}), or functorial operations such as map (\cref{fig:code-map}), can be defined in this way. 
-\todo{@AP Should I elaborate more on this constraint?}
+
 
 \section{Evaluation Semantics}
 
@@ -119,23 +117,25 @@ Next, we define an evaluation rule for non-empty lists. Here, we need to extract
    \begin{aligned}
       \text{where }  & Q(l) \begin{cases*}
          q(x :: xs)     & if l = x :: xs\\
-         q_0            & if l = null
+         q_0            & if l = \listnil
          \end{cases*} \text{and } Q'(l) \begin{cases*}
          q'(x :: xs)     & if l = x :: xs\\
-         q_1            & if l = null
+         q_1            & if l = \listnil
       \end{cases*}
    \end{aligned}
 \]
 
 For the latter rule we define the concrete value of the list \(l\) as a tuple \((v_x, v_{xs})\). Where \(v_x\) is the value contained in the head of the list, and \(v_{xs}\) points to the tail. 
 
-To define recursive functions we are currently missing function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_f\) as the argument name used in the definition of \(f\). 
+To properly evaluate recursive functions we are currently missing function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_i\) as the \(i\)-th argument used in the definition of \(f\). 
 \todo{What about functions with multiple arguments?}
 
 \[
-   \inference[(E:App)]
-   {E(f) = e_f \qquad \evals{\envaugment{E}{y_f}{x}}{e_f}{v}{q_0}{q_1}}
-   {\evals{E}{f x}{v}{q_0}{q_1}}
+   \inference[(E:Application)]
+   {E(f) = e_f 
+   \quad 
+   \evals{E[y_1 \mapsto E(x_1), \dots, y_n \mapsto E(x_n)]}{e_f}{v}{q_0}{q_1}}
+   {\evals{E}{f~x_1~x_2~\dots~x_n}{v}{q_0}{q_1}}
 \]
 \todo{Need to define how we get from f to the expression of f}
 \todo{Maybe talk about free and bound variables in preface?}
@@ -205,7 +205,7 @@ We start by introducing two rules associated to the two list constructors. An em
    \qquad
    \inference[(T:Cons)]
    {}
-   {\typing{\Gamma;x : A; xs : \ralist{p}{A}}{cons(x, xs)}{\ralist{p}{A}}}
+   {\typing{\Gamma;x : A; xs : \ralist{p}{A}}{cons(x, xs)}{\ratype{\ralist{p}{A}}{p}{0}}}
 \]
 
 In order to type expression that pattern match on lists, we introduce a rule (T:MatchList). There are a couple of nuances that we want to explain further. Firstly, the return type of both expressions is assumed to be the same. If we want to have a return type that may be distinct for both respective cases, this would require dependent types. 
@@ -224,13 +224,13 @@ Next, we introduce an inference rule for function application. First, the input 
 
 \[
    \inference[(T:Application)]
-   {\typing{\Gamma}{f}{A \to \ratype{B}{q_0}{q_1}}}
-   {\typing{\Gamma;x_1:\ratype{A}{p_0}{p_1}}{f x}{\ratype{B}{r_0}{r_1}}}
-   \qquad
-   \begin{aligned}
-      \text{where }  & (r_0, r_1) = (p_0, p_1) \sequence (q_0, q_1)
-   \end{aligned}
+   {\typing{\Gamma}{f}{A_1 \to \dots \to B \to \ratype{C}{q_0}{q_1}}}
+   {\typing{\Gamma;x_1:\ratype{A}{p_1}{p_1'};\dots;x_n:\ratype{B}{p_n}{p_n'}}{f x_1 \dots x_n}{\ratype{C}{r_0}{r_1}}}
 \]
+
+\begin{align*}
+   \text{Where }  & (r_0, r_1) = (p_1, p_1') \sequence \dots \sequence (p_n, p_n') \sequence (q_0, q_1)
+\end{align*}
 
 The rule (T:Application) allows us to type recursive functions. Most importantly, the type of \(x\) and the input type of \(f\) are then inferred to be the same. For recursive calls on a list, we assume that they recur only on the tail \(xs\). Then, the tail has a potential annotation, which is propagated to the function signature, as we assume that the types match. This will be important in the coming examples, as this allows us to type recursive functions.
 
@@ -453,7 +453,7 @@ Thus, the resource-annotated signature is:
 \end{example}
 
 \begin{remark}
-   We assumed that the function \(f\) has resource demand \((q_0, q_1)\). Thus, the above typing \emph{does not} offer a general resource-aware typing for any function.
+   We assumed that the function \(f\) has resource demand \((q_0, q_1)\). Without such an assumption we would not be able to derive a resource-aware type.
 \end{remark}
 
 \section{Soundness}\label{sec:soundness-6}
@@ -476,6 +476,28 @@ In the case of residual resources, a similar line of thought holds. Here, we add
 \end{theorem}
 
 \begin{proof}
+   (nil): We know that \(e = \listnil\). Also, \((p_0, p_1) = (0, 0) = (q_0, q_1)\). Together with \(\Phi(\listnil : \ralist{p}{A}) = 0\), we can infer the following:
+   \begin{align}
+      (q_0 + \Phi(\Gamma), q_1 + \Phi(\listnil : \ralist{p}{A})   &= (q_0 + \Phi(\Gamma), q_1)\label{eqn:nil-1} \\
+                                                                  &\relaxation (q_0, q_1) \label{eqn:nil-2}\\
+                                                                  &= (p_0, p_1)
+   \end{align}
+   Where \cref{eqn:nil-1} uses \(\Phi(\listnil: \ralist{p}{A}) = 0\), and \cref{eqn:nil-2} uses ???. 
+   \todo{Add reference to lemma from resources}
+
+   (cons): We know that \(e = \cons{x, xs}\). We also assume that the tail \(xs\) has potential \(p\). Therefore, \(q_0 = p\) and \(q_1 = 0\). Because the rule (E:Cons) had to be applied for the related evaluation derivation, we get that \(p_0 = 0 = p_1\).   
+   The change in potential is given by \(\Phi(xs : \ralist{p}{A}) - \Phi(\cons{x}{xs} : \ralist{p}{A})\), as the context \(\Gamma\) comprises \(x\) and \(xs\), where \(x\) has no associated potential. Therefore, the change in potential is precisely \(-p\). Thus:
+
+   \[
+      \underbrace{q_0 - q_1}_{p} + \underbrace{\Phi(\Gamma) - \Phi(\cons{x}{xs} : \ralist{p}{A}}_{-p}) = 0 = p_0 - p_1
+   \] 
+   And:
+
+   \[
+      q_0 + \Phi(\Gamma) = \Phi(\Gamma) \geq 0 = p_0
+   \]
+
+   Which results in \((q_0 + \Phi(\Gamma), q_1 + \Phi(\cons{x}{xs} : \ralist{p}{A}) \relaxation (p_0, p_1)\). 
 \end{proof}
  
 \section{Questions}
