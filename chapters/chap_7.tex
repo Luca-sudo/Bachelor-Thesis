@@ -1,4 +1,4 @@
-\chapter{Introducing Lists}
+\chapter{Introducing Lists}\label{chap:list-tick}
 
 In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce function application, which introduces recursion into our programming language. 
 
@@ -467,7 +467,7 @@ In the case of residual resources, a similar line of thought holds. Here, we add
 
 
 
-\begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
+\begin{theorem}[Soundness of typing for list-tick language]\label{thm:soundness-7}
    Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A \in \type\), \((p_0, p_1), (q_0, q_1) \in \demand\) and an expression \(e\) that evaluates to the value \(v\). 
 
    \begin{center}
@@ -498,6 +498,44 @@ In the case of residual resources, a similar line of thought holds. Here, we add
    \]
 
    Which results in \((q_0 + \Phi(\Gamma), q_1 + \Phi(\cons{x}{xs} : \ralist{p}{A}) \relaxation (p_0, p_1)\). 
+
+   (match): We know that \(e = \listmatch{l}{e_1}{e_2}\) and there are two possible cases. Either the list is \listnil ~or the list has the form \cons{x}{xs}, which results in (E:MatchNil) or (E:MatchCons) being invoked for the evaluation derivation. 
+
+   Let us start with the first case, \(l = \listnil\). The type rule yields \(p_0 = 0 = p_1\) and the evaluation rule yields \(q_0 = 0 = q_1\). Furthermore, the context is empty, and the empty list has no potential:
+
+   \begin{align*}
+      \Phi(\Gamma) = 0 = \Phi(\listnil : \ralist{p}{A})\\
+   \end{align*}
+
+   We apply \cref{lemma:pos-relaxation} in \cref{eqn:match-nil-1} and the fact that \(p_0 = q_0 = 0 = q_1 = p_1\) in \cref{eqn:match-nil-2} to get: 
+   
+   \begin{align}
+      (q_0 + \Phi(\Gamma), q_1 + \Phi(\listnil : \ralist{p}{A})   &\relaxation (q_0, q_1) \label{eqn:match-nil-1}\\
+                                                                  &= (p_0, p_1) \label{eqn:match-nil-2}
+   \end{align}
+
+   The last case is \(l = \cons{x}{xs}\). This dictates the application of (E:MatchCons) for the evaluation. Given that the list \(l\) has potential \(p\), we get the following assumptions:
+
+   \begin{align}
+      p_0            &= 0 \qquad p_1 = 0\nonumber\\
+      q_0            &= p \qquad q_1 = 0\nonumber\\
+      \Phi(\Gamma)   &= \Phi(x : A) + \Phi(xs : \ralist{p}{A})\label{eqn:match-cons-1}\\
+      \Phi(\cons{x}{xs} : \ralist{p}{A}) &= p + \Phi(x : A) + \Phi(xs : \ralist{p}{A})\label{eqn:match-cons-2}
+   \end{align}
+
+   With these assumptions, we can prove the desired relaxation. First, using \cref{eqn:match-cons-1} and \cref{eqn:match-cons-2} we get:
+
+   \begin{align}
+      p + \underbrace{\Phi(\Gamma) - \Phi(\cons{x}{xs} : \ralist{p}{A})}_{-p} = 0
+   \end{align}
+
+   We use \cref{lemma:pos-relaxation} to get the desired relaxation:
+
+   \[
+      (q_0 + \Phi(\Gamma), q_1 + \Phi(\cons{x}{xs} : \ralist{p}{A})) \relaxation (p_0, p_1)
+   \]
+
+   (application): We know that \(e = f~x\) for some function \(f\) and some variable \(x\). 
 \end{proof}
  
 \section{Questions}

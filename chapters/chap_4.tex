@@ -140,5 +140,29 @@ It is important to note that, for any two resource pairs, one \emph{need not} be
    Let \((4,2), (5,4) \in \demand\). Then, \((4,2) \notrelaxation (5,4)\) \emph{and} \((5,4) \notrelaxation (4,2)\).
 \end{example}
 
+In \cref{chap:list-tick}, we introduce potentials (\cref{def:potential}), which increases the complexity of the proof of soundness (\cref{thm:soundness-7}). To streamline the proof of soundness, we introduce lemmas that will enable easier manipulation of relaxations between resource demands.
 
+Given an arbitrary resource demand \((p_0, p_1) \in \demand\), incrementing the initial resource demand will always produce a relaxed resource demand.
+\todo{Illustration}
+\begin{lemma}
+   \((p_0, p_1) \in \demand, n \in \resource\), then:
+
+   \[
+      (p_0 + n, p_1) \relaxation (p_0, p_1)
+   \]
+\end{lemma}
+
+\begin{remark}
+   This is useful, as contexts (\cref{def:context}) have positive potential. Allowing us to deduce \((p_0 + \Phi(\Gamma), p_1) \relaxation (p_0, p_1)\), as in \cref{eqn:nil-2} in the proof of soundness in \cref{chap:list-tick}.
+\end{remark}
+
+If given an arbitrary resource demand \((p_0, p_1) \in \demand\) as above, we can generate more general relaxations compared to the previous lemma. As we will see, the above lemma is a special case of the following lemma.
+
+\begin{lemma}\label{lemma:pos-relaxation}
+   \((p_0, p_1) \in \demand\) and \(n, m \in \resource\) with \(n - m \geq 0\).
+
+   \[
+      (p_0 + n, p_1 + m) \relaxation (p_0, p_1)
+   \]
+\end{lemma}
 

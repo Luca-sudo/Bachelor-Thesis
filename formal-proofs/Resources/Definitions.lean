@@ -26,9 +26,7 @@ def disparity (p q : ResourceDemand) : Resource := max p.resid q.init
 --Multiplication of resource pairs
 @[simp, reducible]
 def sequence (p q : ResourceDemand) : ResourceDemand := 
-  let r := p.init + p.disparity q - p.resid 
-  let r':= q.resid + p.disparity q - q.init 
-  (r, r')
+  (p.init + p.disparity q - p.resid, q.resid + p.disparity q - q.init)
 
 infix:50 "▹" => sequence
 
@@ -37,10 +35,9 @@ def unit : ResourceDemand := (0, 0)
 
 @[simp, reducible]
 -- Relaxation relation
-def relaxation_of (p q : ResourceDemand) : Bool 
+def relaxation_of (p q : ResourceDemand) : Prop 
   := (p.init ≥ q.init) ∧ (p.consumption ≥ q.consumption) 
 
-@[simp, reducible]
 infix:50 "≽" => relaxation_of
 
 --Example 2.5
