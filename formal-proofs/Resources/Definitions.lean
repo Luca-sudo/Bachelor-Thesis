@@ -1,8 +1,10 @@
 import Mathlib.Tactic.Linarith
 
 
+@[simp, reducible]
 notation "Resource" => Nat
 
+@[simp, reducible]
 abbrev ResourceDemand := Resource × Resource
 
 namespace ResourceDemand
@@ -35,9 +37,10 @@ def unit : ResourceDemand := (0, 0)
 
 @[simp, reducible]
 -- Relaxation relation
-def relaxation_of (p q : ResourceDemand) : Prop 
+def relaxation_of (p q : ResourceDemand) : Bool 
   := (p.init ≥ q.init) ∧ (p.consumption ≥ q.consumption) 
 
+@[simp]
 infix:50 "≽" => relaxation_of
 
 --Example 2.5

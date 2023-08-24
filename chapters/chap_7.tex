@@ -140,7 +140,7 @@ To properly evaluate recursive functions we are currently missing function appli
 \todo{Need to define how we get from f to the expression of f}
 \todo{Maybe talk about free and bound variables in preface?}
 
-\section{Type Rules}
+\section{Type System}
 
 Our goal is to introduce type rules that allow us to assign resource costs to lists. Previously, we assigned a resource-pair (\cref{def:resource-pair}) to the resulting type; This is not feasible for lists, as the cost of evaluating an expression featuring a list depends on the length of the list. For this, we introduced recurrence relations to model resource demands that respect the length of a list. The type rule analogue to recurrence relations are \emph{potentials}. Intuitively, we assign a potential to a list, which corresponds to a cost for each list element. Having introduced potentials, we will define resource-aware lists, which forces us to consider how potentials can be composed and shared.
 
@@ -155,46 +155,49 @@ We start by defining the type of resource-aware lists, the potential function, n
       \ralist{p}{A} = (\ralist{}{A}, p)
    \]
 \end{definition}
-\todo{Cref references definition as theorem}
 
-In order to calculate resource bounds using the potential assigned to a list, we need to introduce a potential function. This will be the mathematical foundation for deriving resource bounds that respect the size of the list. 
+\begin{remark}
+   Resource-aware lists can also have a resource demand associated with them. If an expression evaluates to the resource-aware type \(\ratype{\ralist{1}{A}}{2}{3}\) then (1) Every list entry costs 1 resource and (2) Evaluating the expression requires 2 initial resources and returns 3 residual resources - \emph{regardless of the concrete list}.
+   \end{remark}
+
+In order to calculate resource bounds using the potential assigned to a list, we need to introduce a potential function. This will be the mathematical foundation for deriving resource bounds that respect the size of lists. Most importantly, we assign potential \emph{only} to lists, any other type \emph{including function types} has no associated potential. 
 
 \begin{definition}[Potential Function]\label{def:potential-function}
    For a value \(v\) of type \(A\), we define the potential of that value as follows:
    \[
-      \Phi(v : A) \begin{cases}
-         0                                            & A \in \{\unit, \typeint, \bool\}\\
-         \Phi(x : B) + \Phi(xs : \ralist{q}{B}) + q   & A = \ralist{q}{B}
+      \Phi(v : A) = \begin{cases}
+         \Phi(x : B) + \Phi(xs : \ralist{q}{B}) + q   & A = \ralist{q}{B}\\
+         0                                            & \text{else}
       \end{cases}
    \]
 \end{definition}
+
+We are mostly interested in the potential of a list. As we assign a potential to every element in the list, the concrete length of a list is of paramount interest. Therefore, we introduce notation for the length of a list.
 
 \begin{definition}[Length of lists]\label{def:list-length}
    Given a list \(l : \ralist{}{A}\), we denote by \(|l|\) the \emph{length} of the list.
 \end{definition}
 
-The following corollary proves that, for lists that are not nested, the resulting potential of a list is \emph{only} dependent on the length of the list and the potential assigned to it.
+If the list contains only values of a type that has no potential assigned, then the potential of the list is solely dictated by the potential annotation and the length of the list. 
 
 \begin{corollary}[Potential of lists]\label{cor:potential-list}
-   Let \(l : \ralist{q}{A}\), where \(A \in \{\unit, \typeint, \bool\}\). 
+   Let \(l : \ralist{q}{A}\), where \(A \in \type\), s.t. \(\Phi(v : A) = 0\), then:
    \[
-      \Phi(l : \ralist{q}{A}) = q \cdot |l|
-   \]
-\end{corollary}
-\todo{Need to proof?}
-
-Our definition of the potential function is even more flexible - we are able to derive a potential for \emph{nested lists}. This demonstrates that multivariate resource analysis is possible with our constructions.
-
-\begin{corollary}[Potential of nested list]\label{cor:potential-nested-list}
-   Let \(A \in \{\unit, \typeint, \bool\}\), and \(l_i\) be the lists nested inside \(l\). Then:
-   \[
-      \Phi(l : \ralist{p}{\ralist{q}{A}}) = |l| \cdot p + \sum_{l_i \in l} |l_i| \cdot q
+      \Phi(l : \ralist{q}{A}) = |l| \cdot q
    \]
 \end{corollary}
 
-We have defined potentials for all types \(A \in \type\). This allows us to reason about the potential of a \emph{context}; Which is the summed potentials of every variable contained in it. The potential of contexts will be central to our proof of soundness in \cref{sec:soundness-6}.
+\begin{proof}
+   Using the definition of the potential function, we get:
+   \begin{align*}
+      \Phi(l : \ralist{p}{A}) &= \underbrace{\sum_{x \in l} \Phi(x : A)}_{=0} + \sum_{x \in l} q \\
+                              &= |l| \cdot q
+   \end{align*}
+\end{proof}
 
-\section{Inference Rules}
+We have defined potentials for all types \(A \in \type\). This allows us to reason about the potential of a \emph{context}, which is the summed potentials of every variable contained in it. The potential of contexts will be central to our proof of soundness in \cref{sec:soundness-6}.
+
+\subsection{Inference Rules}
 
 We start by introducing two rules associated to the two list constructors. An empty list can be constructed freely, with no constraints on its potential. On the other hand, constructing a list from an element and another, compatible, list requires us to propagate the potential. The tail \(xs\) of the list is assumed to have potential \(p\), as result, the list \(\cons{x}{xs}\) also has potential \(p\). 
 
@@ -219,20 +222,14 @@ The potential \(p\) of the list \(l\), which is matched on, is defined as the in
    {\typing{\Gamma;l : \ralist{p}{A}}{\listmatch{l}{e_1}{e_2}}{\ratype{B}{q_0}{q_1}}}
 \]
 
-Next, we introduce an inference rule for function application. First, the input type of the function \(f\) needs to align with the variables that are applied. Furthermore, the resource demands of the input variables, as well as the resource demand of the function, need to be propagated - this is similar to propagating values for let expression. 
-\todo{Rephrase with currying in mind. Is now introduced}
+Next, we introduce an inference rule for function application. First, the input type of the function \(f\) needs to align with the variables that are applied. The rule (T:Application) allows us to type recursive functions. Most importantly, the type of \(x\) and the input type of \(f\) are then inferred to be the same. For recursive calls on a list, we assume that they recur only on the tail \(xs\). Then, the tail has a potential annotation, which is propagated to the function signature, as we assume that the types match. This will be important in the coming examples, as this allows us to type recursive functions.
 
 \[
    \inference[(T:Application)]
-   {\typing{\Gamma}{f}{A_1 \to \dots \to B \to \ratype{C}{q_0}{q_1}}}
-   {\typing{\Gamma;x_1:\ratype{A}{p_1}{p_1'};\dots;x_n:\ratype{B}{p_n}{p_n'}}{f x_1 \dots x_n}{\ratype{C}{r_0}{r_1}}}
+   {\typing{\Gamma}{f}{A_1 \to \dots \to A_n \to \ratype{B}{q_0}{q_1}}}
+   {\typing{\Gamma;x_1:A_1;\dots;x_n:A_n}{f x_1 \dots x_n}{\ratype{B}{q_0}{q_1}}}
 \]
 
-\begin{align*}
-   \text{Where }  & (r_0, r_1) = (p_1, p_1') \sequence \dots \sequence (p_n, p_n') \sequence (q_0, q_1)
-\end{align*}
-
-The rule (T:Application) allows us to type recursive functions. Most importantly, the type of \(x\) and the input type of \(f\) are then inferred to be the same. For recursive calls on a list, we assume that they recur only on the tail \(xs\). Then, the tail has a potential annotation, which is propagated to the function signature, as we assume that the types match. This will be important in the coming examples, as this allows us to type recursive functions.
 
 \subsection{Example Type Derivations}\label{sec:example-type-derivations}
 
@@ -482,8 +479,7 @@ In the case of residual resources, a similar line of thought holds. Here, we add
                                                                   &\relaxation (q_0, q_1) \label{eqn:nil-2}\\
                                                                   &= (p_0, p_1)
    \end{align}
-   Where \cref{eqn:nil-1} uses \(\Phi(\listnil: \ralist{p}{A}) = 0\), and \cref{eqn:nil-2} uses ???. 
-   \todo{Add reference to lemma from resources}
+   Where \cref{eqn:nil-1} uses \(\Phi(\listnil: \ralist{p}{A}) = 0\), and \cref{eqn:nil-2} uses \cref{lemma:pos-relaxation}. 
 
    (cons): We know that \(e = \cons{x, xs}\). We also assume that the tail \(xs\) has potential \(p\). Therefore, \(q_0 = p\) and \(q_1 = 0\). Because the rule (E:Cons) had to be applied for the related evaluation derivation, we get that \(p_0 = 0 = p_1\).   
    The change in potential is given by \(\Phi(xs : \ralist{p}{A}) - \Phi(\cons{x}{xs} : \ralist{p}{A})\), as the context \(\Gamma\) comprises \(x\) and \(xs\), where \(x\) has no associated potential. Therefore, the change in potential is precisely \(-p\). Thus:
@@ -538,5 +534,3 @@ In the case of residual resources, a similar line of thought holds. Here, we add
    (application): We know that \(e = f~x\) for some function \(f\) and some variable \(x\). 
 \end{proof}
  
-\section{Questions}
-
