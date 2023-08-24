@@ -195,7 +195,9 @@ If the list contains only values of a type that has no potential assigned, then 
    \end{align*}
 \end{proof}
 
-We have defined potentials for all types \(A \in \type\). This allows us to reason about the potential of a \emph{context}, which is the summed potentials of every variable contained in it. The potential of contexts will be central to our proof of soundness in \cref{sec:soundness-6}.
+We have defined potentials for all types \(A \in \type\). This allows us to reason about the potential of a \emph{context}, which is the summed potentials of every variable contained in it. We simply write \(\Phi(\Gamma)\) for the potential of a context. This notion will be central to our new definition of soundness in \cref{sec:soundness-6}.
+
+
 
 \subsection{Inference Rules}
 
@@ -230,6 +232,9 @@ Next, we introduce an inference rule for function application. First, the input 
    {\typing{\Gamma;x_1:A_1;\dots;x_n:A_n}{f x_1 \dots x_n}{\ratype{B}{q_0}{q_1}}}
 \]
 
+\begin{remark}
+   We denote resource-aware functions just like any other resource-aware type, by adding a resource demand. In the case of functions, this looks like \(A \to \ratype{B}{p_0}{p_1}\). Recall from \cref{def:ra-type} that \(A \to \ratype{B}{p_0}{p_1} = (A \to B, (p_0, p_1))\), where the resource demand represents the cost for evaluating the function.
+\end{remark}
 
 \subsection{Example Type Derivations}\label{sec:example-type-derivations}
 
