@@ -147,7 +147,7 @@ What environments are for evaluation rules, contexts are for inference rules. Co
    We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\type}\) as a partial function from variable names to types.
 \end{definition}
 
-Similarly to \cref{sec:environments}, we define how to retrieve the type of a variable, given a context, what it means for a variable to be in a context and how we can introduce new variables into a context. 
+Similarly to \cref{sec:environments}, we define (1) How to retrieve the type of a variable, (2) What it means for a variable to be contained in a context and (3) Wow we can introduce new variables into a context. 
 
 \begin{definition}\label{def:context-getter}
    Let \(\Gamma\) be a \emph{context}, \(x\) be a variable name and \(A \in \mathbb{T}\) the type of \(x\). 
@@ -190,7 +190,9 @@ In order to define a type rule for let expressions, we need to define when two c
    \]
 \end{definition}
 
-\todo{Add domain of contexts?}
+\begin{remark}
+   Similarly to \cref{def:eval-judgement-environments}, the resource-aware type assigned to \(e\) will vary on the context in which \(e\) is evaluated. 
+\end{remark}
 
 \subsection{Inference Rules}\label{sec:inference-rules-letvar}
 

@@ -536,6 +536,17 @@ In the case of residual resources, a similar line of thought holds. Here, we add
       (q_0 + \Phi(\Gamma), q_1 + \Phi(\cons{x}{xs} : \ralist{p}{A})) \relaxation (p_0, p_1)
    \]
 
-   (application): We know that \(e = f~x\) for some function \(f\) and some variable \(x\). 
+   (application): We know that \(e = f~x\) for some function \(f\) and some variable \(x\). Our hypthesis yields the following assumptions:
+
+   \begin{align}
+      &E(f) = e_f                                      &\evals{\envaugment{E}{y_f}{v_x}}{e_f}{v}{p_0}{p_1} \nonumber\\
+      &E(x) = v_x                                      &\evals{E}{f~x}{v}{p_0}{p_1} \nonumber\\
+      &\typing{\Gamma}{f}{A \to \ratype{B}{q_0}{q_1}}  &\typing{\Gamma;x : A}{f~x}{\ratype{B}{q_0}{q_1}} \nonumber \\
+      &(q_0, q_1 + \Phi(v : B)) \relaxation (p_0, p_1)
+   \end{align}
+
+   Using \cref{lemma:pos-relaxation} we get \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : B)) \relaxation (p_0, p_1)\), which concludes the proof of soundness.
+
+
 \end{proof}
  
