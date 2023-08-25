@@ -193,9 +193,16 @@ As most types \(A \in \type\) have no potential assigned to them, the potential 
    \end{align*}
 \end{proof}
 
-We have defined potentials for all types \(A \in \type\). This allows us to reason about the potential of a \emph{context}, which is the summed potentials of every variable contained in it. We simply write \(\Phi(\Gamma)\) for the potential of a context. This notion will be central to our new definition of soundness in \cref{sec:soundness-6}.
+With potentials defined for \(A \in \type\), we naturally extend potentials to contexts. Intuitively, the potential of a context comprises the potentials of every variable in the contexts' domain (see \cref{def:context-domain}. This notion will be central to our new definition of soundness in \cref{sec:soundness-6}.
+\todo{Introduce context domain}
 
+\begin{definition}[Potential of Contexts]
+   Let \(\Gamma\) be a context.
 
+   \[
+      \Phi(\Gamma) = \sum_{x \in \domain{\Gamma}} \Phi(x : \Phi(x))
+   \]
+\end{definition}
 
 \subsection{Inference Rules}
 
