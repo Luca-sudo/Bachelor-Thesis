@@ -156,7 +156,7 @@ Resource-aware lists have a \emph{potential} assigned to them, which signifies t
    Resource demands and potentials can coexist; Resource demands capture static cost for executing an expression. Potentials capture dynamic cost that depends on the length of the list. A function \(f :: A \to \ratype{\ralist{1}{B}}{2}{3}\), for example, indicates two facts (1) Every list entry costs 1 resource and (2) Calling the function requires 2 initial and 3 residual resources, irrespective of the concrete list.
 \end{remark}
 
-Given a concrete list that is typed with some potential \(p\), we want to calculate the exact potential residing in the list. There are two constituents: the type parameter \(A \in \type\) and the potential \(p\). The type parameter \(A\) defines how much potential a value \(v : A\) of the list has, whereas the potential \(p\) is the \emph{additional} overhead assigned to every list element.
+Given a concrete list that is typed with some potential \(p\), we want to calculate the exact potential residing in the list. There are two constituents: the type parameter \(A \in \type\) and the potential \(p\). The type parameter \(A\) defines how much potential a value \(v : A\) of the list has, whereas the potential \(p\) is the \emph{additional} overhead assigned to every list element - which is specific to the usage of the list.
 
 For any type other than \(A\) within the set of types, we assign a potential of 0. In more intricate type systems that include custom types, it is possible to assign non-zero potentials. 
 
@@ -196,7 +196,7 @@ As most types \(A \in \type\) have no potential assigned to them, the potential 
 With potentials defined for \(A \in \type\), we naturally extend potentials to contexts. Intuitively, the potential of a context comprises the potentials of every variable in the contexts' domain (see \cref{def:context-domain}). This notion will be central to our new definition of soundness in \cref{sec:soundness-6}.
 \todo{Introduce context domain}
 
-\begin{definition}[Potential of Contexts]
+\begin{definition}[Potential of Contexts]\label{def:context-potential}
    Let \(\Gamma\) be a context.
 
    \[

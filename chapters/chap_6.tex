@@ -141,16 +141,10 @@ To type expressions with variables, knowledge of a variable's type is paramount.
 
 \subsection{Contexts}
 
-What environments are for evaluation rules, contexts are for inference rules. Contexts allow us to map variables to types, which is necessary since introducing variables. Similar to \nameref{def:environment}s, a context is a partial function that assigns to variable names a type from \cref{def:type-system-5}:
+What environments are for evaluation rules, contexts are for inference rules. Contexts allow us to map variables to types, which is necessary since introducing variables. Similar to \nameref{def:environment}s, a context is a partial function; Conversely to environments, a context maps variable names to a type from \cref{def:type-system-5}:
 
 \begin{definition}[Context]\label{def:context}
-   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\type}\) as a partial function from variable names to types.
-\end{definition}
-
-Similarly to \cref{sec:environments}, we define (1) How to retrieve the type of a variable, (2) What it means for a variable to be contained in a context and (3) Wow we can introduce new variables into a context. 
-
-\begin{definition}\label{def:context-getter}
-   Let \(\Gamma\) be a \emph{context}, \(x\) be a variable name and \(A \in \mathbb{T}\) the type of \(x\). 
+   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\type}\) as a partial function from variable names to types. Let \(x\) be a variable and \(A \in \type\).
 
    \[
       \Gamma(x) = 
@@ -159,29 +153,33 @@ Similarly to \cref{sec:environments}, we define (1) How to retrieve the type of 
 	 \textbf{undefined}   & \mbox{,else } 
       \end{cases}
    \]
-
 \end{definition}
 
-\begin{definition}\label{def:in-context}
-   Let \(\Gamma\) be a \emph{context} and \(x\) be a variable name, we define \(\contains{\Gamma}{x}\) as follows:
+Inference rules may enforce that a variable \(x\) is defined in a context \(\Gamma\). Intuitively, a variable is defined inside a context if \(\Gamma(x) \neq \textbf{undefined}\). We write \(x \in \Gamma\) to denote that \(x\) is defined in \(\Gamma\).
+
+At the start of executing a program the context is empty. During execution, variables are initialized; This requires extending the context to account for the newly initialized variable. Given that \(x : A\) we add \(x\) to \(\Gamma\) by writing \(\Gamma; x : A\).
+
+Some use cases require us to consider every variable defined in a context \(\Gamma\). For example, in \cref{def:context-potential} we sum over every variable in the context. We introduce a contexts' \emph{domain} as the set of variables that are defined in that context.
+
+\begin{definition}[Domain of Context]\label{def:context-domain}
+   Given a context \(\Gamma\), the \emph{domain} is the set of all variables that are defined in \(\Gamma\).
+   
    \[
-      x \in \Gamma =
-      \begin{cases}
-	 \false	     & \text{,if } \Gamma(x) \text{ is undefined}\\
-	 \true	     & \text{,else}
-      \end{cases}
+      \domain{\Gamma} = \{x \in \Var ~|~ \Gamma(x) \neq \textbf{undefined}\} 
    \]
 \end{definition}
 
-\begin{definition}\label{def:context-augment}
-   Let \(\Gamma\) be a context, \(A\) be a type and let \(x : A\) be a variable. We can embed the variable \(x\) with its associated type \(A\) into the context \(\Gamma\),  by writing \(\Gamma ; x:A\).
-\end{definition}
-
-In order to define a type rule for let expressions, we need to define when two contexts are \emph{disjoint}. Intuitively, they are disjoint, if any variable is not in both contexts. 
+While executing a program, multiple variables with the name \(x\) may be created at discrete times. It is important to note that the \emph{most recent} initialization will determine the value of \(\Gamma(x)\) - for let expressions, this can lead to inconsistencies. \emph{Disjoint} contexts circumvent this problem, as two disjoint contexts do not share any variables, eliminating the chance for inconsistencies.
 
 \begin{definition}[Disjoint contexts]\label{def:disjoint-contexts}
-   Let \(\Gamma_1, \Gamma_2\) be contexts. Then, \(\Gamma_1 \cap \Gamma_2 = \emptyset\), if and only if for any variable x it holds that \(\neg(x \in \Gamma_1 \wedge x \in \Gamma_2)\).
+   Let \(\Gamma_1, \Gamma_2\) be contexts. 
+
+   \[
+      \Gamma_1 \text{ and } \Gamma_2 \text{ are disjoint} :\iff \domain{\Gamma_1} \cap \domain{\Gamma_2} = \emptyset
+   \]
 \end{definition}
+
+With contexts defined, we embed them into our new definition of a \emph{typing judgement}.
 
 \begin{definition}[Typing Judgement with contexts]\label{def:type-judgement-context}
    Let \(\Gamma\) be a \nameref{def:context}, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1) \in \resource\). We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
