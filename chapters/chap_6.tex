@@ -26,18 +26,15 @@ The newly introduced constructors for integers and booleans are reflected in the
 
 \section{Evaluation Semantics}
 
-We begin this section by introducing environments, which provide a necessary link between variable names and values. For this, we define an \nameref{def:environment}, which is a mapping from variable names to values. Along with this, we introduce two notations related to environments, one for retrieving the value of the variable and another notation that allows us to check if an environment contains a specific variable name; This will be needed to ensure that rules featuring variables are correctly defined.
+Expressions now feature variables, necessitating the introduction of \emph{environments} to resolve variables to their associated value. In \cref{sec:environments} we define environments, afterward we introduce evaluation rules in \cref{sec:evaluation-rules-var-tick}.
 
 \subsection{Environments}\label{sec:environments}
 
+Environments map variable names to values; For the variables that are not defined in the environment, the associated value is \textbf{undefined}. Here, \(\Var\) is the set of variable names, and \(\Vals\) is the set of values. 
+
 \begin{definition}[Environment]\label{def:environment}
-   We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function from variable names (\Var) to values (\Vals). 
-\end{definition}
+   We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function. Let \(x \in \Var\) and \(v_x \in \Vals\) be the value of \(x\).
 
-Whenever we have a variable name, we want to get the concrete value associated with that variable. As we defined an environment as a \emph{partial function}, we can simply apply the variable name of interest to the environment.
-
-\begin{definition}\label{def:environment-getter}	
-   Let \(E\) be an \nameref{def:environment} and \(x\) be a variable name, we then write \(E(x)\) for the value of \(x\) in the environment \(E\):
    \[
       E(x) =
       \begin{cases}
@@ -47,26 +44,15 @@ Whenever we have a variable name, we want to get the concrete value associated w
    \]
 \end{definition}
 
-With this definition, it is easy to check an environment for the existance of a variable. If applying the environment to the variable returns \textbf{undefined} then the variable is not defined. Conversely, we know that a variable is defined, should the environment return a value.
-
-\begin{definition}\label{def:in-environment}
-   Given an \nameref{def:environment} \(E\) and a variable name \(x\), we define \(\contains{E}{x}\) as follows:
-   \[
-      \contains{E}{x} = 
-      \begin{cases*}
-	 \false & \mbox{,if E(x) is } \textbf{undefined}\\
-	 \true & \mbox{,else} 
-      \end{cases*}
-   \]
-\end{definition}
+This definition facilitates existence checks for variables. If a variable \(x\) is defined in \(E\), then \(E(x) \neq \textbf{undefined}\); To assert that a variable is defined, we simply write \(x \in E\).
 
 In most programming settings, we start with an empty environment and incrementally populate it with variables as our program evaluates. This constitutes the need for extending environments - we want to add variables to the environment upon introducing them.
 
 \begin{definition}\label{def:environment-augment}	
-   Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(v\) be the value assigned to \(a\). We write \(E[a \mapsto v]\) for the environment \(E\), where \(a\) is additionally mapped onto \(v\):
+   Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(v_a\) be the value assigned to \(a\). We write \(E[a \mapsto v_a]\) for the environment \(E\), where \(a\) is additionally mapped onto \(v_a\):
 
    \[
-      \envaugment{E}{a}{v} = 
+      \envaugment{E}{a}{v_a} = 
       \begin{cases}
 	 E(x)  & \mbox{,if } x \neq a\\
 	 v     & \mbox{,else } 
@@ -75,7 +61,7 @@ In most programming settings, we start with an empty environment and incremental
 
 \end{definition}
 
-Having all of these definitions in place, we can now update the definition of an \emph{evaluation judgement}. Previously, we did not have variables in any expression. As a result, the expressions were evaluated as is, irrespective of an environment, as there was no state to keep track of. As we now evaluate expressions with respect to \nameref{def:environment}s, we need to update \cref{def:evaluation-judgement} to use environments:
+Having all of these definitions in place, we now update the definition of an \emph{evaluation judgement}. Previously, expression were evaluated as is, as no environment influenced the execution of the expression. Now, we consider evaluating expression against an environment \(E\).
 
 \begin{definition}[Evaluation Judgement with Environments]\label{def:eval-judgement-environments}
    Let \(E\) be an \nameref{def:environment}, \(e\) an expression of our programming language (\cref{def:prog-lang-5}), \(v\) the value obtained from evaluating \(e\), and let \((p_0, p_1) \in \resource\). We then write the following for the evaluation judgement with respect to an environment:
@@ -90,7 +76,7 @@ Having all of these definitions in place, we can now update the definition of an
    Note that the evaluation of an expression \(e\) depends on the environment, due to the ambiguity of variable names. Thus, both the return value \(v\) and the resource demand \((p_0, p_1)\) can differ for disparate environments. 
 \end{remark}
 
-\subsection{Evaluation Rules}
+\subsection{Evaluation Rules}\label{sec:evaluation-rules-var-tick}
 
 Having all the necessary definitions at hand, let us now define evaluation rules for our programming language. We start with the rule (E:var), which provides an explicit handle for resolving variable names to their values. In order for the rule to be consistent, we must enforce that the variable we want to resolve is defined in the current environment. 
 

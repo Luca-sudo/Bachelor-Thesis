@@ -16,7 +16,7 @@ theorem relaxation_transitive (p q r: ResourceDemand) : p ≽ q → q ≽ r → 
   
   --Relaxation is antisymmetric
 theorem relaxation_antisymmetric (p q :ResourceDemand) 
-  : p ≽ q → q ≽ p → p.init = q.init ∧ p.resid = q.resid := by
+  : p ≽ q → q ≽ p → p.1 = q.1 ∧ p.2 = q.2 := by
   simp [relaxation_of]
   intros H_p H_p' H_q H_q'
   apply And.intro

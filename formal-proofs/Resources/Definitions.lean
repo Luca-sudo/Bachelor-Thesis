@@ -15,10 +15,13 @@ def consumption (p : ResourceDemand) : Int := p.1 - p.2
 @[simp]
 def disparity (p q : ResourceDemand) : Nat := max p.2 q.1 
 
+
 --Multiplication of resource pairs
 @[simp]
 def sequence (p q : ResourceDemand) : ResourceDemand := 
   (p.1 + disparity p q - p.2, q.2 + disparity p q - q.1)
+
+
 
 infix:50 "▹" => sequence
 
