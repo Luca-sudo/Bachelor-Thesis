@@ -1,62 +1,51 @@
 import Mathlib.Tactic.Linarith
 
 
-@[simp, reducible]
-notation "Resource" => Nat
 
 @[simp, reducible]
-abbrev ResourceDemand := Resource × Resource
+abbrev ResourceDemand := Nat × Nat
 
 namespace ResourceDemand
 
-@[simp, reducible]
---Initial resources
-def init : ResourceDemand → Resource := Prod.fst
-
-@[simp, reducible]
---Residual resources
-def resid : ResourceDemand → Resource := Prod.snd 
-
 --Concrete Resource consumption, definition ... in thesis
-@[simp, reducible]
-def consumption (p : ResourceDemand) : Int := p.init - p.resid 
+@[simp]
+def consumption (p : ResourceDemand) : Int := p.1 - p.2 
 
 --Resource disparity, definition ... in thesis
-@[simp, reducible]
-def disparity (p q : ResourceDemand) : Resource := max p.resid q.init 
+@[simp]
+def disparity (p q : ResourceDemand) : Nat := max p.2 q.1 
 
 --Multiplication of resource pairs
-@[simp, reducible]
+@[simp]
 def sequence (p q : ResourceDemand) : ResourceDemand := 
-  (p.init + p.disparity q - p.resid, q.resid + p.disparity q - q.init)
+  (p.1 + disparity p q - p.2, q.2 + disparity p q - q.1)
 
 infix:50 "▹" => sequence
 
 --Neutral element in Resource Demands
 def unit : ResourceDemand := (0, 0)
 
-@[simp, reducible]
--- Relaxation relation
-def relaxation_of (p q : ResourceDemand) : Bool 
-  := (p.init ≥ q.init) ∧ (p.consumption ≥ q.consumption) 
-
 @[simp]
+-- Relaxation relation
+def relaxation_of (p q : ResourceDemand) : Prop
+  := p.1 ≥ q.1 ∧ (p.1 - p.2) ≥ (q.1 - q.2)
+
 infix:50 "≽" => relaxation_of
 
 --Example 2.5
 #eval (4, 2) ▹ (5, 0) -- (7, 0)
 
 --Example 2.7
-#eval ((4, 2) ≽ (3, 2)) --true
+-- #eval ((4, 2) ≽ (3, 2)) --true
 
 --Example 2.8
-#eval ((4, 2) ≽ (5, 4)) --false
+-- #eval ((4, 2) ≽ (5, 4)) --false
 
 --Example 2.9
-#eval ((5, 4) ≽ (2, 0)) --false
+-- #eval ((5, 4) ≽ (2, 0)) --false
 
 --Example 2.10
-#eval ((4, 2) ≽ (5, 4)) ∧ ((5, 4) ≽ (4, 2)) --false
+-- #eval ((4, 2) ≽ (5, 4)) ∧ ((5, 4) ≽ (4, 2)) --false
 
 -- Example 2.14
 #eval (4, 2) = (4, 3) -- false

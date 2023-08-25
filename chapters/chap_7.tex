@@ -96,7 +96,6 @@ We start by introducing two rules for the construction of lists, corresponding t
    {\contains{E}{x, xs} \qquad l = (E(x), E(xs))}
    {\evals{E}{\cons{x}{xs}}{l}{}{}}
 \]
-\todo{Need to introduce null somewhere}
 
 In order to implement functions that work recursively on a list, we need pattern matching on lists. Whenever a match statement involving a list is invoked, there are two cases: (1) The list passed to it is nil. (2) The list passed to it contains values. The cost of both cases will be combined, to define a recurrence relation (see \cref{def:recurrence-relation}). We first define an evalution rule for matching on empty lists.
 
@@ -128,7 +127,6 @@ Next, we define an evaluation rule for non-empty lists. Here, we need to extract
 For the latter rule we define the concrete value of the list \(l\) as a tuple \((v_x, v_{xs})\). Where \(v_x\) is the value contained in the head of the list, and \(v_{xs}\) points to the tail. 
 
 To properly evaluate recursive functions we are currently missing function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_i\) as the \(i\)-th argument used in the definition of \(f\). 
-\todo{What about functions with multiple arguments?}
 
 \[
    \inference[(E:Application)]
@@ -137,8 +135,6 @@ To properly evaluate recursive functions we are currently missing function appli
    \evals{E[y_1 \mapsto E(x_1), \dots, y_n \mapsto E(x_n)]}{e_f}{v}{q_0}{q_1}}
    {\evals{E}{f~x_1~x_2~\dots~x_n}{v}{q_0}{q_1}}
 \]
-\todo{Need to define how we get from f to the expression of f}
-\todo{Maybe talk about free and bound variables in preface?}
 
 \section{Type System}
 
@@ -146,7 +142,7 @@ Our goal is to introduce type rules that allow us to assign resource costs to li
 
 \subsection{Resource-Aware Lists}\label{sec:resource-aware-lists}
 
-We start by defining the type of resource-aware lists, the potential function, notation for the length of a list and deriving potential for lists with base types. For this, we start by defining resource-aware lists:
+Resource-aware lists have a \emph{potential} assigned to them, which signifies the cost \emph{per list entry}. The potential attributed to a list solely depends on how the list is used; Thus, potentials are of interest in function signatures, to signify cost. 
 
 \begin{definition}[Resource-aware list]\label{def:ra-list}
    Let \(p \in \mathbb{N}\), and let \(A\) be a type from \cref{def:type-system-6}. A resource-aware list type is a pair comprising the \emph{base type} and \emph{potential}:
@@ -157,10 +153,12 @@ We start by defining the type of resource-aware lists, the potential function, n
 \end{definition}
 
 \begin{remark}
-   Resource-aware lists can also have a resource demand associated with them. If an expression evaluates to the resource-aware type \(\ratype{\ralist{1}{A}}{2}{3}\) then (1) Every list entry costs 1 resource and (2) Evaluating the expression requires 2 initial resources and returns 3 residual resources - \emph{regardless of the concrete list}.
-   \end{remark}
+   Resource demands and potentials can coexist; Resource demands capture static cost for executing an expression. Potentials capture dynamic cost that depends on the length of the list. A function \(f :: A \to \ratype{\ralist{1}{B}}{2}{3}\), for example, indicates two facts (1) Every list entry costs 1 resource and (2) Calling the function requires 2 initial and 3 residual resources, irrespective of the concrete list.
+\end{remark}
 
-In order to calculate resource bounds using the potential assigned to a list, we need to introduce a potential function. This will be the mathematical foundation for deriving resource bounds that respect the size of lists. Most importantly, we assign potential \emph{only} to lists, any other type \emph{including function types} has no associated potential. 
+Given a concrete list that is typed with some potential \(p\), we want to calculate the exact potential residing in the list. There are two constituents: the type parameter \(A \in \type\) and the potential \(p\). The type parameter \(A\) defines how much potential a value \(v : A\) of the list has, whereas the potential \(p\) is the \emph{additional} overhead assigned to every list element.
+
+For any type other than \(A\) within the set of types, we assign a potential of 0. In more intricate type systems that include custom types, it is possible to assign non-zero potentials. 
 
 \begin{definition}[Potential Function]\label{def:potential-function}
    For a value \(v\) of type \(A\), we define the potential of that value as follows:
@@ -172,13 +170,13 @@ In order to calculate resource bounds using the potential assigned to a list, we
    \]
 \end{definition}
 
-We are mostly interested in the potential of a list. As we assign a potential to every element in the list, the concrete length of a list is of paramount interest. Therefore, we introduce notation for the length of a list.
+To allow for more compact notations of potentials, we introduce \(|l|\) to denote the length of a list \(l\). 
 
 \begin{definition}[Length of lists]\label{def:list-length}
    Given a list \(l : \ralist{}{A}\), we denote by \(|l|\) the \emph{length} of the list.
 \end{definition}
 
-If the list contains only values of a type that has no potential assigned, then the potential of the list is solely dictated by the potential annotation and the length of the list. 
+As most types \(A \in \type\) have no potential assigned to them, the potential of a list \(l : \ralist{p}{A}\) is dictated \emph{solely} by its length and \(p\); Only if the lists' type parameter is of type \(\ralist{q}{B}\) do values in the list have inherent potential.
 
 \begin{corollary}[Potential of lists]\label{cor:potential-list}
    Let \(l : \ralist{q}{A}\), where \(A \in \type\), s.t. \(\Phi(v : A) = 0\), then:
