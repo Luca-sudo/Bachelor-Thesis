@@ -254,7 +254,7 @@ Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is n
 
 \begin{proof}
 
-(tick): The proof given in \cref{thm:soundness-4} for the tick expression still holds.
+(tick): The proof given in \cref{thm:soundness-let-tick} for the tick expression still holds.
 
 (bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\) by definition. As a result \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\), which is identical to \((p_0, p_1) \relaxation (q_0, q_1)\). It furthermore follows that the type of the resulting value \(b\) is of type \bool~, and such, consistent with the typing derived from the type rule.
 
@@ -262,7 +262,7 @@ Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is n
 
 (let): We have a program of the form \(\letexp{x}{e_1}{e_2}\). Here, the let expression is a special case. Where any other language construct corresponded to exactly one type rule, the let expression may be typed by two different rules, (T:let) or (T:relax). As such, we need to prove that for the application of both type rules, soundness holds.  
 
-For (T:let): The proof from \cref{let-tick:soundness-t-let} still holds.
+For (T:let): The proof from \cref{thm:soundness-let-tick} still holds.
 
 For (T:relax): What is special for the (T:relax) inference rule is that it could be applied an arbitrary (finite!) number of times. Thus our prove changes slightly. Instead of proving soundness for one application of (T:Relax), we use induction. 
 

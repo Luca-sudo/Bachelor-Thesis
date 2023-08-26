@@ -1,6 +1,6 @@
 \chapter{Introducing Lists}\label{chap:list-tick}
 
-In this chapter we introduce lists as a data type. As we will see, this necessitates various new definitions; The most salient being potentials. Previously, we attached resource-annotations to a type, which resulted in a "What-you-see-is-what-you-get" resource cost. For lists' we need to adapt, instead of a constant cost for any input list, we assign a cost to every list element. This results in resource-consumption respecting the variable length of lists. The notion of potentials will be a key concept in enabling this. Beyond lists, we introduce function application, which introduces recursion into our programming language. 
+In this chapter, we introduce the concept of lists as a fundamental data type. This introduction leads to the development of several new definitions, with the most significant among them being potentials. In our previous approach, resource annotations were attached to a type, resulting in a resource cost that followed a "What-you-see-is-what-you-get" principle. However, when dealing with lists, a different approach becomes necessary. Instead of a constant cost for any input list, we assign a specific cost to each individual element within the list. This adaptation allows us to manage resource consumption while accommodating the variable length of lists. The concept of potentials plays a pivotal role in making this adjustment feasible. Beyond our exploration of lists, we delve into function application, which inherently introduces recursion to our programming language. 
 
 \begin{definition}[list-tick language]
    \label{def:prog-lang-6}
@@ -18,29 +18,13 @@ In this chapter we introduce lists as a data type. As we will see, this necessit
 \end{align*}
 \end{definition}
 
-Because a list can contain \emph{any type} of data, assuming it is homogenous data, we introduce generic lists. Similarly, we need to introduce function types, which map values of one type to values of another type. For more concrete examples of list types and function types, we supplement examples below.
+Because lists can contain \emph{any type} of data, assuming it is homogenous, they are an example of a \emph{polymorphic type}. We can think of polymorphic types as functions from types to types, where the input is called a \emph{type variable} and defines the concrete type of list. 
 
 \begin{definition}[Type system]\label{def:type-system-6}
    \[
       A, B := \unit~|~\text{\bool}~|~\text{\typeint}~|~\ralist{}{A}~|~\rafunc{A}{B}{}{}
    \]
 \end{definition}
-
-\begin{example}
-   \(\ralist{}{\typeint}\) is the type of lists that contain integers
-\end{example}
-
-\begin{example}
-   \(\ralist{}{\ralist{}{\bool}}\) is the type of lists that contain lists with values of type \bool.
-\end{example}
-
-\begin{example}
-   A function \(f(x) = x+1\) has the type \(f :: \rafunc{\typeint}{\typeint}{}{}\).
-\end{example}
-
-\begin{example}
-   A function \(sum\), that sums integers in a list has the type \(\rafunc{\ralist{}{\typeint}}{\typeint}{}{}\).
-\end{example}
 
 We want to infer resource-bounds for programs. In order for the inference to be computationally tractable, we constrain the use of certain language features. Most notably, we enforce that functions on lists only recur on the tail of the list. As a result, recursive function calls \emph{will terminate}, eventually.
 
@@ -49,26 +33,24 @@ While this reduces the set of programs that we permit, most problems on lists na
 
 \section{Evaluation Semantics}
 
-We introduce evaluation rules, which are nuanced when we evaluate a list, because the resource demand will, in most cases, be related to the length of the list. This necessitates the introduction of resource demands as \emph{recurrence relations}. We start by introducing recurrence relations and motivate the connection to resource demands. 
+We introduce evaluation rules, which are nuanced when evaluating lists, as the resource demand can be related to the length of the list. This necessitates the introduction of resource demands as \emph{recurrence relations}. We start by introducing recurrence relations and motivate the connection to resource demands. 
 
 \subsection{Recurrence Relations As Resource Demands}
 
 Since we introduced lists and recursion into our programming language, this has a profound impact on the relation between input and resource demands. Previously the values of any type in our type system had no \emph{structural implication} for resource demands. As lists can inhabit any (finite) length, we need to find a general approach to relating lists with resource demands. 
 
-Let us build an intuition for the interplay of resource demands and lists of variable length, by informally working through an example function. For this consider the function \(add1\) in \cref{code:add1}, which increments every entry in the list.
+Let us build an intuition for the interplay of resource demands and lengths of lists, by informally working through an example function. Consider the function \(add1\) in \cref{fig:code-add1}, which increments every entry in the list.
 
-Given a non-empty list \(l\), we execute the body of the second match condition. There, we tick and increment the head of the list. Afterward we call the function recursively on the tail. Thus, we have paid \(2\) resources for the head of the list, plus, the cost of calling the function on the tail, which is not yet determined.
+Our goal is to represent the resource demand \(Q\) of a list \(l\) as a function of the tail of the list. We want to derive an equation of the form \(Q(\cons{x}{xs}) = \alpha + Q(xs)\), assigning a cost to an element \(x\) of the list. To ensure that this equation produces a well-defined result, we need to derive a cost \(Q(\listnil)\) as well.
 
-We can model this cost as a function of the list. However, as we do not know how to handle an empty list yet, this is only a partial definition.
+Given a non-empty list \(l\), we execute the body of the second match condition. There, we tick and increment the head of the list. Afterward we call the function recursively on the tail. Thus, we have paid \(2\) resources for the head of the list, plus the cost of calling the function on the tail, which is not yet determined. This yields an equation of the form 
 
 \[
-   Q(l) = \begin{cases*}
-      2 + Q(xs)            & if l = x :: xs\\
-      \textbf{undefined}   & else
-   \end{cases*}
+   Q(\cons{x}{xs}) = 2 + Q(xs)
 \]
 
-This aligns with our intuition, as this recurrence relation states that for any list element we have a resource cost of \(2\). To derive a complete recurrence relation, and thus a resource demand for arbitrary, finite lists, we need to understand what cost we assign to the empty list. In our example, we simply return nil with no associated cost. Thus, there is a cost of \(0\) for the empty list. Augmenting the recurrence relation yields the following:
+
+To derive a complete recurrence relation, and thus a resource demand for arbitrary, finite lists, we need to derive the cost \(Q(\listnil)\). In our example, we simply return nil with no associated cost. Thus, we have \(Q(\listnil) = 0\). Using both equations we define the cost of a list \(l\):
 
 \[
    Q(l) = \begin{cases*}
@@ -77,11 +59,15 @@ This aligns with our intuition, as this recurrence relation states that for any 
    \end{cases*}
 \]
 
-Which captures the resource demand for arbitrary lists. Having exercised this example, we now define recurrence relations. Notably, we constrain recurrence relations to have \emph{order} 1, as we only allow recursion on the tail of a list. For arbitrary, inductive data types, an order of 1 might not suffice. Binary trees, for example, may require order 2.
+Understanding this example, we define recurrence relations. Notably, we constrain recurrence relations to have \emph{order} 1, as we only allow recursion on the tail of a list. 
 
 \begin{definition}[Recurrence Relation]\label{def:recurrence-relation}
    A \emph{recurrence relation} (of order 1) is an equation that defines the value of each element as a function of the preceding element.
 \end{definition}
+
+\begin{remark}
+   We restrict recurrence relations to have order 1, as functions are required to recur on the tail. For more elaborate types, the resulting recurrence relations may require a higher order. As an example, binary trees usually require order 2, as functions usually recur on the left and right subtree.
+\end{remark}
 
 \subsection{Evaluation Rules}
 
