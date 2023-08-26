@@ -122,11 +122,11 @@ To properly evaluate recursive functions we introduce an evaluation rule for fun
 
 \section{Type System}
 
-Our goal is to introduce type rules that allow us to assign resource costs to lists. Previously, we assigned a resource-pair (\cref{def:resource-pair}) to the resulting type; This is not feasible for lists, as the cost of evaluating an expression featuring a list depends on the length of the list. For this, we introduced recurrence relations to model resource demands that respect the length of a list. The type rule analogue to recurrence relations are \emph{potentials}. Intuitively, we assign a potential to a list, which corresponds to a cost for each list element. Having introduced potentials, we will define resource-aware lists, which forces us to consider how potentials can be composed and shared.
+Our goal is to introduce type rules that allow us to assign resource costs to lists. Previously, we assigned a resource-pair (\cref{def:resource-pair}) to the resulting type; This is not feasible for lists, as the cost of evaluating an expression depends on the length of the list. \emph{Potentials} are the analogue to recurrence relations, allowing us to assign costs to every list element. 
 
 \subsection{Resource-Aware Lists}\label{sec:resource-aware-lists}
 
-Resource-aware lists have a \emph{potential} assigned to them, which signifies the cost \emph{per list entry}. The potential attributed to a list solely depends on how the list is used; Thus, potentials are of interest in function signatures, to signify cost. 
+Resource-aware lists have a \emph{potential} assigned to them, which signifies the cost \emph{per list entry}. The potential attributed to a list solely depends on how the list is used; Thus, potentials are of interest in function signatures to signify cost. 
 
 \begin{definition}[Resource-aware list]\label{def:ra-list}
    Let \(p \in \mathbb{N}\), and let \(A\) be a type from \cref{def:type-system-6}. A resource-aware list type is a pair comprising the \emph{base type} and \emph{potential}:
@@ -178,7 +178,6 @@ As most types \(A \in \type\) have no potential assigned to them, the potential 
 \end{proof}
 
 With potentials defined for \(A \in \type\), we naturally extend potentials to contexts. Intuitively, the potential of a context comprises the potentials of every variable in the contexts' domain (see \cref{def:context-domain}). This notion will be central to our new definition of soundness in \cref{sec:soundness-6}.
-\todo{Introduce context domain}
 
 \begin{definition}[Potential of Contexts]\label{def:context-potential}
    Let \(\Gamma\) be a context.
@@ -202,10 +201,7 @@ We start by introducing two rules associated to the two list constructors. An em
    {\typing{\Gamma;x : A; xs : \ralist{p}{A}}{cons(x, xs)}{\ratype{\ralist{p}{A}}{p}{0}}}
 \]
 
-In order to type expression that pattern match on lists, we introduce a rule (T:MatchList). There are a couple of nuances that we want to explain further. Firstly, the return type of both expressions is assumed to be the same. If we want to have a return type that may be distinct for both respective cases, this would require dependent types. 
-
-The potential \(p\) of the list \(l\), which is matched on, is defined as the initial resource cost specific to destructuring the list into head and tail. The expression \(e_1\) has a resource demand of \((q_0, q_1)\), whereas the evaluation of \(e_2\) has a resource demand of \((q_0 + p, q_1)\). Thus, the initial cost for an element of the list is precisely \(p\).  
-\todo{Motivate the rule a bit}
+The potential \(p\) of the list \(l\) is the initial resource cost, specific to destructuring the list into head and tail. The expression \(e_1\) has a resource demand of \((q_0, q_1)\), whereas the evaluation of \(e_2\) has a resource demand of \((q_0 + p, q_1)\). Thus, the initial cost for an element of the list is precisely \(p\). Furthermore, \((q_0, q_1)\) represents a static cost that is paid regardless of the concrete list. We attach \((q_0, q_1)\) to the return type.
 
 \[
    \inference[(T:MatchList)]
@@ -213,7 +209,7 @@ The potential \(p\) of the list \(l\), which is matched on, is defined as the in
    {\typing{\Gamma;l : \ralist{p}{A}}{\listmatch{l}{e_1}{e_2}}{\ratype{B}{q_0}{q_1}}}
 \]
 
-Next, we introduce an inference rule for function application. First, the input type of the function \(f\) needs to align with the variables that are applied. The rule (T:Application) allows us to type recursive functions. Most importantly, the type of \(x\) and the input type of \(f\) are then inferred to be the same. For recursive calls on a list, we assume that they recur only on the tail \(xs\). Then, the tail has a potential annotation, which is propagated to the function signature, as we assume that the types match. This will be important in the coming examples, as this allows us to type recursive functions.
+For function application, the input type needs to align with the variables that are applied. The rule (T:Application) allows us to type recursive functions. Most importantly, the type of \(x\) and the input type of \(f\) are then inferred to be the same. For recursive calls on a list, we assume that they recur only on the tail \(xs\). Then, the tail has a potential annotation which is propagated to the function signature, as we assume that the types match.
 
 \[
    \inference[(T:Application)]
