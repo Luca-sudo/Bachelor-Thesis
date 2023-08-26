@@ -35,7 +35,7 @@ While this reduces the set of programs that we permit, most problems on lists na
 
 We introduce evaluation rules, which are nuanced when evaluating lists, as the resource demand can be related to the length of the list. This necessitates the introduction of resource demands as \emph{recurrence relations}. We start by introducing recurrence relations and motivate the connection to resource demands. 
 
-\subsection{Recurrence Relations As Resource Demands}
+\subsection{Recurrence Relations As Resource Demands}\label{sec:recurrence-relation}
 
 Since we introduced lists and recursion into our programming language, this has a profound impact on the relation between input and resource demands. Previously the values of any type in our type system had no \emph{structural implication} for resource demands. As lists can inhabit any (finite) length, we need to find a general approach to relating lists with resource demands. 
 
@@ -71,7 +71,7 @@ Understanding this example, we define recurrence relations. Notably, we constrai
 
 \subsection{Evaluation Rules}
 
-We start by introducing two rules for the construction of lists, corresponding to the two constructors of our programming language. In this thesis, construction of both empty and non-empty lists has no associated cost. As a result the cost of operations on lists is purely dictated by the actions performed on the list. 
+We start by introducing two rules for the construction of lists, corresponding to the two constructors of our programming language. The construction of empty and non-empty lists has no associated cost. As a result, the cost of operations on lists is purely dictated by the actions performed on the list. 
 
 \[
    \inference[(E:Nil)]
@@ -83,7 +83,7 @@ We start by introducing two rules for the construction of lists, corresponding t
    {\evals{E}{\cons{x}{xs}}{l}{}{}}
 \]
 
-In order to implement functions that work recursively on a list, we need pattern matching on lists. Whenever a match statement involving a list is invoked, there are two cases: (1) The list passed to it is nil. (2) The list passed to it contains values. The cost of both cases will be combined, to define a recurrence relation (see \cref{def:recurrence-relation}). We first define an evalution rule for matching on empty lists.
+In order to implement functions that work recursively on a list, we need pattern matching. The two cases of the pattern match are defined by the inductive definition of lists: (1) A list is nil, or (2) A list comprises head and tail. We introduce one evaluation rule for each case respectively. The first rule matches an empty list.
 
 \[
    \inference[(E:MatchNil)]
@@ -91,28 +91,26 @@ In order to implement functions that work recursively on a list, we need pattern
    {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
 \]
 
-Next, we define an evaluation rule for non-empty lists. Here, we need to extract all required resource demands, in order to construct a recurrence relation. As a result, we compute the resource demand of empty and non-empty lists, which allows us to create the needed recurrence relation.
+Next, we define an evaluation rule for non-empty lists. Here, we need to extract the resource demand as a recurrence relation, which we construct similar to \cref{sec:recurrence-relation}.
 
 \[
    \inference[(E:MatchCons)]
-   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{q(l)}{q'(l)} \qquad \evals{E}{e_1}{v_1}{q_0}{q_1}}
+   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{Q(\cons{x}{xs})}{Q'(\cons{x}{xs})} \qquad \evals{E}{e_1}{v_1}{q_0}{q_1}}
    {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{Q(l)}{Q'(l)}}
 \]
 \[
    \begin{aligned}
       \text{where }  & Q(l) \begin{cases*}
-         q(x :: xs)     & if l = x :: xs\\
-         q_0            & if l = \listnil
+         Q(x :: xs)     & if l = x :: xs\\
+         q_0            & else
          \end{cases*} \text{and } Q'(l) \begin{cases*}
-         q'(x :: xs)     & if l = x :: xs\\
-         q_1            & if l = \listnil
+         Q'(x :: xs)     & if l = x :: xs\\
+         q_1            & else
       \end{cases*}
    \end{aligned}
 \]
 
-For the latter rule we define the concrete value of the list \(l\) as a tuple \((v_x, v_{xs})\). Where \(v_x\) is the value contained in the head of the list, and \(v_{xs}\) points to the tail. 
-
-To properly evaluate recursive functions we are currently missing function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_i\) as the \(i\)-th argument used in the definition of \(f\). 
+To properly evaluate recursive functions we introduce an evaluation rule for function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_i\) as the \(i\)-th argument used in the definition of \(f\). 
 
 \[
    \inference[(E:Application)]
