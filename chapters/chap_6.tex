@@ -266,9 +266,9 @@ For (T:let): The proof from \cref{thm:soundness-let-tick} still holds.
 
 For (T:relax): What is special for the (T:relax) inference rule is that it could be applied an arbitrary (finite!) number of times. Thus our prove changes slightly. Instead of proving soundness for one application of (T:Relax), we use induction. 
 
-Let us start with the base case; That is, applying (T:Relax) \emph{once}. By assumption, the following to hold true: \(\evals{E}{\letexp{x}{e_1}{e_2}}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{\letexp{x}{e_1}{e_2}}{\ratype{A}{p_0}{p_1}}\) and (\((p_0, p_1) \relaxation (r_0, r_1)\). As \((p_0, p_1) \relaxation (r_0, r_1)\) is exactly what we wanted to show, we are done for the base case.
+Let us start with the base case; That is, applying (T:Relax) \emph{once}. By assumption, the following to hold true: \(\evals{E}{\letexp{x}{e_1}{e_2}}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{\letexp{x}{e_1}{e_2}}{\ratype{A}{p_0}{p_1}}\) and \((p_0, p_1) \relaxation (r_0, r_1)\). As \((p_0, p_1) \relaxation (r_0, r_1)\) is exactly what we wanted to show, we are done for the base case.
 
-For the induction step, we can leverage the fact that the relaxation relation defines a partial ordering, or more specifically, is \emph{transitive}. Our induction hypothesis includes the following assumptions:
+For the induction step, we can leverage the fact that the relaxation relation is \emph{transitive}. Our induction hypothesis includes the following assumptions:
 
    \begin{align*}
       &										    & &\exists (m_0, m_1) \in \resource\\

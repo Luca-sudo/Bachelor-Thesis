@@ -82,30 +82,24 @@ We start by introducing \emph{resource-aware types}, which comprise two parts: t
    Most of the time we write \(\ratype{A}{p_0}{p_1}\) for \((A, (p_0, p_1))\).
 \end{remark}
 
-For this chapter, the only type that \(A\) can adopt is that of \(\unit\). Therefore, resource-aware types have the form \(\ratype{\unit}{p_0}{p_1}\) for this chapter. To acquaint the reader with the new notation, consider the example below.
-
-\begin{example}
-   \(\typing{}{e}{\ratype{\unit}{4}{2}}\) is a judgement, claiming that the expression \(e\) produces a value of type \(\unit\), with a resource demand of 4 initial resources and 2 residual resources.
-\end{example}
+For this chapter, the only type that \(A\) can adopt is that of \(\unit\). Therefore, resource-aware types have the form \(\ratype{\unit}{p_0}{p_1}\).
 
 \subsection{Inference Rules}
 
-We need to define two rules, one for each language construct each. Similarly to the composition of resource-annotations in the previous section on evaluation semantics, we define the cost of sequential operations in a let expression as the product of the respective resource pairs.
+For let expressions, we compose resource demands using the sequencing operator \(\sequence\) introduced in \cref{def:multiplying-pairs}. 
 
-This yields the following rules:
 \[
    \label{def:tr-let-4}
    \vcenter{\hbox{
       \inference[(T:let)]
-      {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}},  \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
+      {\typing{}{e_1}{\ratype{\unit}{p_0}{p_1}} \quad \typing{}{e_2}{\ratype{\unit}{q_0}{q_1}}}
       {\typing{}{\letexp{\_}{e_1}{e_2}}{\ratype{\unit}{r_0}{r_1}}}
 }}\qquad \begin{aligned}
       (r_0, r_1) = (p_0, p_1) \sequence (q_0, q_1)
    \end{aligned}
 \]
 
-\begin{remark}
-\end{remark}
+The expression \(\tick{k}\) consumes (or frees) \(k\) resources. We can type this expression with any resource demand \((q_0, q_1)\) where \(q_0 - q_1 \geq k\).
 
 \[
    \label{def:tr-tick-4}
@@ -115,7 +109,7 @@ This yields the following rules:
 \]
 
 
-Let us now perform an exemplary type derivation for a simple program, using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
+Let us now perform an exemplary type derivation using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
 
 \begin{example}
    \begin{align*}
@@ -125,7 +119,7 @@ Let us now perform an exemplary type derivation for a simple program, using the 
    \end{align*}
 \end{example}
 
-Intuitively, we have three distinct steps, the first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
+Intuitively, we have three distinct steps. The first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
 
 \[
    \inference
@@ -161,12 +155,12 @@ We are now left with the task of resolving the collected, numeric constraints. I
    p_0 = 6 \qquad p_1 = 0
 \]
 
-This completes our type derivation, as inserting the calculated resource-annotations yields our desired type. The resulting type judgement is: 
+This completes our type derivation, as inserting the calculated resource-annotations yields our desired type.
 \[
    \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{6}{0}
 \]
 
-The resulting type \(\ratype{\unit}{6}{0}\) indeed furnishes a tight bound on the resources required. Having a solid grasp of how the type rules orchestrate together, having exercised a simple example, we now prove soundness for the \emph{let-tick} programming language.
+Having a solid grasp of how the type rules orchestrate together, having exercised a simple example, we now prove soundness for the \emph{let-tick} programming language.
 
 
 \section{Soundness}
@@ -175,7 +169,7 @@ Ultimately, we want our type rules to be consistent with the operational semanti
 Let us first sketch the structure of our soundness proof:
 
 If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
-The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The initial resources of the type are not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, by using the relaxation relation defined in \cref{def:relaxation}, yielding the following theorem:
+The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The initial resources of the type are not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, by using the relaxation relation defined in \cref{def:relaxation}.
 
 \begin{theorem}[Soundness of typing for let-tick language]\label{thm:soundness-let-tick}
    Let e be an expression in our programming language, and let \((q_0, q_1), (p_0, p_1) \in \resource\). 
