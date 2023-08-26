@@ -188,7 +188,7 @@ Let us start by introducing the rule (T:var), which allows us to add a variable 
    {\typing{\Gamma; x: A}{x}{A}}
 \]
 
-Next, we introduce two rules, one for boolean constants and one for integer constants. The rule (T:bool) assigns a type \bool~to any occurrence of \(\true\) or \(\false\), and, similarly, the rule (T:int) assigns a type \typeint to any occurrence of integer constants.
+Next, we introduce two rules, one for boolean constants and one for integer constants. The rule (T:bool) assigns a type \bool~to any occurrence of \(\true\) or \(\false\), and similarly, the rule (T:int) assigns a type \typeint~to any occurrence of integer constants.
 
 \[
    \inference[(T:bool)]
@@ -227,8 +227,7 @@ This leads to the following formulation of the rule (T:Let), that uses \emph{dis
    {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
 \]
 
-Compared to the previous chapter, we made the rule (T:let) stricter, by requiring that the \nameref{def:resource-disparity} between the two expressions is zero. As this would deny typing for \(\tick{}\) expressions that have a non-zero resource-disparity, we introduce another rule (T:relax) that allows us to \emph{relax} the resource-annotations into ones that permit applying (T:let) - only if that is possible. 
-We need to administer special caution when defining the relax rule, as we \emph{do not} want to reduce the resource demand. We do this, by enforcing that \((q_0, q_1) \relaxation (p_0, p_1)\).
+It is important to note that (T:let) requires the residual resources from the first expression to match the initial resources of the second expression - the rule is stringent compared to its predecessor from the previous chapter. Now, there exist pairs of resource demands that cannot be typed; We circumvent this restriction by introducing a rule (T:relax) that allows us to type an expression with any other resource demand that is a \emph{relaxation} of the original resource demand. This allows us to match residual and initial resources to be the same, facilitating application of (T:let).
 
 \[
    \inference[(T:relax)]
@@ -236,6 +235,9 @@ We need to administer special caution when defining the relax rule, as we \emph{
    {\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}}
 \]
 
+\begin{example}
+   Given \(\typing{\Gamma}{e_1}{\ratype{A}{1}{0}}\) and \(\typing{\Gamma}{e_2}{\ratype{A}{2}{3}}\), application of (T:let) is not permitted. The first expression is required to have \(2\) residual resources; Relaxation of \((1, 0)\) to \((3, 2)\) permits application of (T:let).
+\end{example}
 
 
 \section{Soundness}
