@@ -2,7 +2,17 @@
 
 Throughout this thesis, we introduce programming language constructs, in order to elicit resource consumption of programs. It is, therefore, important to mention that resources can be an arbitrary cost metric, including but not limited to: memory consumption, runtime, energy consumption. While the details of the respective type of resource are nuanced, the resource consumption generally comprises two parts: Resources consumed to start evaluating, and possibly, resources freed after evaluation.
 
-This overarching structure of resource demands leads us to a refined version of \href{def:resource-consumption}{resource consumption}. Furthermore, we will define a rich structure on the resource demand of programs; Most notably, we introduce sequencing of resource demands, which gives rise to a monoidal structure, and relaxation, which defines a \emph{partial order} - allowing us to compare resource demands, that is consistent with our intuition about cost.
+Tracing resource consumption throughout the evaluation of a program may look like this:
+
+\ctikzfig{resource_intro}
+
+We are most interested in the value at the beginning and at the end, which leads us to simplify the resource consumption further. Drawing a straight line between resources at the start and at the end.
+
+\ctikzfig{resource_reduced}
+
+We use this visual representation to foster intuition throughout this chapter - illustrating examples and concepts.
+
+This overarching structure of resource demands leads us to a refined version of \href{def:resource-consumption}{resource consumption}. Furthermore, we will define a rich structure on the resource demand of programs; Most notably, we introduce sequencing of resource demands, which gives rise to a monoidal structure, and relaxation, which defines a \emph{partial order} - allowing us to compare resource demands, in a way that is consistent with our intuition of cost.
 
 \section{Resource Demand}
 
@@ -29,19 +39,25 @@ When reasoning about a resource demand \((p_0, p_1) \in \demand\), \(p_0\) are t
    A \nameref{def:resource-pair} with 4 initial and 2 residual resources is denoted by \((4, 2)\).
 \end{example}
 
-It is important to distinguish the resource demand from the \emph{resource consumption}. The resource consumption of a program is precisely its residual resource subtracted from its initial resources. To illustrate this, imagine that we pay resources with tokens as a currency. To start evaluating an expression we need to pay 6 tokens, but we get 2 tokens back after completing evaluation; As a result, our \emph{effective cost} is 4 tokens, not 6.
+\ctikzfig{ex25}
+
+It is important to distinguish the resource demand from the \emph{resource consumption}. The resource consumption of a program is precisely its residual resource subtracted from its initial resources. 
 
 \begin{definition}[Resource Consumption]\label{def:resource-consumption}
    Given \((p_0, p_1) \in \demand\), we define the \emph{resource consumption} as the difference between initial and residual resources, \(p_0 - p_1\).
 \end{definition}
 
+We can think of the resource consumption as the directed (!) height of the associated resource diagram. Consider the following example.
+
 \begin{example}
    For \((4, 2) \in \resource\), the resource consumption equals \(4 - 2 = 2\).
 \end{example}
 
+\ctikzfig{resource_consumption}
+
 As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need to define the resource cost of subsequent evaluations. 
 For this, there are two cases: The first operation has enough residual resources for the second operation to be executed, or the second operation requires more initial resources than residual resources of the first operation provides. In the latter case we need to increase the initial resources of the composed evaluation.
-
+left
 This yields two cases for the resulting resource demand:
 \[
    \begin{cases}
