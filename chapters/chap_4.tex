@@ -66,6 +66,18 @@ This yields two cases for the resulting resource demand:
    \end{cases}
 \]
 
+For the first case, we lift the first resource demand so its residual resources match the initial resources of subsequent resource demand - allowing us to compose both resource demands.
+
+\begin{align*}
+   \tikzfig{sequencing_11} & \implies & \tikzfig{sequencing_12}
+\end{align*}
+
+The second case is similar, but we lift the second resource demand to match.
+
+\begin{align*}
+   \tikzfig{sequencing_21} & \implies & \tikzfig{sequencing_22}
+\end{align*}
+
 We can, however, simplify the multiplication of resource demands by merging the two cases. Consider that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the initial resources for both cases. Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) precisely matches the residual resources for both cases. 
 This yields the following definition:
 
@@ -78,13 +90,12 @@ This yields the following definition:
 \begin{example}
    For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \sequence (5, 0) = (7,0)\).
 \end{example}
+
+\begin{align*}
+   \tikzfig{ex27I} & \implies & \tikzfig{ex27II}
+\end{align*}
  
 As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call it the \emph{disparity} of two resource demands.
-
-\begin{definition}[Resource disparity]
-   \label{def:resource-disparity}
-   Let \((p_0, p_1), (q_0, q_1) \in \demand\), we define the \emph{disparity} of these resource demands as \(\max(p_1, q_0)\).
-\end{definition}
 
 \begin{theorem}
    Resource demands form a \emph{monoid} under sequencing.
@@ -100,7 +111,7 @@ As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call i
 
 Whenever we define a programming language, we provide evaluation semantics and type rules, which we ultimately want to link by proving their \emph{soundness}. Soundness of a programming language with respect to evaluation semantics and type rules comprises two parts. First, we need to prove that the type we assign to an expression is consistent - evaluating the expression will produce a value of that type. Secondly, we need to show that the inferred resource demand is always \emph{at least} the concrete resource demand of evaluating an expression. In subsequent chapters, the main challenge of proving soundness will be in proving consistency of resource demands. 
 
-In order to do this, we need to be able to compare resource demands. This ultimately motivates the definition of \emph{relaxation}, which induces a partial order on the set of resource demands. Ultimately, this will streamline future soundness proofs. Let us therefore begin by defining what it means for a resource demand to be a relaxation of another one. Intuitively, one resource demand is a relaxation of another resource demand, if the initial resources and the resource consumption are at least as large.
+In order to do this, we need to be able to compare resource demands. This ultimately motivates the definition of \emph{relaxation}, which induces a partial order on the set of resource demands. Ultimately, this will streamline future soundness proofs. Let us therefore begin by defining what it means for a resource demand to be a relaxation of another one. Intuitively, one resource demand is a relaxation of another resource demand, if the initial resources \emph{and} the resource consumption are at least as large.
 
 \begin{definition}[Relaxation]\label{def:relaxation}
    Let \((p_0, p_1), (q_0, q_1) \in \demand\). We define the relation \relaxation ~as follows:
@@ -110,23 +121,33 @@ In order to do this, we need to be able to compare resource demands. This ultima
    \]
 \end{definition}
 
-We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\).
-
-\todo{Introduce Visual representation}
+We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\). Relaxation has a visual interpretation in resource diagrams: The relaxed resource demand has to start at least the same height \emph{and} be at least as long as the resource demand compared to. We illustrate this with examples below.
 
 \begin{example}
-   \((4, 2) \relaxation (3, 2)\), as \(4 \geq 3\) and \(4 - 2 \geq 3 - 2\).
+   \((4, 2) \relaxation (3, 2)\)
 \end{example}
+
+Here both constraints are satisfied, \(4 \geq 3\) and \(4 - 2 \geq 3 - 2\). We see: (1) The first resource demand has a higher starting point, indicating higher initial resources. (2) The first resource demand is vertically longer, which indicates larger resource consumption.
+
+\ctikzfig{ex210}
 
 \begin{example}
-   \((4,2) \notrelaxation (5, 4)\), as \(4 \centernot \geq 5\).
+   \((4,2) \notrelaxation (5, 4)\)
 \end{example}
+
+As \(4 \centernot{\geq} 5\) we have less initial resources. Thus, \((4,2)\) \emph{cannot} be a relaxation. In the diagram below we see that the first resource demand begins at a lower point.
+
+\ctikzfig{ex211}
 
 \begin{example}
-   \((5, 4) \notrelaxation (2, 0)\), as \(5 - 4 \centernot{\geq} 2 - 0\).
+   \((5, 4) \notrelaxation (2, 0)\)
 \end{example}
 
-Most notably, relaxation defines a partial ordering on the set of resource demands. Let us, therefore, define partial orders:
+For this example it holds that \(5 - 4 \centernot{\geq} 2 - 0\), which violates a constraint for relaxation - the first resource demand consumes \emph{less} resources. In the diagram below, this correlates to the first resource demand being vertically smaller than the second one.
+
+\ctikzfig{ex212}
+
+Most notably, relaxation defines a partial ordering on the set of resource demands. Let us recall the definition of \emph{partial orders}:
 
 \begin{definition}[Partial Order]
    Let \(M\) be a set, and \(\leq\) be a relation on \(M\). A partial order satisfies the following properties for any \(a, b, c \in M\):

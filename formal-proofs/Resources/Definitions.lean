@@ -1,7 +1,5 @@
 import Mathlib.Tactic.Linarith
 
-
-
 @[simp, reducible]
 abbrev ResourceDemand := Nat × Nat
 
@@ -17,13 +15,11 @@ def disparity (p q : ResourceDemand) : Nat := max p.2 q.1
 
 
 --Multiplication of resource pairs
-@[simp]
+@[simp, reducible]
 def sequence (p q : ResourceDemand) : ResourceDemand := 
-  (p.1 + disparity p q - p.2, q.2 + disparity p q - q.1)
+  (p.1 - p.2 + max p.2 q.1, q.2 - q.1 + max p.2 q.1) 
 
-
-
-infix:50 "▹" => sequence
+infixl:50 "▹" => sequence
 
 --Neutral element in Resource Demands
 def unit : ResourceDemand := (0, 0)
