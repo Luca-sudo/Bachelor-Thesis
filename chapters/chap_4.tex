@@ -36,10 +36,13 @@ We start by defining resources mathematically, which will lead to defining resou
 When reasoning about a resource demand \((p_0, p_1) \in \demand\), \(p_0\) are the \emph{initial} resources, and \(p_1\) are the \emph{residual} resources. 
 
 \begin{example}
-   A \nameref{def:resource-pair} with 4 initial and 2 residual resources is denoted by \((4, 2)\).
-\end{example}
+   \((4, 2) \in \demand\)
+
+Representing this resource demand using resource diagrams yields:
 
 \ctikzfig{ex25}
+
+\end{example}
 
 It is important to distinguish the resource demand from the \emph{resource consumption}. The resource consumption of a program is precisely its residual resource subtracted from its initial resources. 
 
@@ -47,17 +50,18 @@ It is important to distinguish the resource demand from the \emph{resource consu
    Given \((p_0, p_1) \in \demand\), we define the \emph{resource consumption} as the difference between initial and residual resources, \(p_0 - p_1\).
 \end{definition}
 
-We can think of the resource consumption as the directed (!) height of the associated resource diagram. Consider the following example.
+While a resource demand is a pair of \emph{non-negative} integers, its resource consumption can be negative - this corresponds to a program that \emph{frees} resources instead of consuming them. We can think of the resource consumption as the directed (!) height of the associated resource diagram. Consider the following example.
 
 \begin{example}
    For \((4, 2) \in \resource\), the resource consumption equals \(4 - 2 = 2\).
-\end{example}
 
 \ctikzfig{resource_consumption}
 
+\end{example}
+
 As most programs are made up of multiple subsequent evaluations, we need a mechanism for composing evaluations; More specifically, we need to define the resource cost of subsequent evaluations. 
 For this, there are two cases: The first operation has enough residual resources for the second operation to be executed, or the second operation requires more initial resources than residual resources of the first operation provides. In the latter case we need to increase the initial resources of the composed evaluation.
-left
+
 This yields two cases for the resulting resource demand:
 \[
    \begin{cases}
@@ -89,11 +93,12 @@ This yields the following definition:
 
 \begin{example}
    For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \sequence (5, 0) = (7,0)\).
-\end{example}
 
 \begin{align*}
    \tikzfig{ex27I} & \implies & \tikzfig{ex27II}
 \end{align*}
+
+\end{example}
  
 As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call it the \emph{disparity} of two resource demands.
 
@@ -125,27 +130,30 @@ We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\). Relaxa
 
 \begin{example}
    \((4, 2) \relaxation (3, 2)\)
-\end{example}
 
 Here both constraints are satisfied, \(4 \geq 3\) and \(4 - 2 \geq 3 - 2\). We see: (1) The first resource demand has a higher starting point, indicating higher initial resources. (2) The first resource demand is vertically longer, which indicates larger resource consumption.
 
 \ctikzfig{ex210}
 
+\end{example}
+
 \begin{example}
    \((4,2) \notrelaxation (5, 4)\)
-\end{example}
 
 As \(4 \centernot{\geq} 5\) we have less initial resources. Thus, \((4,2)\) \emph{cannot} be a relaxation. In the diagram below we see that the first resource demand begins at a lower point.
 
 \ctikzfig{ex211}
 
+\end{example}
+
 \begin{example}
    \((5, 4) \notrelaxation (2, 0)\)
-\end{example}
 
 For this example it holds that \(5 - 4 \centernot{\geq} 2 - 0\), which violates a constraint for relaxation - the first resource demand consumes \emph{less} resources. In the diagram below, this correlates to the first resource demand being vertically smaller than the second one.
 
 \ctikzfig{ex212}
+
+\end{example}
 
 Most notably, relaxation defines a partial ordering on the set of resource demands. Let us recall the definition of \emph{partial orders}:
 
@@ -163,8 +171,6 @@ Before we can show that resource demands form a partial order under relaxation, 
 \begin{lemma}
    The relaxation relation \(\relaxation\) defines a partial ordering on the set of resource demands.
 \end{lemma}
-
-\newpage
 
 \begin{proof}
    We provide a lean proof script.
