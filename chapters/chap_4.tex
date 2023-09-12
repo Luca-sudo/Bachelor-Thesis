@@ -183,9 +183,9 @@ It is important to note that, for any two resource pairs, one \emph{need not} be
    Let \((4,2), (5,4) \in \demand\). Then, \((4,2) \notrelaxation (5,4)\) \emph{and} \((5,4) \notrelaxation (4,2)\).
 \end{example}
 
-In \cref{chap:list-tick} we introduce potentials (\cref{chap:list-tick}), which increases the complexity of the proof of soundness (\cref{thm:soundness-7}). To streamline the proof, we introduce a lemma for easier manipulation of relaxations of resource demands.
+In later chapters (\cref{chap:list-tick}), the introduction of potentials increases the complexity of the proof of soundness (\cref{thm:soundness-7}). To streamline the proof, we introduce a lemma for easier manipulation of relaxations of resource demands.
 
-For an arbitrary resource demand \((p_0, p_1) \in \demand\) and \(n, m \in \resource\), one may ask if \((p_0 + n, p_1 + m) \relaxation (p_0, p_1)\). As it turns out, this is true if and only if \(n - m \geq 0\). We begin by stating the lemma, visualizing it and lastly proving it.
+For an arbitrary resource demand \((p_0, p_1) \in \demand\) and \(n, m \in \resource\), one may ask if \((p_0 + n, p_1 + m) \relaxation (p_0, p_1)\). As it turns out, this is true if and only if \(n - m \geq 0\). This agrees with our intuition: Enforcing that \(n - m \geq 0\) ensures that the resource consumption does not decrease - keeping relaxation constraints sound.
 
 \begin{lemma}\label{lemma:pos-relaxation}
    \((p_0, p_1) \in \demand\) and \(n, m \in \resource\) with \(n - m \geq 0\).

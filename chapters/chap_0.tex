@@ -1,11 +1,11 @@
 \begin{abstract}
-How can I improve my scientific writing skills?
-\begin{itemize}
- \item \url{https://www.zfw.rub.de/sz/}
- \item \url{http://www.cs.joensuu.fi/pages/whamalai/sciwri/sciwri.pdf}
- \item \url{https://www.student.unsw.edu.au/writing}
- \item \url{https://www.sydney.edu.au/content/dam/students/documents/learning-resources/learning-centre/writing-a-thesis-proposal.pdf}
-\end{itemize}
+   The performance of computer programs is of paramount interest to software engineers. There are multiple lenses through which performance may be evaluated: Worst-case analysis, average-case analysis and amortized analysis. In the case of amortized analysis, however, analysis was previously done manually - making it tedious and error-prone. This thesis presents Automatic Amortized Resource Analysis (AARA), a method that permits \emph{automatic} elicitation of a program's resource consumption through augmented type inference.
+
+   AARA embellishes type rules with linear constraints. As part of type inference, those constraints are collected and solved using an LP-solver.
+
+   This thesis presents concepts of AARA by incrementally building up a programming language. In chapter 2 we start off by introducing resource demands, which capture the resource consumption of a program. We then introduce a sequencing operation that allows composing resource demands, to build up larger programs, and a relation that facilitates comparing resource demands.
+
+   In chapter 3 we introduce the \emph{tick} instruction, which is an explicit handle for consuming/freeing resources. In chapter 4, we extend this language by introducing variables. In chapter 5, we introduce lists as a data type. This requires introducing potentials in order to elicit lower bounds on the resource consumption that is variable under the length of the list.
 \end{abstract}
 
 \cleardoublepage
