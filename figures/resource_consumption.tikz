@@ -1,0 +1,26 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=none] (0) at (-6, 4) {};
+		\node [style=none] (1) at (-6, -4) {};
+		\node [style=none] (2) at (6, -4) {};
+		\node [style=none] (3) at (-6.5, 0) {\rotatebox{90}{Resources}};
+		\node [style=none] (4) at (0, -4.5) {Time};
+		\node [style=none, label={above:4}] (5) at (-2, 3) {};
+		\node [style=none, label={below:2}] (11) at (4, -2) {};
+		\node [style=none] (12) at (-2.5, 3) {};
+		\node [style=none] (13) at (-1.5, 3) {};
+		\node [style=none] (14) at (3.5, -2) {};
+		\node [style=none] (15) at (4.5, -2) {};
+		\node [style=none] (16) at (-3.25, 3) {};
+		\node [style=none] (17) at (-3.25, -2) {};
+		\node [style=none] (18) at (-4, 0.5) {2};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw (12.center) to (13.center);
+		\draw (14.center) to (15.center);
+		\draw [style=new edge style 0] (1.center) to (2.center);
+		\draw [style=new edge style 0] (1.center) to (0.center);
+		\draw (5.center) to (11.center);
+		\draw [style=new edge style 3] (17.center) to (16.center);
+	\end{pgfonlayer}
+\end{tikzpicture}
