@@ -227,7 +227,13 @@ This leads to the following formulation of the rule (T:Let), that uses \emph{dis
    {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
 \]
 
-It is important to note that (T:let) requires the residual resources from the first expression to match the initial resources of the second expression - the rule is stringent compared to its predecessor from the previous chapter. Now, there exist pairs of resource demands that cannot be typed; We circumvent this restriction by introducing a rule (T:relax) that allows us to type an expression with any other resource demand that is a \emph{relaxation} of the original resource demand. This allows us to match residual and initial resources to be the same, facilitating application of (T:let).
+It is important to note that (T:let) requires the residual resources from the first expression to \emph{match} the initial resources of the second expression - the rule is stringent compared to its predecessor from the previous chapter. Consider the two resource diagrams below. The one on the left-hand side \emph{cannot} be typed with (T:Let), whereas the one on the right-hand side \emph{can} be typed.
+
+\begin{align*}
+   \tikzfig{let1} & \quad & \tikzfig{let2}
+\end{align*}
+
+As a result, there exist resource demands that \emph{could} be sequenced soundly, that (T:Let) prohibits. This leads to the introduction of (T:Relax), which allows relaxing resource demands. As a result, we are able to type programs with resource demands similar to the left-hand side example above.
 
 \[
    \inference[(T:relax)]
@@ -236,8 +242,12 @@ It is important to note that (T:let) requires the residual resources from the fi
 \]
 
 \begin{example}
-   Given \(\typing{\Gamma}{e_1}{\ratype{A}{1}{0}}\) and \(\typing{\Gamma}{e_2}{\ratype{A}{2}{3}}\), application of (T:let) is not permitted. The first expression is required to have \(2\) residual resources; Relaxation of \((1, 0)\) to \((3, 2)\) permits application of (T:let).
+   Given \(\typing{\Gamma}{e_1}{\ratype{A}{1}{0}}\) and \(\typing{\Gamma}{e_2}{\ratype{A}{2}{4}}\), application of (T:let) is \emph{not} permitted. However, interweaving (T:Relax) allows us to type the resulting let expression.
 \end{example}
+
+\begin{align*}
+   \tikzfig{ex4101} \overset{T:Relax}{\implies} \tikzfig{ex4102} \overset{T:Let}{\implies} \tikzfig{ex4103}
+\end{align*}
 
 
 \section{Soundness}

@@ -1,0 +1,45 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=none] (0) at (-3.5, 4) {};
+		\node [style=none] (1) at (-3.5, -4) {};
+		\node [style=none] (2) at (4, -4) {};
+		\node [style=none] (3) at (-4, 0) {\rotatebox{90}{Resources}};
+		\node [style=none] (4) at (0, -4.5) {Time};
+		\node [style=none, label={below:2}] (17) at (-1, -1) {};
+		\node [style=none] (20) at (-1.5, -1) {};
+		\node [style=none] (21) at (-0.5, -1) {};
+		\node [style=none] (24) at (-1.5, -1) {};
+		\node [style=none] (25) at (-0.5, -1) {};
+		\node [style=none] (28) at (-2, 0.5) {};
+		\node [style=none] (29) at (-2.5, 0.5) {};
+		\node [style=none] (30) at (-1.5, 0.5) {};
+		\node [style=none, label={above:3}] (31) at (-2, 0.5) {};
+		\node [style=none] (33) at (-2.5, 0.5) {};
+		\node [style=none] (34) at (-1.5, 0.5) {};
+		\node [style=none, label={above:4}] (35) at (2, 2) {};
+		\node [style=none] (36) at (1.5, 2) {};
+		\node [style=none] (37) at (2.5, 2) {};
+		\node [style=none] (38) at (1.5, 2) {};
+		\node [style=none] (39) at (2.5, 2) {};
+		\node [style=none] (40) at (1, -1) {};
+		\node [style=none] (41) at (0.5, -1) {};
+		\node [style=none] (42) at (1.5, -1) {};
+		\node [style=none, label={below:2}] (43) at (1, -1) {};
+		\node [style=none] (44) at (0.5, -1) {};
+		\node [style=none] (45) at (1.5, -1) {};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=new edge style 0] (1.center) to (2.center);
+		\draw [style=new edge style 0] (1.center) to (0.center);
+		\draw (20.center) to (21.center);
+		\draw (24.center) to (25.center);
+		\draw (29.center) to (30.center);
+		\draw (33.center) to (34.center);
+		\draw (31.center) to (17.center);
+		\draw (36.center) to (37.center);
+		\draw (38.center) to (39.center);
+		\draw (41.center) to (42.center);
+		\draw (44.center) to (45.center);
+		\draw (43.center) to (35.center);
+	\end{pgfonlayer}
+\end{tikzpicture}

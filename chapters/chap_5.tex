@@ -1,8 +1,8 @@
 \chapter{LetTick Language}
 
-In this chapter, we introduce our first programming language. This language will be the core, subsequent chapters will extend this language incrementally. To this end, we define the type system, along with the associated evaluation semantics and type rules. The chapter then concludes with a proof of soundness, showing that the relation between evaluation semantics and type rules is consistent - the resource bounds assigned to types provide a true lower bound on the concrete resource consumption of evaluating an expression.
+In this chapter, we introduce our first programming language. This language will form a core, so that subsequent chapters extend this language incrementally. To this end, we define the type system, along with the associated evaluation semantics and type rules. The chapter then concludes with a proof of soundness, showing that the relation between evaluation semantics and type rules is consistent - the resource bounds assigned to types indeed provide a lower bound on the concrete resource consumption of evaluating an expression.
 
-In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the resource demand and (2) types that reflect the resource demand. The first problem is solved by introducing the instruction \(\tick{k}\), where \(k\) is an integer, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the return type with a resource demand.
+In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the resource demand and (2) Types that reflect the resource demand. The first problem is solved by introducing the instruction \(\tick{k}\), where \(k\) is an integer, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the return type with a resource demand.
 
 \section{Language Syntax and Type System}
 We begin by defining the programming language and the associated type system below:
@@ -78,11 +78,7 @@ We start by introducing \emph{resource-aware types}, which comprise two parts: t
    Let \(A \in \type\) and \((p_0, p_1) \in \demand\). We define resource-aware types as tuples \((A, (p_0, p_1)) \in \type \times \demand\).
 \end{definition}
 
-\begin{remark}
-   Most of the time we write \(\ratype{A}{p_0}{p_1}\) for \((A, (p_0, p_1))\).
-\end{remark}
-
-For this chapter, the only type that \(A\) can adopt is that of \(\unit\). Therefore, resource-aware types have the form \(\ratype{\unit}{p_0}{p_1}\).
+Most of the time we write \(\ratype{A}{p_0}{p_1}\) for \((A, (p_0, p_1))\). For this chapter, the only type that \(A\) can adopt is \(\unit\). Therefore, resource-aware types have the form \(\ratype{\unit}{p_0}{p_1}\).
 
 \subsection{Inference Rules}
 
@@ -155,12 +151,18 @@ We are now left with the task of resolving the collected, numeric constraints. I
    p_0 = 6 \qquad p_1 = 0
 \]
 
+As a visual aid, consider the resource diagram for this program:
+
+\begin{align*}
+   \tikzfig{ex351} & \implies & \tikzfig{ex352}
+\end{align*}
+
 This completes our type derivation, as inserting the calculated resource-annotations yields our desired type.
 \[
    \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{6}{0}
 \]
 
-Having a solid grasp of how the type rules orchestrate together, having exercised a simple example, we now prove soundness for the \emph{let-tick} programming language.
+Having a solid grasp of how the type rules orchestrate together, we now prove soundness for the \emph{let-tick} programming language.
 
 
 \section{Soundness}
