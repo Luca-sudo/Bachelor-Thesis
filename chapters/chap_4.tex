@@ -194,5 +194,10 @@ For an arbitrary resource demand \((p_0, p_1) \in \demand\) and \(n, m \in \reso
       (p_0 + n, p_1 + m) \relaxation (p_0, p_1)
    \]
 \end{lemma}
-\todo{Visualize, explain and proof lemma.}
+
+\begin{proof}
+   The first inequality, \(p_0 + n \geq p_0\), trivially holds as \(n \in \resource\) implies that \(n \geq 0\). 
+
+   For the second inequality, we get \(p_0 + n - (p_1 + m) \geq p_0 - p_1\), which is equivalent to \((p_0 - p_1) + (n - m) \geq p_0 - p_1\). By assumption \(n - m \geq 0\). Thus, this inequality also holds.
+\end{proof}
 
