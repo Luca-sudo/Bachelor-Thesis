@@ -4,11 +4,14 @@
 % \tikzstyle{NAME}=[PROPERTY LIST]
 
 % Node styles
+\tikzstyle{new style 0}=[fill=gray, draw=black, shape=rectangle]
 
 % Edge styles
 \tikzstyle{new edge style 0}=[->]
 \tikzstyle{new edge style 1}=[->, dashed]
-\tikzstyle{new edge style 2}=[-, draw={black!20!white}]
+\tikzstyle{new edge style 2}=[-, draw={black!40!white}]
 \tikzstyle{new edge style 3}=[-, decorate, decoration=calligraphic brace]
 \tikzstyle{new edge style 4}=[->, dashed, draw={red!60!white}]
 \tikzstyle{new edge style 5}=[<->, dashed, draw={red!60!white}]
+\tikzstyle{new edge style 6}=[-, fill={blue!20!white}]
+\tikzstyle{new edge style 7}=[-, fill={red!20!white}]
