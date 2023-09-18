@@ -2,13 +2,19 @@
 
 Throughout this thesis, we introduce programming language constructs, in order to elicit resource consumption of programs. It is, therefore, important to mention that resources can be an arbitrary cost metric, including but not limited to: memory consumption, runtime, energy consumption. While the details of the respective type of resource are nuanced, the resource consumption generally comprises two parts: Resources consumed to start evaluating, and possibly, resources freed after evaluation.
 
-Tracing resource consumption throughout the evaluation of a program may look like this:
+Tracing the heap-space usage of a program may look like the diagram on the left-hand side. It both consumes and frees resources in intermediary steps. For time consumption, things are different. We cannot reimburse time, but only consume it - as illustrated in the right-hand side example.
 
-\ctikzfig{resource_intro}
+\begin{align*}
+   \tikzfig{resource_intro} & \quad & \tikzfig{time_illustration}
+\end{align*}
 
 We are most interested in the value at the beginning and at the end, which leads us to simplify the resource consumption further. Drawing a straight line between resources at the start and at the end.
 
 \ctikzfig{resource_reduced}
+
+It is important to note that distinct programs may have the same start and end resources, while they differ vastly in their temporal development. In order to reflect this in a resource diagram, we draw a polygon, which contains \emph{every} valid development for the specific beginning and end resource amount.
+
+\ctikzfig{polygon_intro}
 
 We use this visual representation to foster intuition throughout this chapter - illustrating examples and concepts.
 
