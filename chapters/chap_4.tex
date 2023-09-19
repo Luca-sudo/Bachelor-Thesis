@@ -96,7 +96,7 @@ Intuitively, one may want to lower the second resource demand to match. This, ho
 
 \begin{align*}
    \tikzfig{seq_neg_11} & \implies & \tikzfig{seq_neg_12} 
-\end{align*}
+\end{align*}   
 
 For the second case, we lift the second resource demand to match. We cannot lower the first resource demand, due to reasons congruent with the example above. Fundamentally, composing resource demands forces us to lift either resource demand to match, as lowering any resource demand may reduce the set of programs represented by the resulting resource demand.
 
@@ -208,8 +208,7 @@ Before we can show that resource demands form a partial order under relaxation, 
 \end{lemma}
 
 \begin{proof}
-   We provide a lean proof script.
-   \inputminted{lean}{formal-proofs/Resources/Relaxation_PO.lean}
+   \todo{Add proof}
 \end{proof}
 
 It is important to note that, for any two resource pairs, one \emph{need not} be a relaxation of the other. Therefore, relaxation does not define a total order - as the following example shows.
@@ -223,16 +222,26 @@ In later chapters (\cref{chap:list-tick}), the introduction of potentials increa
 For an arbitrary resource demand \((p_0, p_1) \in \demand\) and \(n, m \in \resource\), one may ask if \((p_0 + n, p_1 + m) \relaxation (p_0, p_1)\). As it turns out, this is true if and only if \(n - m \geq 0\). This agrees with our intuition: Enforcing that \(n - m \geq 0\) ensures that the resource consumption does not decrease - keeping relaxation constraints sound.
 
 \begin{lemma}\label{lemma:pos-relaxation}
-   \((p_0, p_1) \in \demand\) and \(n, m \in \resource\) with \(n - m \geq 0\).
+   Let \((p_0, p_1) \in \demand\) and \(n, m \in \resource\). Then,
 
    \[
-      (p_0 + n, p_1 + m) \relaxation (p_0, p_1)
+      n - m \geq 0 \iff (p_0 + n, p_1 + m) \relaxation (p_0, p_1)
    \]
 \end{lemma}
 
 \begin{proof}
-   The first inequality, \(p_0 + n \geq p_0\), trivially holds as \(n \in \resource\) implies that \(n \geq 0\). 
+   We start by proving \(n - m \geq 0 \implies (p_0 + n, p_1 + m) \relaxation (p_0, p_1)\).
 
-   For the second inequality, we get \(p_0 + n - (p_1 + m) \geq p_0 - p_1\), which is equivalent to \((p_0 - p_1) + (n - m) \geq p_0 - p_1\). By assumption \(n - m \geq 0\), 
+   For the initial resources, \(p_0 + n \geq p_0\) holds, as \(n \in \resource\). For the resource consumption, we get:
+
+   \begin{align*}
+      p_0 - n - (p_1 + m)  & = p_0 - p_1 + (n - m) \\
+                           & \geq p_0 - p_1
+   \end{align*}
+
+   Where we use the assumption \(n - m \geq 0\) from line one to two. 
+
+
+   We continue with \((p_0 + n, p_1 + m) \relaxation (p_0, p_1) \implies n - m \geq 0\). By assumption, we get that \(p_0 + n - (p_1 + m) \geq p_0 - p_1\). Thus, \(p_0 - p_1 + (n - m) \geq p_0 - p_1\), which shows that \(n - m \geq 0\). 
 \end{proof}
 
