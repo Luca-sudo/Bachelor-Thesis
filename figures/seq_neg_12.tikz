@@ -22,7 +22,7 @@
 		\node [style=none] (22) at (-5, -4) {};
 		\node [style=none] (23) at (-1, -4) {};
 		\node [style=none] (26) at (1, -8) {};
-		\node [style=none] (27) at (-2, -6) {\textcolor{red}{\ding{55}}};
+		\node [style=none] (27) at (-1, -6) {\textcolor{red}{\ding{55}}};
 	\end{pgfonlayer}
 	\begin{pgfonlayer}{edgelayer}
 		\draw (12.center) to (13.center);
