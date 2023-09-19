@@ -77,22 +77,22 @@ Next, we need a rule that allows us to combine two expression into a let express
 
 In the next section, we introduce type rules that are tightly linked to the evaluation semantics defined now. 
 
-\section{Type Rules}
-The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{lower-bound} on the resource-consumption. As a result, type inference can be used to determine a lower bound on the resource consumption, without executing a program.
+\section{Type System}
+The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary expression from \cref{def:prog-lang-4}. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{upper-bound} on the resource-consumption. As a result, type inference can be used to determine an upper bound on the resource consumption, without executing a program.
 
 \subsection{Resource-aware Type System}
 
 We start by introducing \emph{resource-aware types}, which comprise two parts: the type assigned to an expression, together with a resource-pair representing the inferred resource consumption. To this end, we provide an ergonomic notation for resource-aware types:
 
 \begin{definition}[Resource-aware types]\label{def:ra-type}
-   Let \(A \in \type\) and \((p_0, p_1) \in \demand\). We define resource-aware types as tuples \((A, (p_0, p_1)) \in \type \times \demand\).
+   Let \(A \in \type\) and \((p_0, p_1) \in \demand\). We define resource-aware types as tuples \((A, (p_0, p_1)) \in \type \times \demand\). Most of the time we write \(\ratype{A}{p_0}{p_1}\) for \((A, (p_0, p_1))\). 
 \end{definition}
 
-Most of the time we write \(\ratype{A}{p_0}{p_1}\) for \((A, (p_0, p_1))\). For this chapter, the only type that \(A\) can adopt is \(\unit\). Therefore, resource-aware types have the form \(\ratype{\unit}{p_0}{p_1}\).
+For this chapter, the only type that \(A\) can adopt is \(\unit\). Therefore, resource-aware types have the form \(\ratype{\unit}{p_0}{p_1}\) \emph{for this chapter}.
 
 \subsection{Inference Rules}
 
-For let expressions, we compose resource demands using the sequencing operator \(\sequence\) introduced in \cref{def:multiplying-pairs}. 
+For let expressions, we compose resource demands using the sequencing operator \(\sequence\) introduced in \cref{def:multiplying-pairs}. Note that this rule matches its associated evaluation rule.
 
 \[
    \label{def:tr-let-4}
@@ -105,7 +105,9 @@ For let expressions, we compose resource demands using the sequencing operator \
    \end{aligned}
 \]
 
-The expression \(\tick{k}\) consumes (or frees) \(k\) resources. We can type this expression with any resource demand \((q_0, q_1)\) where \(q_0 - q_1 \geq k\).
+The expression \(\tick{k}\) consumes (or frees) \(k\) resources. We can type this expression with any resource demand \((q_0, q_1)\) where \(q_0 - q_1 \geq k\). Compared to the evaluation rules in the previous section, this rule is more generic - the resource demand \((p_0, p_1)\) is not unique.
+
+Let us elaborate on why this makes sense. 
 
 \[
    \label{def:tr-tick-4}
@@ -115,14 +117,7 @@ The expression \(\tick{k}\) consumes (or frees) \(k\) resources. We can type thi
 \]
 
 
-Let us now perform an exemplary type derivation using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the program from \cref{ex:let-tick-prog}.
-
-\begin{align*}\label{eqn:let-tick-derivation}
-\letexp{\_}{\tick{3}}{} \\
-\letexp{\_}{\tick{-2}}{} \\
-\tick{5}
-\end{align*}
-
+Let us now perform an exemplary type derivation using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the program from \cref{ex:let-tick-prog}. The resulting type derivation is displayed below.
 
 \[
    \inference
@@ -146,19 +141,32 @@ Let us now perform an exemplary type derivation using the type rules we just int
    {\typing{}{\letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}}{\ratype{\unit}{p_0}{p_1}}}
 \]
 
+We are now left with the task of resolving the collected, numeric constraints. These are the collected constraints:
+
+\begin{align}
+   q_0 & \geq 3 + q_1 \label{eqn:derivation-tick-1}\\
+   t_0 & \geq t_1 - 2 \label{eqn:derivation-tick-2}\\
+   s_0 & \geq 5 + s_1 \label{eqn:derivation-tick-3}\\
+   (r_0, r_1) & = (t_0, t_1) \sequence (s_0, s_1) \label{eqn:derivation-seq-1}\\
+   (p_0, p_1) & = (q_0, q_1) \sequence (r_0, r_1) \label{eqn:derivation-seq-2}
+\end{align}
+
+\cref{eqn:derivation-tick-1}, \cref{eqn:derivation-tick-2} and \cref{eqn:derivation-tick-3} stem from applications of (T:Tick). \cref{eqn:derivation-seq-1} and \cref{eqn:derivation-seq-2} stem from applications of (T:Let). To derive a resulting resource demand, we must find a solution to the set of constraints above. For this specific instance, a valid solution would be:
+
 \begin{align*}
-   \text{Where }  & (r_0, r_1) = (t_0, t_1) \sequence (s_0, s_1)\\
-                  & (p_0, p_1) = (q_0, q_1) \sequence (r_0, r_1)
+   q_0 &= 3 & q_1 & = 0\\
+   t_0 &= 0 & t_1 & = 2 \\
+   s_0 &= 5 & s_1 & = 0
 \end{align*}
 
+Thus, we can calculate \((p_0, p_1)\) using \cref{eqn:derivation-seq-1} and \cref{eqn:derivation-seq-2}. We get:
 
-We are now left with the task of resolving the collected, numeric constraints. In concrete implementations, this would be done by an LP-solver. As a result of applying the (T:tick) rule for the three instances of \(\tick{}\) expressions, we get the following values: \(q_0 = 3, t_1 = 2, s_0 = 5, q_1 = t_0 = s_1 = 0\). Using these values, we are able to compute the intermediary values \(r_0, r_1, p_0, p_1\), resulting in:
+\begin{align*}
+   (r_0, r_1) & = (0, 2) \sequence (5, 0) = (3, 0) \\
+   (p_0, p_1) & = (3, 0) \sequence (3, 0) = (6, 0)
+\end{align*}
 
-\[
-   p_0 = 6 \qquad p_1 = 0
-\]
-
-As a visual aid, consider the resource diagram for this program:
+As a visual aid, consider the associated resource diagram: 
 
 \begin{align*}
    \tikzfig{ex351} & \implies & \tikzfig{ex352}
@@ -166,10 +174,10 @@ As a visual aid, consider the resource diagram for this program:
 
 This completes our type derivation, as inserting the calculated resource-annotations yields our desired type.
 \[
-   \<let> \_ = \<tick>~3~\<in> ~ \<let> \_ = \<tick>~-2~\<in>~ \<tick>~5 : \ratype{\unit}{6}{0}
+   \letexp{\_}{\tick{3}}{\letexp{\_}{\tick{-2}}{\tick{5}}}~:~\ratype{\unit}{6}{0}
 \]
 
-Having a solid grasp of how the type rules orchestrate together, we now prove soundness for the \emph{let-tick} programming language.
+Having a solid grasp of how the type rules orchestrate together, we now prove soundness for the LetTick programming language.
 
 
 \section{Soundness}
@@ -180,7 +188,7 @@ Let us first sketch the structure of our soundness proof:
 If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then the following hold true:
 The result \(()\) of the expression \(e\) has a type that is consistent with the one assigned to \(e\). The initial resources of the type are not exceeded in the concrete evaluation of the expression \(e\). The resource consumption assigned to the type is not exceeded by the evaluation, either. We can state the same more precisely, by using the relaxation relation defined in \cref{def:relaxation}.
 
-\begin{theorem}[Soundness of typing for let-tick language]\label{thm:soundness-let-tick}
+\begin{theorem}[Soundness of typing for LetTick language]\label{thm:soundness-let-tick}
    Let e be an expression in our programming language, and let \((q_0, q_1), (p_0, p_1) \in \resource\). 
    \center If \(\typing{}{e}{\ratype{\unit}{p_0}{p_1}}\) and \(\evals{}{e}{()}{q_0}{q_1}\), then \((p_0, p_1) \relaxation (q_0, q_1)\).
 \end{theorem}
