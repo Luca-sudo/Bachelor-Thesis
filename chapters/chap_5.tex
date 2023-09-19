@@ -4,10 +4,10 @@ In this chapter, we introduce our first programming language. This language will
 
 In order to elicit resource bounds for programs, we need two things: (1) A construct in the programming language that allows altering the resource demand and (2) Types that reflect the resource demand. The first problem is solved by introducing the instruction \(\tick{k}\), where \(k\) is an integer, indicating the amount of resources that are either consumed of freed. The second problem is solved by embellishing the return type with a resource demand.
 
-\section{Language Syntax and Type System}
-We begin by defining the programming language and the associated type system below:
+\section{Language Syntax}
+We begin by defining the programming language and the associated type system. Initially, the syntax for let expressions may seem obfuscated. We choose this syntax with later chapters in mind, to make extension as easy as possible. Generally, the literal after \textbf{let} is used to bind the result of \(e_1\). For this chapter, we do not yet bind any literals - for now, we use \_ as a placeholder.
 
-\begin{definition}[let-tick language]
+\begin{definition}[LetTick syntax]
    \label{def:prog-lang-4}
 
 \begin{align*}
@@ -16,9 +16,24 @@ We begin by defining the programming language and the associated type system bel
 \end{align*}
 \end{definition}
 
-\begin{definition}[Type System]\label{fig:type-system}
+Expressions inside the LetTick language are sequences of tick instructions. As an example, consider the programs below. In \cref{eqn:let-tick-derivation} we provide the associated type derivation and derive resource bounds for this program.
+
+\begin{example} \label{ex:let-tick-prog}
+   \begin{align*}
+   \letexp{\_}{\tick{3}}{} \\
+   \letexp{\_}{\tick{-2}}{} \\
+   \tick{5}
+   \end{align*}
+\end{example}
+
+Intuitively, we have three distinct steps. The first one consumes 3 resources, the second one frees up 2 resources and the last one consumes 5 resources. 
+
+\begin{definition}[LetTick types]\label{fig:type-system}
    \[\type := \unit \]
 \end{definition}
+
+Note that the unit type has exactly one, unique value that we denote by \(\bullet\). A specific constructor for \(\bullet\) is not required, we can already generate this value. By writing \tick{0}, no resources are consumed and \(\bullet\) is returned. Thus, it serves as a constructor for \(\bullet\).
+
 
 \section{Evaluation Semantics}
 In this section, we define what it means for a program to consume (or free) resources, by defining the evaluation semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \((p_0, p_1) \in \demand\). 
@@ -105,17 +120,14 @@ The expression \(\tick{k}\) consumes (or frees) \(k\) resources. We can type thi
 \]
 
 
-Let us now perform an exemplary type derivation using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the following program:
+Let us now perform an exemplary type derivation using the type rules we just introduced, to get a better understanding of how the definitions orchestrate together. For this, consider the program from \cref{ex:let-tick-prog}.
 
-\begin{example}
-   \begin{align*}
-   \letexp{\_}{\tick{3}}{} \\
-   \letexp{\_}{\tick{-2}}{} \\
-   \tick{5}
-   \end{align*}
-\end{example}
+\begin{align*}\label{eqn:let-tick-derivation}
+\letexp{\_}{\tick{3}}{} \\
+\letexp{\_}{\tick{-2}}{} \\
+\tick{5}
+\end{align*}
 
-Intuitively, we have three distinct steps. The first one consuming 3 resources, the second one freeing up 2 resources and the last one consuming 5 resources. Let us now derive a typing for the program.
 
 \[
    \inference
