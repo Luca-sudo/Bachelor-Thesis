@@ -36,7 +36,34 @@ Note that the unit type has exactly one, unique value that we denote by \(\bulle
 
 
 \section{Evaluation Semantics}
-In this section, we define what it means for a program to consume (or free) resources, by defining the evaluation semantics needed. To this end, we write \(\evals{}{e}{v}{}{}\) for the fact the expression \(e\) evaluates to the value \(v\). In order to capture resource-consumption, we augment this notation like this: \(\evals{}{e}{v}{p_0}{p_1}\), where \((p_0, p_1) \in \demand\). 
+
+When evaluating an expression from \cref{def:prog-lang-4}, we are interested in (1) The value that the expression evaluates to and (2) The resource demand required for evaluation. Both are defined by the evaluation rules below. 
+
+Before we can define evaluation rules, we need to introduce new notation. We denote by \(\evals{}{e}{v}{p_0}{p_1}\) the fact that the expression \(e\) evaluates to the value \(v\), while requiring \(p_0\) initial and \(p_1\) residual resources. The definition of the \emph{evaluation judgement} is then given by the evaluation rules.
+
+First, we define a rule for \tick{k} instructions. Such an instruction either frees resources or consumes them, if k is negative or positive, respectively. We model these cases as two evaluation rules.
+
+\[
+   \inference[\((E:tick_{+})\)]
+   {q \geq 0}
+   {\evals{}{\tick{k}}{\bullet}{k}{0}}
+   \qquad
+   \inference[\((E:tick_{-})\)]
+   {q < 0}
+   {\evals{}{\tick{k}}{\bullet}{0}{|k|}}
+\]
+
+Next, we need a rule that allows us to combine two expression into a let expression. The resulting resource demand is the composition of the resource demand of each sub-expression. For a definition of the \(\sequence\) operator, please refer to \cref{def:multiplying-pairs}.
+
+\[
+   \inference[(E:let)]
+   {\evals{}{e_1}{\bullet}{p_0}{p_1} ~~,~~ \evals{}{e_2}{\bullet}{q_0}{q_1}}
+   {\evals{}{\letexp{}{e_1}{e_1}}{\bullet}{r_0}{r_1}}
+   \qquad
+   \begin{aligned}
+      \text{where }  &(r_0, r_1) = (p_0, p_1) \sequence (q_0, q_1) 
+   \end{aligned}
+\]
 
 
 \begin{definition}[Evaluation Judgement]\label{def:evaluation-judgement}
@@ -48,39 +75,7 @@ In this section, we define what it means for a program to consume (or free) reso
    \]
 \end{definition}
 
-\begin{remark}
-   Evaluating an expression may have no resource demands. Meaning, \(p_0 = 0 = p_1\). In this case we simply omit the annotations for brevity. 
-   \[
-      \evals{}{e}{v}{}{}
-   \]
-\end{remark}
-
-We will now define rules for the evaluation of programming language constructs, in the form of evaluation semantics. This will allow us to later solve a list of numeric constraints to arrive at the specific resource-consumption of evaluating an expression.
-First, we need a rule that allows us to combine two expression into a let expression. We also need to, however, provide resource annotations for the resulting let expression. Therefore, we also need to add numeric constraints, resulting in the following rule:
-
-\[
-   \inference[(E:let)]
-   {\evals{}{e_1}{()}{p_0}{p_1} ~~,~~ \evals{}{e_2}{()}{q_0}{q_1}}
-   {\evals{}{\letexp{}{e_1}{e_1}}{()}{r_0}{r_1}}
-   \qquad
-   \begin{aligned}
-      \text{where }  &(r_0, r_1) = (p_0, p_1) \sequence (q_0, q_1) 
-   \end{aligned}
-\]
-
-Similarly, we now define a rule for the \<tick> instruction. The expression \<tick> \(q\) consumes precisely \(q\) resources; or frees \(q\) resources, should the amount be negative. These two cases translate directly into two evaluation rules, provided below:
-
-\[
-   \inference[\((E:tick_{+})\)]
-   {q \geq 0}
-   {\evals{}{\tick{q}}{()}{q}{0}}
-   \qquad
-   \inference[\((E:tick_{-})\)]
-   {q < 0}
-   {\evals{}{\tick{q}}{()}{0}{|q|}}
-\]
-
-In the next section, we introduce type rules that are tightly linked to the operational semantics defined now. 
+In the next section, we introduce type rules that are tightly linked to the evaluation semantics defined now. 
 
 \section{Type Rules}
 The evaluation judgement in the previous section defined our \emph{ground truth}; That is, using the rules defined there, we can exactly calculate the resource-consumption of an arbitrary, \textbf{well-formed} expression. The type rules introduced in this chapter will allow us to assign a type to an expression, where the resource-annotations of that type provide an \textbf{lower-bound} on the resource-consumption. As a result, type inference can be used to determine a lower bound on the resource consumption, without executing a program.
