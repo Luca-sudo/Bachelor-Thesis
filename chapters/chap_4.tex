@@ -141,7 +141,11 @@ Note that compopsition of resource demands is \emph{not} commutative. As a count
 
 Whenever we define a programming language, we provide evaluation semantics and type rules, which we ultimately want to link by proving their \emph{soundness}. Soundness of a programming language with respect to evaluation semantics and type rules comprises two parts. First, we need to prove that the type we assign to an expression is consistent - evaluating the expression will produce a value of that type. Secondly, we need to show that the inferred resource demand is always \emph{at least} the concrete resource demand of evaluating an expression. In subsequent chapters, the main challenge of proving soundness will be in proving consistency of resource demands. 
 
-In order to do this, we need to be able to compare resource demands. This ultimately motivates the definition of \emph{relaxation}, which induces a partial order on the set of resource demands. Ultimately, this will streamline future soundness proofs. Let us therefore begin by defining what it means for a resource demand to be a relaxation of another one. Intuitively, one resource demand is a relaxation of another resource demand, if the initial resources \emph{and} the resource consumption are at least as large.
+In order to do this, we need to be able to compare resource demands. This ultimately motivates the definition of \emph{relaxation}, which induces a partial order on the set of resource demands, streamlining future soundness proofs. Let us, therefore, begin by motivating how to compare resource demands in a way that aligns with our goal of AARA.
+
+Intuitively, if a resource demand \(a\) is a \emph{relaxation} of another resource demand \(b\), we expect every program that is executable with respect to \(b\) to also be executable with respect to \(a\). Therefore, \(a\) may have more \emph{initial resources} than \(b\). This makes sense, as a program would then have more resource available throughout its execution. 
+
+Furthermore, we want to compare the \emph{consumption} of both resource demands. In this sense, if \(a\) is a relaxation of \(b\) then \(a\) should consume \emph{at least} as many resources as \(b\). 
 
 \begin{definition}[Relaxation]\label{def:relaxation}
    Let \((p_0, p_1), (q_0, q_1) \in \demand\). We define the relation \relaxation ~as follows:
@@ -151,7 +155,13 @@ In order to do this, we need to be able to compare resource demands. This ultima
    \]
 \end{definition}
 
-We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\). Relaxation has a visual interpretation in resource diagrams: The relaxed resource demand has to start at least the same height \emph{and} be at least as long as the resource demand compared to. We illustrate this with examples below.
+We then say that \((p_0, p_1)\) is \emph{a relaxation of} \((q_0, q_1)\). 
+
+Another way to compare resource demands also comes to mind: Instead of the resource consumption to be at least as large, we could enforce that \(p_1 \leq q_1\) - the relaxed resource demand needs \emph{at most} as many residual resources. This would provide a less precise comparison of cost than our definition of relaxation.
+
+To illustrate why, consider the two resource demands \((4, 2), (3, 1) \in \demand\). Any program that can be executed under \((3, 1)\) should also be executable under \((4, 2)\); Intuitively, we provide the program one additional resource. Indeed, \((4, 2) \relaxation (3, 1)\). For the second possible definition of relaxation, we see that \(2 \centernot{\leq} 1\). This highlights the key difference between those definitions - relaxation allows lifting a resource demand, which the second notion prohibits.
+
+Equipped with our definition of relaxation, we illustrate relaxation using resource diagrams. The relaxed resource demand has to start at least the same height \emph{and} be at least as long as the resource demand compared to. 
 
 \begin{example}
    \((4, 2) \relaxation (3, 2)\)
