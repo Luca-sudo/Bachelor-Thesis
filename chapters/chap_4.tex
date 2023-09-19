@@ -12,7 +12,7 @@ We are most interested in the value at the beginning and at the end, which leads
 
 \ctikzfig{resource_reduced}
 
-It is important to note that distinct programs may have the same start and end resources, while they differ vastly in their temporal development. In order to reflect this in a resource diagram, we draw a polygon, which contains \emph{every} valid development for the specific beginning and end resource amount.
+It is important to note that distinct programs may have the same start and end resources, while they differ vastly in their temporal development. In order to reflect this in a resource diagram, we draw a polygon which contains \emph{every} valid development for the specific beginning and end resource amount.
 
 \ctikzfig{polygon_intro}
 
@@ -50,7 +50,17 @@ Representing this resource demand using resource diagrams yields:
 
 \end{example}
 
-It is important to distinguish the resource demand from the \emph{resource consumption}. The resource consumption of a program is precisely its residual resource subtracted from its initial resources. 
+For this example, one might wonder if we can simplify \((4, 2)\) to \((2, 0)\), by simply shifting the polygon downward. This is not possible, as a program with demand \((4, 2)\) may not have sufficient resources if it is initiated with only \(2\) initial resources. 
+
+Consider the diagrams below. On the left-hand side, the development of the program is contained in the associated polygon. However, on the right-hand side, this is not the case. The amount of available resources is even negative at some point - this is not valid. 
+
+\begin{align*}\label{fig:resource-shift-down}
+   \tikzfig{shift_down_1} & \quad \tikzfig{shift_down_2}
+\end{align*}
+
+On the other hand, one may ask if a program in \((2, 0)\) can also be represented by \((4, 2)\). The answer is yes! Further clarification as to why this is the case is subject of \cref{sec:comp-pairs}.
+
+The notion of \emph{consumption} is nuanced. On the one hand, the example above may use all four resources at some point, but frees two resources after its execution. For our use, we view the demand of programs as a black box, only concerned with initial and residual resources. As a result, the \emph{consumption} of a resource demand is precisely the difference between initial and residual resources. 
 
 \begin{definition}[Resource Consumption]\label{def:resource-consumption}
    Given \((p_0, p_1) \in \demand\), we define the \emph{resource consumption} as the difference between initial and residual resources, \(p_0 - p_1\).
@@ -59,7 +69,7 @@ It is important to distinguish the resource demand from the \emph{resource consu
 While a resource demand is a pair of \emph{non-negative} integers, its resource consumption can be negative - this corresponds to a program that \emph{frees} resources instead of consuming them. We can think of the resource consumption as the directed (!) height of the associated resource diagram. Consider the following example.
 
 \begin{example}
-   For \((4, 2) \in \resource\), the resource consumption equals \(4 - 2 = 2\).
+   For \((2, 4) \in \resource\), the resource consumption equals \(2 - 4 = -2\). An associated programs \emph{frees} 2 resources!
 
 \ctikzfig{resource_consumption}
 
@@ -82,6 +92,12 @@ For the first case, we lift the first resource demand so its residual resources 
    \tikzfig{sequencing_11} & \implies & \tikzfig{sequencing_12}
 \end{align*}
 
+Intuitively, one may want to lower the second resource demand to match. This, however, is not a valid composition. Consider the same resource demands, but with an example progression outlined in the second resource demand. If we were to lower the second resource demand, we would have negative resources at some point in our evaluation, similar to \cref{fig:resource-shift-down} - this would not be sound.
+
+\begin{align*}
+   \tikzfig{seq_neg_11} & \implies & \tikzfig{seq_neg_12} 
+\end{align*}
+
 The second case is similar, but we lift the second resource demand to match.
 
 \begin{align*}
@@ -91,7 +107,7 @@ The second case is similar, but we lift the second resource demand to match.
 We can, however, simplify the multiplication of resource demands by merging the two cases. Consider that \(p_0 - p_1 + \max(p_1, q_0)\) precisely matches the initial resources for both cases. Similarly, \(q_1 - q_0 + \max(p_1, q_0)\) precisely matches the residual resources for both cases. 
 This yields the following definition:
 
-\begin{definition}[Sequencing resource demands]
+\begin{definition}[Composition of resource demands]
    \label{def:multiplying-pairs}
    Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, as introduced above. We then define:
    \[(p_0, p_1) \sequence (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]
@@ -107,18 +123,18 @@ This yields the following definition:
 \end{example}
  
 As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call it the \emph{disparity} of two resource demands.
+\todo{Better name}
 
-\begin{theorem}
-   Resource demands form a \emph{monoid} under sequencing.
-\end{theorem}
+\begin{lemma}
+   Resource demands, with unit \((0, 0)\) form a \emph{monoid} under sequencing.
+\end{lemma}
 
 \begin{proof}
-   We provide a proof script in lean.
-   \inputminted{lean}{formal-proofs/Resources/Monoid.lean}
+   \todo{Proof}
 \end{proof}
 
 
-\section{Comparing Resource Pairs}
+\section{Comparing Resource Pairs}\label{sec:comp-pairs}
 
 Whenever we define a programming language, we provide evaluation semantics and type rules, which we ultimately want to link by proving their \emph{soundness}. Soundness of a programming language with respect to evaluation semantics and type rules comprises two parts. First, we need to prove that the type we assign to an expression is consistent - evaluating the expression will produce a value of that type. Secondly, we need to show that the inferred resource demand is always \emph{at least} the concrete resource demand of evaluating an expression. In subsequent chapters, the main challenge of proving soundness will be in proving consistency of resource demands. 
 

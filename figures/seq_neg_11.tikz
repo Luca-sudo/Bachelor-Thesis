@@ -21,6 +21,7 @@
 		\node [style=none] (21) at (3.5, 0) {};
 		\node [style=none] (22) at (-5, -4) {};
 		\node [style=none] (23) at (-1, -4) {};
+		\node [style=none] (26) at (1, -4) {};
 	\end{pgfonlayer}
 	\begin{pgfonlayer}{edgelayer}
 		\draw (12.center) to (13.center);
@@ -41,6 +42,8 @@
 			 to (25.center)
 			 to (24.center)
 			 to (17.center);
-		\draw [style=new edge style 4] (11.center) to (16.center);
+		\draw [style=new edge style 4] (16.center) to (11.center);
+		\draw [style=new edge style 2] (16.center) to (26.center);
+		\draw [style=new edge style 2] (26.center) to (17.center);
 	\end{pgfonlayer}
 \end{tikzpicture}
