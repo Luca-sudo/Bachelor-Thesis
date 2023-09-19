@@ -112,6 +112,10 @@ This yields the following definition:
    Let \((p_0, p_1)\) and \((q_0, q_1)\) be two \nameref{def:resource-pair}s, as introduced above. We then define:
    \[(p_0, p_1) \sequence (q_0, q_1) = (p_0 - p_1 + \max(p_1, q_0), q_1 - q_0 + \max(p_1, q_0))\]
 \end{definition}
+\todo{Elaborate/remark: This isnt linear, how can it be solve by LP?}
+
+As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call it the \emph{disparity} of two resource demands.
+\todo{Better name}
 
 \begin{example}
    For \((4, 2), (5,0) \in \resource\), we have \((4, 2) \sequence (5, 0) = (7,0)\).
@@ -122,8 +126,7 @@ This yields the following definition:
 
 \end{example}
  
-As the value \(\max(p_1, q_0)\) is key for composing resource demands, we call it the \emph{disparity} of two resource demands.
-\todo{Better name}
+Note that compopsition of resource demands is \emph{not} commutative. As a counterexample, consider \((2, 0) \sequence (0, 2)\) and \((0, 2) \sequence (2, 0)\). The first evaluates to \((2, 2)\), whereas the second evaluates to \((0, 0)\).  
 
 \begin{lemma}
    Resource demands, with unit \((0, 0)\) form a \emph{monoid} under sequencing.
