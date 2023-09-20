@@ -4,6 +4,8 @@ Before continuing, let us examine the limitations of the \nameref{def:prog-lang-
 
 Similarly to environments, we will introduce contexts for the type rules. While an environment maps variables to concrete values, a context will map variables to types. This will also require carefully embellishing previous type rules, to provide rules that are rigorous with respect to contexts. We define the syntax of the augmented programming language below.
 
+Before we can define the syntax, we have to define the set of variable names (\(\Var\)). For our language, valid variable names are those that comprise only letters, without whitespace and numbers. 
+
 \begin{definition}[VarTick syntax]
    \label{def:prog-lang-5}
 
@@ -38,6 +40,8 @@ The set of \emph{all} possible values is simply the disjoint union of the set of
    \(\Vals = \Vals_{\unit} \sqcup \Vals_{\bool} \sqcup \Vals_{\typeint}\)
 \end{definition}
 
+We also want to express that a variable has a specific type, which is the same as claiming that the variable is in the set \(\Vals_{A}\) for the appropriate type \(A\). Thus, we write \(v : A\) to denote \(v \in \Vals_{A}\).
+
 
 \section{Evaluation Semantics}
 
@@ -45,35 +49,22 @@ Expressions now feature variables, necessitating the introduction of \emph{envir
 
 \subsection{Environments}\label{sec:environments}
 
-Environments map variable names to values; For the variables that are not defined in the environment, the associated value is \textbf{undefined}. Here, \(\Var\) is the set of variable names, and \(\Vals\) is the set of values. 
+Environments map variable names to values. Here, \(\Var\) is the set of variable names, and \(\Vals\) is the set of values. 
 
 \begin{definition}[Environment]\label{def:environment}
-   We define an \textbf{environment} \(E: \text{\Var} \partialto \text{\Vals}\) as a partial function. Let \(x \in \Var\) and \(v_x \in \Vals\) be the value of \(x\).
-
-   \[
-      E(x) =
-      \begin{cases}
-	 v_x		    & \mbox{,if } E(x) \text{ is defined} \\
-	 \textbf{undefined} &\mbox{,else}
-      \end{cases}
-   \]
+   An environment \(E: \Var \partialto \text{\Vals}\) is a partial function.
 \end{definition}
 
-This definition facilitates existence checks for variables. If a variable \(x\) is defined in \(E\), then \(E(x) \neq \textbf{undefined}\); To assert that a variable is defined, we simply write \(x \in E\).
+For an environment \(E\), we may be interested in the set of variable names that are defined. This is called the \emph{domain} of \(E\). As some evaluation rules required the existence of certain variables, we use the domain to check variable names for membership. For this, we write \(x \in \domain{E}\) for \(x \in \Var\).
+
+\begin{definition}[Domain of environments]
+   Let \(E\) be an environment. The \emph{domain} \(\domain{E}\) is the set of all variable names that are defined in \(E\).
+\end{definition}
 
 In most programming settings, we start with an empty environment and incrementally populate it with variables as our program evaluates. This constitutes the need for extending environments - we want to add variables to the environment upon introducing them.
 
 \begin{definition}\label{def:environment-augment}	
-   Let \(E\) be an \nameref{def:environment}, \(a\) be a variable name and \(v_a\) be the value assigned to \(a\). We write \(E[a \mapsto v_a]\) for the environment \(E\), where \(a\) is additionally mapped onto \(v_a\):
-
-   \[
-      \envaugment{E}{a}{v_a} = 
-      \begin{cases}
-	 E(x)  & \mbox{,if } x \neq a\\
-	 v     & \mbox{,else } 
-      \end{cases}
-   \]
-
+   Let \(E\) be an environment, \(x \in \Var\) and \(v \in \Vals\) be the value assigned to \(x\). We write \(E[x \mapsto v]\) for the environment \(E\), where \(x\) is \emph{additionally} mapped onto \(v\).
 \end{definition}
 
 Having all of these definitions in place, we now update the definition of an \emph{evaluation judgement}. Previously, expression were evaluated as is, as no environment influenced the execution of the expression. Now, we consider evaluating expression against an environment \(E\).
@@ -88,7 +79,7 @@ Having all of these definitions in place, we now update the definition of an \em
 \end{definition}
 
 \begin{remark}
-   Note that the evaluation of an expression \(e\) depends on the environment, due to the ambiguity of variable names. Thus, both the return value \(v\) and the resource demand \((p_0, p_1)\) can differ for disparate environments. 
+   Note that the evaluation of an expression \(e\) depends on the environment, due to the ambiguity of variable names. Thus, both the return value \(v\) and the resource demand \((p_0, p_1)\) can differ for discrete environments. 
 \end{remark}
 
 \subsection{Evaluation Rules}\label{sec:evaluation-rules-var-tick}
@@ -98,31 +89,28 @@ Having all the necessary definitions at hand, let us now define evaluation rules
 \[
    \inference[(E:var)]
    {\contains{E}{x}}
-   {\evals{E}{x}{E(x)}{}{}}
+   {\evals{E}{x}{E(x)}{0}{0}}
 \]
 
 Next, we define one rule (E:bool) that unifies the evaluation of both boolean constants. Similarly, we define the evaluation of constant integers using the rule (E:Int). In contrast to the previous rule, we do not need to check the environment for existence of any variables, as both booleans and integers are evaluated in a direct manner.
 
 \[
-   \inference[(E:bool)]{b \in \{\true, \false\}}{\evals{E}{b}{b}{}{}}%
+   \inference[(E:bool)]{b \in \{\true, \false\}}{\evals{E}{b}{b}{0}{0}}%
    \quad\quad\quad
-   \inference[(E:int)]{n \in \mathbb{Z}}{\evals{E}{n}{n}{}{}}
+   \inference[(E:int)]{n \in \mathbb{Z}}{\evals{E}{n}{n}{0}{0}}
 \]
 
 Next, we introduce the evaluation rule for \textbf{tick}. Here, the concrete environment has no impact on the evaluation of a tick expression, it is evaluated \emph{as is}. 
 
 \[
-   \inference[(E:tick)]
-   {}
-   {\evals{E}{\tick{q}}{()}{r_0}{r_1}}%
-   \qquad 
-   \begin{aligned}
-      \text{where }  &r_0 = \max(q, 0)\\
-      \text{and }    &r_1 = \max(0, -q) 
-   \end{aligned}
-\]
-
-Given an expression \(\tick{k}\), there are two mutually exclusive cases: \(k\) is positive, or it is negative. In the former case, \(r_0\) reduces to \(k\) and \(r_1\) to zero. In the latter case, \(r_0\) is zero and \(r_1\) reduces to \(|q|\), which is again a positive number - as desired. 
+   \inference[(E:tick+)]
+   {k \geq 0}
+   {\evals{E}{\tick{k}}{\bullet}{k}{0}}
+   \qquad
+   \inference[(E:tick-)]
+   {k < 0}
+   {\evals{E}{\tick{k}}{\bullet}{0}{|k|}}
+\[
 
 The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. We do so by augmenting the environment using the variable name and result of the preceding sub-expression.
 

@@ -45,11 +45,11 @@ First, we define a rule for \tick{k} instructions. Such an instruction either fr
 
 \[
    \inference[\((E:tick_{+})\)]
-   {q \geq 0}
+   {k \geq 0}
    {\evals{}{\tick{k}}{\bullet}{k}{0}}
    \qquad
    \inference[\((E:tick_{-})\)]
-   {q < 0}
+   {k < 0}
    {\evals{}{\tick{k}}{\bullet}{0}{|k|}}
 \]
 
