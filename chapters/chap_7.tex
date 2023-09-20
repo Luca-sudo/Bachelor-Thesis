@@ -175,7 +175,7 @@ With potentials defined for \(A \in \type\), we naturally extend potentials to c
    Let \(\Gamma\) be a context.
 
    \[
-      \Phi(\Gamma) = \sum_{x \in \domain{\Gamma}} \Phi(x : \Phi(x))
+      \Phi(\Gamma) = \sum_{x \in \domain{\Gamma}} \Phi(x : \Gamma(x))
    \]
 \end{definition}
 
@@ -193,7 +193,7 @@ We start by introducing two rules associated to the two list constructors. An em
    {\typing{\Gamma;x : A; xs : \ralist{p}{A}}{cons(x, xs)}{\ratype{\ralist{p}{A}}{p}{0}}}
 \]
 
-The potential \(p\) of the list \(l\) is the initial resource cost, specific to destructuring the list into head and tail. The expression \(e_1\) has a resource demand of \((q_0, q_1)\), whereas the evaluation of \(e_2\) has a resource demand of \((q_0 + p, q_1)\). Thus, the initial cost for an element of the list is precisely \(p\). Furthermore, \((q_0, q_1)\) represents a static cost that is paid regardless of the concrete list. We attach \((q_0, q_1)\) to the return type.
+The potential \(p\) of the list \(l\) is the initial resource cost, specific to destructuring the list into head and tail. The expression \(e_1\) has a resource demand of \((q_0, q_1)\), whereas the evaluation of \(e_2\) has a resource demand of \((q_0 + p, q_1)\). Thus, the initial cost for an element of the list is precisely \(p\). Furthermore, \((q_0, q_1)\) represents a static cost that is paid regardless of the concrete list. We attach \((q_0, q_1)\) to the return type. Similar to (T:Let) from previous chapters, we require that \(l \notin \Gamma\), as this can otherwise lead to undesired side-effects.
 
 \[
    \inference[(T:MatchList)]
