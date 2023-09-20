@@ -249,25 +249,25 @@
 
 % Resources
 \glsxtrnewsymbol
-  [description={\hyperref[def:resources]{Set of resources}}, group={resources}]
+  [description={Set of resources (\cref{def:resources})}, group={resources}]
   {resources}
   {\resource}
 \glsxtrnewsymbol
-[description={\hyperref[def:resource-pair]{Resource Demands}}, group={resources}]
+[description={Resource Demands (\cref{def:resource-pair})}, group={resources}]
   {resource demands}
   {\demand}
 \glsxtrnewsymbol
-[description={\hyperref[def:multiplying-pairs]{Sequencing Operator}}, group={resources}]
+[description={Sequencing Operator (\cref{def:multiplying-pairs})}, group={resources}]
   {sequencing}
   {\sequence}
 \glsxtrnewsymbol
-[description={\hyperref[def:relaxation]{Relaxation Relation}}, group={resources}]
+[description={Relaxation Relation (\cref{def:relaxation})}, group={resources}]
   {relaxation}
   {\relaxation}
 
 % Types
 \glsxtrnewsymbol
-[description={Set of Types}, group={types}]
+[description={Set of Types (\cref{fig:type-system}, \cref{def:type-system-5}, \cref{def:type-system-6})}, group={types}]
   {set types}
   {\type}
 \glsxtrnewsymbol
@@ -281,37 +281,37 @@
 \glsxtrnewsymbol[description={Type Bool}, group={types}]{int}{\bool}
 \glsxtrnewsymbol[description={Type Int}, group={types}]{bool}{\typeint}
 \glsxtrnewsymbol
-[description={\hyperref[def:ra-type]{Resource-Aware Type}}, group={types}]
+[description={Resource-Aware Type (\cref{def:ra-type})}, group={types}]
   {ratype}
   {\(\ratype{A}{p_0}{p_1}\)}
 \glsxtrnewsymbol[description={Resource-Aware Function}, group={types}]{rafunc}{\(\rafunc{A}{B}{p_0}{p_1}\)}
-\glsxtrnewsymbol[description={\hyperref[def:context]{Type Context}}, group={types}]{context}{\(\Gamma\)}
-\glsxtrnewsymbol[description={\hyperref[def:context-domain]{Domain of a Context}}, group={types}]{context-domain}{\(\domain{\Gamma}\)}
-\glsxtrnewsymbol[description={\hyperref[def:disjoint-contexts]{Disjoint Contexts}}, group={types}]{disjoint contexts}{\(\Gamma_1 \cap \Gamma_2 = \emptyset\)}
+\glsxtrnewsymbol[description={Context (\cref{def:context})}, group={types}]{context}{\(\Gamma\)}
+\glsxtrnewsymbol[description={Domain of a Context (\cref{def:context-domain})}, group={types}]{context-domain}{\(\domain{\Gamma}\)}
+\glsxtrnewsymbol[description={Disjoint Contexts (\cref{def:disjoint-contexts})}, group={types}]{disjoint contexts}{\(\Gamma_1 \cap \Gamma_2 = \emptyset\)}
 \glsxtrnewsymbol[description={Union of Contexts}, group={types}]{context union}{\(\Gamma_1;\Gamma_2\)}
-\glsxtrnewsymbol[description={\hyperref[def:context-augment]{Augmenting a Context}}, group={types}]{context augment}{\(\Gamma;x : A\)}
-\glsxtrnewsymbol[description={\hyperref[def:ra-list]{List Type with Potential}}, group={types}]{listtype}{\(\ralist{q}{A}\)}
-\glsxtrnewsymbol[description={\hyperref[def:list-length]{Length of List}}, group={types}]{listlength}{\(|l|\)}
-\glsxtrnewsymbol[description={\hyperref[def:potential-function]{Potential Function}}, group={types}]{potentialfunction}{\(\Phi\)}
-\glsxtrnewsymbol[description={\hyperref[def:type-judgement-context]{Typing Judgement}}, group={types}]{typejudgement}{\(\typing{\Gamma}{e}{A}\)}
+\glsxtrnewsymbol[description={Augmenting a Context}, group={types}]{context augment}{\(\Gamma;x : A\)}
+\glsxtrnewsymbol[description={List Type with Potential (\cref{def:ra-list})}, group={types}]{listtype}{\(\ralist{q}{A}\)}
+\glsxtrnewsymbol[description={Length of List (\cref{def:list-length})}, group={types}]{listlength}{\(|l|\)}
+\glsxtrnewsymbol[description={{Potential Function (\cref{def:potential-function})}}, group={types}]{potentialfunction}{\(\Phi\)}
+\glsxtrnewsymbol[description={Typing Judgement (\cref{def:type-judgement-context})}, group={types}]{typejudgement}{\(\typing{\Gamma}{e}{A}\)}
 
 
 % Evaluation
-\glsxtrnewsymbol[description={Environment}, group={evaluation}]{environment}{\(E\)}
+\glsxtrnewsymbol[description={Environment (\cref{def:environment})}, group={evaluation}]{environment}{\(E\)}
 \glsxtrnewsymbol[description={Value of x}, group={evaluation}]{value from environment}{\(E(x)\)}
 \glsxtrnewsymbol[description={Existence of x in E}, group={evaluation}]{def in env}{\(\contains{E}{x}\)}
 \glsxtrnewsymbol[description={Map x to y in E}, group={evaluation}]{envaugment}{\(\envaugment{E}{x}{y}\)}
-\glsxtrnewsymbol[description={Evaluation judgement}, group={evaluation}]{evaluation}{\(\evals{E}{e}{v}{p_{0}}{p_{1}}\)}
-\glsxtrnewsymbol[description={Set of Variable Names}, group={evaluation}]{var}{\(\Var\)}
-\glsxtrnewsymbol[description={Set of Values}, group={evaluation}]{vals}{\(\Vals\)}
+\glsxtrnewsymbol[description={Evaluation judgement (\cref{def:eval-judgement-environments})}, group={evaluation}]{evaluation}{\(\evals{E}{e}{v}{p_{0}}{p_{1}}\)}
+\glsxtrnewsymbol[description={Set of Variable Names }, group={evaluation}]{var}{\(\Var\)}
+\glsxtrnewsymbol[description={Set of Values (\cref{def:vals})}, group={evaluation}]{vals}{\(\Vals\)}
 
 % Prog Language syntax
-\glsxtrnewsymbol[description={Let expression}, group={syntax}]{letexp}{\(\letexp{x}{e_1}{e_2}\)}
-\glsxtrnewsymbol[description={Tick}, group={syntax}]{tick}{\tick{k}}
-\glsxtrnewsymbol[description={List Constructor}, group={syntax}]{cons}{\cons{x}{xs}}
-\glsxtrnewsymbol[description={Nil Constructor}, group={syntax}]{nil}{\listnil}
-\glsxtrnewsymbol[description={Function Application}, group={syntax}]{func app}{\(f~x\)}
-\glsxtrnewsymbol[description={Function Abstraction}, group={syntax}]{func abstraction}{\(\func~f~x = e_f\)}
+\glsxtrnewsymbol[description={Let expression (\cref{def:prog-lang-6})}, group={syntax}]{letexp}{\(\letexp{x}{e_1}{e_2}\)}
+\glsxtrnewsymbol[description={Tick (\cref{def:prog-lang-6})}, group={syntax}]{tick}{\tick{k}}
+\glsxtrnewsymbol[description={List Constructor (\cref{def:prog-lang-6})}, group={syntax}]{cons}{\cons{x}{xs}}
+\glsxtrnewsymbol[description={Nil Constructor (\cref{def:prog-lang-6})}, group={syntax}]{nil}{\listnil}
+\glsxtrnewsymbol[description={Function Application (\cref{def:prog-lang-6})}, group={syntax}]{func app}{\(f~x\)}
+\glsxtrnewsymbol[description={Function Abstraction (\cref{def:prog-lang-6})}, group={syntax}]{func abstraction}{\(\func~f~x = e_f\)}
 
 % Glossary group titles
 \renewcommand\glstreegroupheaderfmt[1]{\begingroup\centering \textbf{#1}\par\endgroup}

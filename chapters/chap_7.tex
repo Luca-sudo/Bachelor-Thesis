@@ -10,11 +10,12 @@ In this chapter, we introduce the concept of lists as a fundamental data type. T
             & \tick{k}				& \text{(tick)}\\
 	    & x					& \text{(var)}\\
 	    & \true ~~| ~~\false		& \text{(bool)}\\
-	    & q					& \text{(integer)}\\
-            & \cons{x}{xs} ~~| ~~ \listnil      & \text{(list constructor)}\\
+	    & k					& \text{(integer)}\\
+            & \cons{head}{tail} ~~| ~~ \listnil      & \text{(list constructor)}\\
             & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
             & \func~f~x_1~\dots~x_n = e_f       & \text{(function abstraction)}\\
             & f~x                               & \text{(function application)}\\
+            & \text{where } x \in \Var, k \in \mathbb{Z}
 \end{align*}
 \end{definition}
 
