@@ -130,33 +130,20 @@ To type expressions with variables, knowledge of a variable's type is paramount.
 
 \subsection{Contexts}
 
-What environments are for evaluation rules, contexts are for inference rules. Contexts allow us to map variables to types, which is necessary since introducing variables. Similar to \nameref{def:environment}s, a context is a partial function; Conversely to environments, a context maps variable names to a type from \cref{def:type-system-5}:
+What environments are for evaluation rules, contexts are for inference rules. Contexts allow us to map variables to types, which is necessary since introducing variables. Similar to \nameref{def:environment}s, a context is a partial function; Conversely to environments, a context maps variable names to a type from \cref{def:type-system-5}.
 
 \begin{definition}[Context]\label{def:context}
-   We define a \emph{context} \(\Gamma : \text{\Var} \partialto \text{\type}\) as a partial function from variable names to types. Let \(x\) be a variable and \(A \in \type\).
-
-   \[
-      \Gamma(x) = 
-      \begin{cases}
-	 A		      & \mbox{,if } \Gamma(x) \text{ is defined}\\
-	 \textbf{undefined}   & \mbox{,else } 
-      \end{cases}
-   \]
+   We define a context \(\Gamma : \Var \partialto \type\) as a partial function from variable names to types. 
 \end{definition}
 
-Inference rules may enforce that a variable \(x\) is defined in a context \(\Gamma\). Intuitively, a variable is defined inside a context if \(\Gamma(x) \neq \textbf{undefined}\). We write \(x \in \Gamma\) to denote that \(x\) is defined in \(\Gamma\).
+Most definitions for contexts are similar to the definitions for environments. For example, we define the \emph{domain} of a context to comprise all variables that are defined.
 
-At the start of executing a program the context is empty. During execution, variables are initialized; This requires extending the context to account for the newly initialized variable. Given that \(x : A\) we add \(x\) to \(\Gamma\) by writing \(\Gamma; x : A\).
-
-Some use cases require us to consider every variable defined in a context \(\Gamma\). For example, in \cref{def:context-potential} we sum over every variable in the context. We introduce a contexts' \emph{domain} as the set of variables that are defined in that context.
 
 \begin{definition}[Domain of Context]\label{def:context-domain}
-   Given a context \(\Gamma\), the \emph{domain} is the set of all variables that are defined in \(\Gamma\).
-   
-   \[
-      \domain{\Gamma} = \{x \in \Var ~|~ \Gamma(x) \neq \textbf{undefined}\} 
-   \]
+   Given a context \(\Gamma\), the domain \(\domain{\Gamma}\) is the set of all variables that are defined in \(\Gamma\).
 \end{definition}
+
+To assert that a variable \(x\) is defined in the current context \(\Gamma\), we write \(x \in \domain{\Gamma}\).
 
 While executing a program, multiple variables with the name \(x\) may be created at discrete times. It is important to note that the \emph{most recent} initialization will determine the value of \(\Gamma(x)\) - for let expressions, this can lead to inconsistencies. \emph{Disjoint} contexts circumvent this problem, as two disjoint contexts do not share any variables, eliminating the chance for inconsistencies.
 
@@ -168,10 +155,12 @@ While executing a program, multiple variables with the name \(x\) may be created
    \]
 \end{definition}
 
+At the start of executing a program the context is empty. During execution, variables are initialized; This requires extending the context to account for the newly initialized variable. Given that \(x : A\) we add \(x\) to \(\Gamma\) by writing \(\Gamma~;~x : A\). However, we require that \(x \notin \domain{\Gamma}\). In a sense we require that \(\Gamma\) and the context containing only \(x\) are \emph{disjoint}.
+
 With contexts defined, we embed them into our new definition of a \emph{typing judgement}.
 
 \begin{definition}[Typing Judgement with contexts]\label{def:type-judgement-context}
-   Let \(\Gamma\) be a \nameref{def:context}, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1) \in \resource\). We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
+   Let \(\Gamma\) be a context, \(e\) an expression of \cref{def:prog-lang-5} with the return type \(A\), and let \((p_0, p_1) \in \resource\). We then denote a typing judgement with respect to the context \(\Gamma\) by writing:
    \[
       \typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}}
    \]
