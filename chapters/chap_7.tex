@@ -1,16 +1,16 @@
-\chapter{Introducing Lists}\label{chap:list-tick}
+\chapter{ListTick Language}\label{chap:list-tick}
 
 In this chapter, we introduce the concept of lists as a fundamental data type. This introduction leads to the development of several new definitions, with the most significant among them being potentials. In our previous approach, resource annotations were attached to a type, resulting in a resource cost that followed a "What-you-see-is-what-you-get" principle. However, when dealing with lists, a different approach becomes necessary. Instead of a constant cost for any input list, we assign a specific cost to each individual element within the list. This adaptation allows us to manage resource consumption while accommodating the variable length of lists. The concept of potentials plays a pivotal role in making this adjustment feasible. Beyond our exploration of lists, we delve into function application, which inherently introduces recursion to our programming language. 
 
-\begin{definition}[list-tick language]
+\begin{definition}[ListTick syntax]
    \label{def:prog-lang-6}
 
 \begin{align*}
    e := ~~~ & \letexp{x}{e_1}{e_2}		& \text{(let)}\\
             & \tick{k}				& \text{(tick)}\\
 	    & x					& \text{(var)}\\
-	    & \true ~~| ~~\false		& \text{(bool constructors)}\\
-	    & q					& \text{(const integer)}\\
+	    & \true ~~| ~~\false		& \text{(bool)}\\
+	    & q					& \text{(integer)}\\
             & \cons{x}{xs} ~~| ~~ \listnil      & \text{(list constructor)}\\
             & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
             & \func~f~x_1~\dots~x_n = e_f       & \text{(function abstraction)}\\
@@ -20,11 +20,20 @@ In this chapter, we introduce the concept of lists as a fundamental data type. T
 
 Because lists can contain \emph{any type} of data, assuming it is homogenous, they are an example of a \emph{polymorphic type}. We can think of polymorphic types as functions from types to types, where the input is called a \emph{type variable} and defines the concrete type of list. 
 
-\begin{definition}[Type system]\label{def:type-system-6}
+\begin{definition}[ListTick types]\label{def:type-system-6}
    \[
       A, B := \unit~|~\text{\bool}~|~\text{\typeint}~|~\ralist{}{A}~|~\rafunc{A}{B}{}{}
    \]
 \end{definition}
+
+In order to define the set of values for list types, we start by defining the set of values for lists of length \(n\), which we denote by \(\listoflength{n}{A}\). Intuitively, the set of \emph{all} list values for a type \(A\) is the union of \(\listoflength{n}{A}\) for every \(n \in \mathbb{N}\). 
+
+\begin{definition}[Vals for List(A)]
+   \begin{displaymath}
+      \Vals_{\ralist{}{A}} = \bigcup_{n \in \mathbb{N}} \listoflength{n}{A}
+   \end{displaymath}
+\end{definition}
+
 
 We want to infer resource-bounds for programs. In order for the inference to be computationally tractable, we constrain the use of certain language features. Most notably, we enforce that functions on lists only recur on the tail of the list. As a result, recursive function calls \emph{will terminate}, eventually.
 
@@ -61,13 +70,6 @@ To derive a complete recurrence relation, and thus a resource demand for arbitra
 
 Understanding this example, we define recurrence relations. Notably, we constrain recurrence relations to have \emph{order} 1, as we only allow recursion on the tail of a list. 
 
-\begin{definition}[Recurrence Relation]\label{def:recurrence-relation}
-   A \emph{recurrence relation} (of order 1) is an equation that defines the value of each element as a function of the preceding element.
-\end{definition}
-
-\begin{remark}
-   We restrict recurrence relations to have order 1, as functions are required to recur on the tail. For more elaborate types, the resulting recurrence relations may require a higher order. As an example, binary trees usually require order 2, as functions usually recur on the left and right subtree.
-\end{remark}
 
 \subsection{Evaluation Rules}
 
@@ -76,11 +78,11 @@ We start by introducing two rules for the construction of lists, corresponding t
 \[
    \inference[(E:Nil)]
    {}
-   {\evals{E}{\listnil}{null}{}{}}
+   {\evals{E}{\listnil}{null}{0}{0}}
    \qquad
    \inference[(E:Cons)]
-   {\contains{E}{x, xs} \qquad l = (E(x), E(xs))}
-   {\evals{E}{\cons{x}{xs}}{l}{}{}}
+   {\contains{E}{x, xs}}
+   {\evals{E}{\cons{x}{xs}}{(E(x), E(xs))}{0}{0}}
 \]
 
 In order to implement functions that work recursively on a list, we need pattern matching. The two cases of the pattern match are defined by the inductive definition of lists: (1) A list is nil, or (2) A list comprises head and tail. We introduce one evaluation rule for each case respectively. The first rule matches an empty list.
@@ -95,29 +97,18 @@ Next, we define an evaluation rule for non-empty lists. Here, we need to extract
 
 \[
    \inference[(E:MatchCons)]
-   {E(l) = (v_x, v_{xs}) \qquad \evals{\envaugment{E}{l}{(v_x, v_{xs})}}{e_2}{v}{Q(\cons{x}{xs})}{Q'(\cons{x}{xs})} \qquad \evals{E}{e_1}{v_1}{q_0}{q_1}}
-   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{Q(l)}{Q'(l)}}
-\]
-\[
-   \begin{aligned}
-      \text{where }  & Q(l) \begin{cases*}
-         Q(x :: xs)     & if l = x :: xs\\
-         q_0            & else
-         \end{cases*} \text{and } Q'(l) \begin{cases*}
-         Q'(x :: xs)     & if l = x :: xs\\
-         q_1            & else
-      \end{cases*}
-   \end{aligned}
+   {E(l) = (v_x, v_{xs}) \qquad \evals{E[x \mapsto v_x,~xs \mapsto v_{xs}]}{e_2}{v}{p_0}{p_1}} 
+   {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{p_0}{p_1}}
 \]
 
-To properly evaluate recursive functions we introduce an evaluation rule for function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_i\) as the \(i\)-th argument used in the definition of \(f\). 
+To properly evaluate recursive functions we introduce an evaluation rule for function application. We define \(e_f\) as the body of the function \(f\), and the variable name \(y_f\) as the argument used in the definition of \(f\). 
 
 \[
    \inference[(E:Application)]
    {E(f) = e_f 
    \quad 
-   \evals{E[y_1 \mapsto E(x_1), \dots, y_n \mapsto E(x_n)]}{e_f}{v}{q_0}{q_1}}
-   {\evals{E}{f~x_1~x_2~\dots~x_n}{v}{q_0}{q_1}}
+   \evals{E[y_f \mapsto E(x)]}{e_f}{v}{q_0}{q_1}}
+   {\evals{E}{f~x}{v}{q_0}{q_1}}
 \]
 
 \section{Type System}
