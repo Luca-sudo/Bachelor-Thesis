@@ -192,7 +192,7 @@ Next, we introduce two rules, one for boolean constants and one for integer cons
    {\typing{\Gamma}{n}{\text{\typeint}}}
 \]
 
-Defining the type rule for the \(\tick{}\) is straightforward, we add a context \(\Gamma\) to the rule from the previous chapter \cref{def:tr-tick-4}:
+Defining the type rule for the \(\tick{}\) is straightforward, we add a context \(\Gamma\) to the rule from the previous chapter \cref{def:tr-tick-4}. 
 
 \[
    \inference[(T:tick)]
@@ -211,35 +211,13 @@ Defining the type rule for the \(\tick{}\) is straightforward, we add a context 
    This is prevented, by demanding that the contexts are \emph{disjoint}. While this makes the rule less flexible, we avoid cases where the application of (T:let) would yield a possibly ill-typed judgement; If the variable \(x\) is present in both contexts, altering the type of that variable may construe the resulting typing of the expression.
 \end{remark}
 
-This leads to the following formulation of the rule (T:Let), that uses \emph{disjoint} contexts.
+This leads to the following formulation of the rule (T:Let). Compared to the previous chapter, we now require the contexts to be disjoint, and propagate the type of \(e_1\) to the context \(\Gamma_2\) to type \(e_2\). Previously, no variables were acrued and thus no propagation was needed.
 
 \[
    \inference[(T:let)]
-   {\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{m}} \qquad \typing{\Gamma_2}{e_2}{\ratype{B}{m}{q_1}} \qquad \Gamma_1 \cap \Gamma_2 = \emptyset}
+   {\typing{\Gamma_1}{e_1}{\ratype{A}{p_0}{p_1}} \qquad \typing{\Gamma_2;x : A}{e_2}{\ratype{B}{q_0}{q_1}} \qquad \Gamma_1 \cap \Gamma_2 = \emptyset}
    {\typing{\Gamma_1; \Gamma_2}{\letexp{x}{e_1}{e_2}}{\ratype{B}{p_0}{q_1}}}
 \]
-
-It is important to note that (T:let) requires the residual resources from the first expression to \emph{match} the initial resources of the second expression - the rule is stringent compared to its predecessor from the previous chapter. Consider the two resource diagrams below. The one on the left-hand side \emph{cannot} be typed with (T:Let), whereas the one on the right-hand side \emph{can} be typed.
-
-\begin{align*}
-   \tikzfig{let1} & \quad & \tikzfig{let2}
-\end{align*}
-
-As a result, there exist resource demands that \emph{could} be sequenced soundly, that (T:Let) prohibits. This leads to the introduction of (T:Relax), which allows relaxing resource demands. As a result, we are able to type programs with resource demands similar to the left-hand side example above.
-
-\[
-   \inference[(T:relax)]
-   {\typing{\Gamma}{e}{\ratype{A}{p_0}{p_1}} \qquad (q_0, q_1) \relaxation (p_0, p_1)}
-   {\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}}
-\]
-
-\begin{example}
-   Given \(\typing{\Gamma}{e_1}{\ratype{A}{1}{0}}\) and \(\typing{\Gamma}{e_2}{\ratype{A}{2}{4}}\), application of (T:let) is \emph{not} permitted. However, interweaving (T:Relax) allows us to type the resulting let expression.
-\end{example}
-
-\begin{align*}
-   \tikzfig{ex4101} \overset{T:Relax}{\implies} \tikzfig{ex4102} \overset{T:Let}{\implies} \tikzfig{ex4103}
-\end{align*}
 
 
 \section{Soundness}
