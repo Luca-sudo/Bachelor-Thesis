@@ -110,7 +110,7 @@ Next, we introduce the evaluation rule for \textbf{tick}. Here, the concrete env
    \inference[(E:tick-)]
    {k < 0}
    {\evals{E}{\tick{k}}{\bullet}{0}{|k|}}
-\[
+\]
 
 The last rule missing is (E:let). Here, we need to carefully weave the value that is the result of the first expression into the second expression. We do so by augmenting the environment using the variable name and result of the preceding sub-expression.
 
@@ -225,38 +225,21 @@ This leads to the following formulation of the rule (T:Let). Compared to the pre
 Having introduced \nameref{def:environment}s and \nameref{def:context}s, it is necessary to formulate the soundness theorem as to account for environments and contexts. This yields the following statement:
 
 \begin{theorem}[Soundness of typing for var-tick language]\label{thm:soundness-5}
-   Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A\) be a type, \((p_0, p_1), (q_0, q_1) \in \resource\) and an expression \(e\) that evaluates to the value \(v\). The Soundness Theorem states:
+   Let \(E\) be an environment, \(\Gamma\) be a context. Further, let \(A\) be a type, \((p_0, p_1), (q_0, q_1) \in \resource\) and an expression \(e\) that evaluates to the value \(v\). The Soundness Theorem states:
 
    \begin{center}
-   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{}{}\) with \((q_0, q_1) \relaxation (p_0, p_1)\).
+   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{}{}\) and \((q_0, q_1) \relaxation (p_0, p_1)\).
    \end{center}
 \end{theorem}
 
 \begin{proof}
+   The proof uses the same structure from the previous chapter (\cref{thm:soundness-let-tick}). We perform structural induction over the type derivation. 
 
-(tick): The proof given in \cref{thm:soundness-let-tick} for the tick expression still holds.
+The proof given in \cref{thm:soundness-let-tick} still holds for the rules (T:Tick) and (T:Let).
 
-(bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\) by definition. As a result \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\), which is identical to \((p_0, p_1) \relaxation (q_0, q_1)\). It furthermore follows that the type of the resulting value \(b\) is of type \bool~, and such, consistent with the typing derived from the type rule.
+(T:Bool): We know that \(p_0 = p_1 = 0 = q_0 = q_1\) by definition of the evaluation and typing rule. As a result \(p_0 \geq q_0\) and \(p_0 - p_1 \geq q_0 - q_1\), which is identical to \((p_0, p_1) \relaxation (q_0, q_1)\). It furthermore follows that the type of the resulting value \(b\) is of type \bool, and such, consistent with the typing derived from the type rule.
 
-(int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows \((p_0, p_1) \relaxation (q_0, q_1)\), and similarly, the type of \(n\) is \typeint~, which is consistent.
-
-(let): We have a program of the form \(\letexp{x}{e_1}{e_2}\). Here, the let expression is a special case. Where any other language construct corresponded to exactly one type rule, the let expression may be typed by two different rules, (T:let) or (T:relax). As such, we need to prove that for the application of both type rules, soundness holds.  
-
-For (T:let): The proof from \cref{thm:soundness-let-tick} still holds.
-
-For (T:relax): What is special for the (T:relax) inference rule is that it could be applied an arbitrary (finite!) number of times. Thus our prove changes slightly. Instead of proving soundness for one application of (T:Relax), we use induction. 
-
-Let us start with the base case; That is, applying (T:Relax) \emph{once}. By assumption, the following to hold true: \(\evals{E}{\letexp{x}{e_1}{e_2}}{v}{r_0}{r_1}\) and \(\typing{\Gamma}{\letexp{x}{e_1}{e_2}}{\ratype{A}{p_0}{p_1}}\) and \((p_0, p_1) \relaxation (r_0, r_1)\). As \((p_0, p_1) \relaxation (r_0, r_1)\) is exactly what we wanted to show, we are done for the base case.
-
-For the induction step, we can leverage the fact that the relaxation relation is \emph{transitive}. Our induction hypothesis includes the following assumptions:
-
-   \begin{align*}
-      &										    & &\exists (m_0, m_1) \in \resource\\
-      &\typing{\Gamma}{\letexp{x}{e_1}{e_2}}{\ratype{\unit}{p_0}{p_1}}                   & &(p_0, p_1)\relaxation (m_0, m_1)\\
-      &\evals{E}{\letexp{x}{e_1}{e_2}}{v_1}{q_0}{q_1}                               & &(m_0, m_1)\relaxation (q_0, q_1)\\
-   \end{align*}
-
-Where \((r_0, r_1)\) is the resource-annotation of the previous application of (T:Relax). As the relaxation relation is transitive, it follows that \((p_0, p_1) \relaxation (q_0, q_1)\). Which concludes our proof.
+(T:Int): Identical to the previous proof, we get that \(p_0 = p_1 = 0 = q_0 = q_1\) which shows \((p_0, p_1) \relaxation (q_0, q_1)\), and similarly, the type of \(n\) is \typeint, which is consistent.
 
 \end{proof}
 
