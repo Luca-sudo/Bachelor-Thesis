@@ -13,7 +13,6 @@ In this chapter, we introduce the concept of lists as a fundamental data type. T
 	    & k					& \text{(integer)}\\
             & \cons{head}{tail} ~~| ~~ \listnil & \text{(list constructor)}\\
             & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
-            & \arrow{x}{e_f}                    & \text{(lambda)} \\
             & \letFun{f}{x}{e_f}{e_2}           & \text{(function declaration)} \\
             & f~x                               & \text{(function application)}\\
             & \text{where } x \in \Var,~k \in \mathbb{Z},~ head \in A,~ tail \in \ralist{}{A}
@@ -224,12 +223,20 @@ For function application, the input type needs to align with the variables that 
 \[
    \inference[(T:Application)]
    {\typing{\Gamma}{f}{A \to \ratype{B}{q_0}{q_1}}}
-   {\typing{\Gamma;x:A}{f x_1 \dots x_n}{\ratype{B}{q_0}{q_1}}}
+   {\typing{\Gamma;x:A}{f x}{\ratype{B}{q_0}{q_1}}}
 \]
 
 \begin{remark}
    We denote resource-aware functions just like any other resource-aware type, by adding a resource demand. In the case of functions, this looks like \(A \to \ratype{B}{p_0}{p_1}\). Recall from \cref{def:ra-type} that \(A \to \ratype{B}{p_0}{p_1} = (A \to B, (p_0, p_1))\), where the resource demand represents the cost for evaluating the function.
 \end{remark}
+
+The final type rule that we introduce is (T:LetFun). Informally, this rule adds the type of the function \(f\) to the context under which \(e_2\) is evaluated. Of course, \(e_2\) may use \(f\), but only the resource-aware type of \(e_2\) is of interest to us.
+
+\[
+   \inference[(T:LetFun)]
+   {\typing{\Gamma}{f}{A \to B} \qquad \typing{\Gamma; f : A \to B}{e_2}{\ratype{C}{p_0}{p_1}}}
+   {\typing{\Gamma}{\letFun{f}{x}{e_1}{e_2}}{\ratype{C}{p_0}{p_1}}}
+\]
 
 \subsection{Example Type Derivations}\label{sec:example-type-derivations}
 
