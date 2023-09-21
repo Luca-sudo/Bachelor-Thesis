@@ -445,8 +445,17 @@ In the case of residual resources, a similar line of thought holds. Here, we add
       &(q_0, q_1 + \Phi(v : B)) \relaxation (p_0, p_1)
    \end{align}
 
-   Using \cref{lemma:pos-relaxation} we get \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : B)) \relaxation (p_0, p_1)\), which concludes the proof of soundness.
+   Using \cref{lemma:pos-relaxation} we get \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : B)) \relaxation (p_0, p_1)\).
 
+   (T:LetFun): We know that the expression \(e\) had the form \(\letFun{f}{x}{e_f}{e_2}\). We assume that \(e_2\) is typed soundly, which gives us three additional assumptions:
+
+   \begin{align*}
+      & \typing{\Gamma}{e_2}{\ratype{A}{r_0}{r_1}} & \evals{E}{e_2}{v}{s_0}{s_1} & & (r_0, r_1 + \Phi(v : A)) \relaxation (s_0, s_1) &
+   \end{align*}
+
+   Application of (E:LetFun) then gives us that \((p_0, p_1) = (s_0, s_1)\). Additionally, applying (T:LetFun) yields \((q_0, q_1) = (r_0, r_1)\). Using that \((r_0, r_1 + \Phi(v : A)) \relaxation (s_0, s_1)\) from our assumptions, we get that \((q_0, q_1 + \Phi(v : A)) \relaxation (p_0, p_1)\). 
+
+   Using \cref{lemma:pos-relaxation} we get \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : A)) \relaxation (p_0, p_1)\) as desired.
 
 \end{proof}
  
