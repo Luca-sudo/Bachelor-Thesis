@@ -119,7 +119,7 @@
 \newcommand{\ralist}[2]{\text{List}^{#1}(#2)}
 
 % Set of lists of length n
-\newcommand{\listoflength}[2]{\text{List}_{#1}(#2)}
+\newcommand{\listoflength}[2]{\ensuremath{\text{List}_{#1}(#2)}}
 
 % List constructor.
 \newcommand{\cons}[2]{#1 :: #2}
@@ -128,7 +128,7 @@
 \newcommand{\listnil}{\textbf{nil}}
 
 % Pattern match on lists.
-\newcommand{\listmatch}[3]{\textbf{match } #1~\textbf{with}~|~\listnil \to #2~|~\cons{x}{xs} \to #3}
+\newcommand{\listmatch}[3]{\ensuremath{\textbf{match } #1~\textbf{with}~|~\listnil \to #2~|~\cons{x}{xs} \to #3}}
 
 % Set of resources
 \newcommand{\resource}{\ensuremath{\mathcal{R}}}
@@ -297,6 +297,7 @@
 \glsxtrnewsymbol[description={Union of Contexts}, group={types}]{context union}{\(\Gamma_1;\Gamma_2\)}
 \glsxtrnewsymbol[description={Augmenting a Context}, group={types}]{context augment}{\(\Gamma;x : A\)}
 \glsxtrnewsymbol[description={List Type with Potential (\cref{def:ra-list})}, group={types}]{listtype}{\(\ralist{q}{A}\)}
+\glsxtrnewsymbol[description={Set of Lists with length \(n\) (\cref{def:lists-of-length-n})}, group={types}]{set of lists length n}{\listoflength{n}{A}}
 \glsxtrnewsymbol[description={Length of List (\cref{def:list-length})}, group={types}]{listlength}{\(|l|\)}
 \glsxtrnewsymbol[description={{Potential Function (\cref{def:potential-function})}}, group={types}]{potentialfunction}{\(\Phi\)}
 \glsxtrnewsymbol[description={Typing Judgement (\cref{def:type-judgement-context})}, group={types}]{typejudgement}{\(\typing{\Gamma}{e}{A}\)}
@@ -305,10 +306,11 @@
 % Evaluation
 \glsxtrnewsymbol[description={Environment (\cref{def:environment})}, group={evaluation}]{environment}{\(E\)}
 \glsxtrnewsymbol[description={Value of x}, group={evaluation}]{value from environment}{\(E(x)\)}
-\glsxtrnewsymbol[description={Existence of x in E}, group={evaluation}]{def in env}{\(\contains{E}{x}\)}
-\glsxtrnewsymbol[description={Map x to y in E}, group={evaluation}]{envaugment}{\(\envaugment{E}{x}{y}\)}
+\glsxtrnewsymbol[description={Domain of E (\cref{sec:environments})}, group={evaluation}]{domain of environment}{\domain{E}}
+\glsxtrnewsymbol[description={Existence of x in E (\cref{sec:environments})}, group={evaluation}]{def in env}{\(\contains{E}{x}\)}
+\glsxtrnewsymbol[description={Map x to y in E (\cref{def:environment-augment})}, group={evaluation}]{envaugment}{\(\envaugment{E}{x}{y}\)}
 \glsxtrnewsymbol[description={Evaluation judgement (\cref{def:eval-judgement-environments})}, group={evaluation}]{evaluation}{\(\evals{E}{e}{v}{p_{0}}{p_{1}}\)}
-\glsxtrnewsymbol[description={Set of Variable Names }, group={evaluation}]{var}{\(\Var\)}
+\glsxtrnewsymbol[description={Set of Variable Names (\cref{chap:VarTick})}, group={evaluation}]{var}{\(\Var\)}
 \glsxtrnewsymbol[description={Set of Values (\cref{def:vals})}, group={evaluation}]{vals}{\(\Vals\)}
 
 % Prog Language syntax
@@ -316,8 +318,10 @@
 \glsxtrnewsymbol[description={Tick (\cref{def:prog-lang-6})}, group={syntax}]{tick}{\tick{k}}
 \glsxtrnewsymbol[description={List Constructor (\cref{def:prog-lang-6})}, group={syntax}]{cons}{\cons{x}{xs}}
 \glsxtrnewsymbol[description={Nil Constructor (\cref{def:prog-lang-6})}, group={syntax}]{nil}{\listnil}
+\glsxtrnewsymbol[description={Match on Lists (\cref{def:prog-lang-6})}, group={syntax}]{list match}{\listmatch{l}{e_1}{e_2}}
 \glsxtrnewsymbol[description={Function Application (\cref{def:prog-lang-6})}, group={syntax}]{func app}{\(f~x\)}
-\glsxtrnewsymbol[description={Function Abstraction (\cref{def:prog-lang-6})}, group={syntax}]{func abstraction}{\(\func~f~x = e_f\)}
+\glsxtrnewsymbol[description={Arrow/ Lambda(\cref{def:prog-lang-6})}, group={syntax}]{arrow}{\arrow{x}{e_f}}
+\glsxtrnewsymbol[description={Function Declaration (\cref{def:prog-lang-6})}, group={syntax}]{func abstraction}{\letFun{f}{x}{e_f}{e_2}}
 
 % Glossary group titles
 \renewcommand\glstreegroupheaderfmt[1]{\begingroup\centering \textbf{#1}\par\endgroup}

@@ -1,10 +1,10 @@
-\chapter{VarTick Language}
+\chapter{VarTick Language}\label{chap:VarTick}
 
 Before continuing, let us examine the limitations of the \nameref{def:prog-lang-4} from the previous chapter. We are not able to declare variables, control flow, or constants. All of those features will be implemented in this chapter. In order to declare and use variables in our programming language, we need to provide a definition of an environment, which comprises the concrete values of variables. As we will see, introducing variables will demand cautious reformulation of some evaluation rules to account for environments.
 
 Similarly to environments, we will introduce contexts for the type rules. While an environment maps variables to concrete values, a context will map variables to types. This will also require carefully embellishing previous type rules, to provide rules that are rigorous with respect to contexts. We define the syntax of the augmented programming language below.
 
-Before we can define the syntax, we have to define the set of variable names (\(\Var\)). For our language, valid variable names are those that comprise only letters, without whitespace and numbers. 
+Before we can define the syntax, we have to define the set of variable names (\(\Var\)). For our language, valid variable names are those that comprise only letters and numbers, without whitespace. 
 
 \begin{definition}[VarTick syntax]
    \label{def:prog-lang-5}
@@ -56,7 +56,7 @@ Environments map variable names to values. Here, \(\Var\) is the set of variable
    An environment \(E: \Var \partialto \text{\Vals}\) is a partial function.
 \end{definition}
 
-For an environment \(E\), we may be interested in the set of variable names that are defined. This is called the \emph{domain} of \(E\). As some evaluation rules required the existence of certain variables, we use the domain to check variable names for membership. For this, we write \(x \in \domain{E}\) for \(x \in \Var\).
+For an environment \(E\), we may be interested in the set of variable names that are defined. This is called the \emph{domain} of \(E\), and we denote it by \(\domain{E}\). As some evaluation rules require the existence of certain variables, we use the domain to check variable names for membership. For this, we write \(x \in \domain{E}\) for \(x \in \Var\).
 
 \begin{definition}[Domain of environments]
    Let \(E\) be an environment. The \emph{domain} \(\domain{E}\) is the set of all variable names that are defined in \(E\).

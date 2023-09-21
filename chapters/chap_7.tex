@@ -28,7 +28,13 @@ Because lists can contain \emph{any type} of data, assuming it is homogenous, th
    \]
 \end{definition}
 
-In order to define the set of values for list types, we start by defining the set of values for lists of length \(n\), which we denote by \(\listoflength{n}{A}\). Intuitively, the set of \emph{all} list values for a type \(A\) is the union of \(\listoflength{n}{A}\) for every \(n \in \mathbb{N}\). 
+In order to define the set of values for list types, we start by defining the set of values for lists of length \(n\), which we denote by \(\listoflength{n}{A}\). 
+
+\begin{definition}[Lists of Length n]\label{def:lists-of-length-n}
+   \(\listoflength{n}{A}\) is the set of all lists of type \(A\) with a length of \(n\).
+\end{definition}
+
+The set of values for \(\ralist{}{A}\) comprises lists of every possible length \(n\). Thus, it is the union of \(\listoflength{n}{A}\) for every \(n \in \mathbb{N}\). 
 
 \begin{definition}[Vals for List(A)]
    \begin{displaymath}
