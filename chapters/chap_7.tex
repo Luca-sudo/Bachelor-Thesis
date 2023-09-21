@@ -223,8 +223,8 @@ For function application, the input type needs to align with the variables that 
 
 \[
    \inference[(T:Application)]
-   {\typing{\Gamma}{f}{A_1 \to \dots \to A_n \to \ratype{B}{q_0}{q_1}}}
-   {\typing{\Gamma;x_1:A_1;\dots;x_n:A_n}{f x_1 \dots x_n}{\ratype{B}{q_0}{q_1}}}
+   {\typing{\Gamma}{f}{A \to \ratype{B}{q_0}{q_1}}}
+   {\typing{\Gamma;x:A}{f x_1 \dots x_n}{\ratype{B}{q_0}{q_1}}}
 \]
 
 \begin{remark}
@@ -351,12 +351,9 @@ Furthermore, \(q_0 = 0 = q_1\), as neither sub-expressions have any resource dem
 \end{enumerate}
 \end{example}
 
-\todo{Add another example? @AP @MW}
-
 \section{Soundness}\label{sec:soundness-6}
 
-The introduction of potentials has a profound effect on the proof of soundness. Previously, the proof centered around inequalities on resource demands - this does not suffice. The \emph{effective cost} that is modelled by type inference is composed of resource demands and the potential of the context. This matches the notion of amortized cost, as introduced in \dots
-\todo{Ref to preliminaries talking about amortized cost}
+The introduction of potentials has a profound effect on the proof of soundness. Previously, the proof centered around inequalities on resource demands - this does not suffice. The \emph{effective cost} that is modelled by type inference is composed of resource demands and the potential of the context. 
 
 This forces us to embellish the inequalities required to hold for soundness. Consider that evaluation and typing judgements have the following form:  \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\). In order to define sound resource inequalities which account for potentials, we reconsider initial and residual resources. The amortized \emph{initial} cost of an operation is composed of the concrete initial resources \emph{and} the potential of the context in which the operation is performed. Thus the initial resources are given by \(p_0 + \Phi(\Gamma)\). 
 
@@ -368,12 +365,12 @@ In the case of residual resources, a similar line of thought holds. Here, we add
    Let \(E\) be an \nameref{def:environment}, \(\Gamma\) be a \nameref{def:context}. Further, let \(A \in \type\), \((p_0, p_1), (q_0, q_1) \in \demand\) and an expression \(e\) that evaluates to the value \(v\). 
 
    \begin{center}
-   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{}{}\) with \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : A)) \relaxation (p_0, p_1)\).
+   If \(\evals{E}{e}{v}{p_0}{p_1}\) and \(\typing{\Gamma}{e}{\ratype{A}{q_0}{q_1}}\), then \(v : \ratype{A}{}{}\) and \((q_0 + \Phi(\Gamma), q_1 + \Phi(v : A)) \relaxation (p_0, p_1)\)
    \end{center}
 \end{theorem}
 
 \begin{proof}
-   (nil): We know that \(e = \listnil\). Also, \((p_0, p_1) = (0, 0) = (q_0, q_1)\). Together with \(\Phi(\listnil : \ralist{p}{A}) = 0\), we can infer the following:
+   (T:Nil): We know that the expression has the form \(e = \listnil\). Also, \((p_0, p_1) = (0, 0)\) from (E:Nil), and \((q_0, q_1) = (0, 0)\) from (T:Nil). Together with \(\Phi(\listnil : \ralist{p}{A}) = 0\), we can infer the following:
    \begin{align}
       (q_0 + \Phi(\Gamma), q_1 + \Phi(\listnil : \ralist{p}{A})   &= (q_0 + \Phi(\Gamma), q_1)\label{eqn:nil-1} \\
                                                                   &\relaxation (q_0, q_1) \label{eqn:nil-2}\\
@@ -381,12 +378,13 @@ In the case of residual resources, a similar line of thought holds. Here, we add
    \end{align}
    Where \cref{eqn:nil-1} uses \(\Phi(\listnil: \ralist{p}{A}) = 0\), and \cref{eqn:nil-2} uses \cref{lemma:pos-relaxation}. 
 
-   (cons): We know that \(e = \cons{x, xs}\). We also assume that the tail \(xs\) has potential \(p\). Therefore, \(q_0 = p\) and \(q_1 = 0\). Because the rule (E:Cons) had to be applied for the related evaluation derivation, we get that \(p_0 = 0 = p_1\).   
-   The change in potential is given by \(\Phi(xs : \ralist{p}{A}) - \Phi(\cons{x}{xs} : \ralist{p}{A})\), as the context \(\Gamma\) comprises \(x\) and \(xs\), where \(x\) has no associated potential. Therefore, the change in potential is precisely \(-p\). Thus:
+   (T:Cons): We know that \(e = \cons{x}{xs}\). We also assume that the tail \(xs\) has some potential \(p\). Applying (T:Cons) gives us \(q_0 = p\) and \(q_1 = 0\). Applying (E:Cons) we get \(p_0 = 0 = p_1\).   
+   The change in potential is given by \(\Phi(xs : \ralist{p}{A}) - \Phi(\cons{x}{xs} : \ralist{p}{A})\), as the context \(\Gamma\) comprises \(x\) and \(xs\), where \(x\) has no associated potential. Therefore, the change in potential is precisely \(-p\) - the list got elongated by one element. Thus:
 
    \[
       \underbrace{q_0 - q_1}_{p} + \underbrace{\Phi(\Gamma) - \Phi(\cons{x}{xs} : \ralist{p}{A}}_{-p}) = 0 = p_0 - p_1
    \] 
+
    And:
 
    \[
@@ -395,7 +393,7 @@ In the case of residual resources, a similar line of thought holds. Here, we add
 
    Which results in \((q_0 + \Phi(\Gamma), q_1 + \Phi(\cons{x}{xs} : \ralist{p}{A}) \relaxation (p_0, p_1)\). 
 
-   (match): We know that \(e = \listmatch{l}{e_1}{e_2}\) and there are two possible cases. Either the list is \listnil ~or the list has the form \cons{x}{xs}, which results in (E:MatchNil) or (E:MatchCons) being invoked for the evaluation derivation. 
+   (T:MatchList): We know that \(e = \listmatch{l}{e_1}{e_2}\) and there are two possible cases. Either the list is \listnil ~or the list has the form \cons{x}{xs}, which results in (E:MatchNil) or (E:MatchCons) being invoked for the evaluation derivation, respectively. 
 
    Let us start with the first case, \(l = \listnil\). The type rule yields \(p_0 = 0 = p_1\) and the evaluation rule yields \(q_0 = 0 = q_1\). Furthermore, the context is empty, and the empty list has no potential:
 
@@ -431,7 +429,7 @@ In the case of residual resources, a similar line of thought holds. Here, we add
       (q_0 + \Phi(\Gamma), q_1 + \Phi(\cons{x}{xs} : \ralist{p}{A})) \relaxation (p_0, p_1)
    \]
 
-   (application): We know that \(e = f~x\) for some function \(f\) and some variable \(x\). Our hypthesis yields the following assumptions:
+   (T:Application): We know that \(e = f~x\) for some function \(f\) and some variable \(x\). Our hypothesis yields the following assumptions, where the first two rows result from applying (E:Application), and the remaining constraints result from applying (T:Application):
 
    \begin{align}
       &E(f) = e_f                                      &\evals{\envaugment{E}{y_f}{v_x}}{e_f}{v}{p_0}{p_1} \nonumber\\
