@@ -6,26 +6,37 @@
 		\node [style=none] (3) at (-6.5, 0) {\rotatebox{90}{Resources}};
 		\node [style=none] (4) at (0, -4.5) {Time};
 		\node [style=none, label={above:5}] (5) at (-5, 1) {};
-		\node [style=none, label={below:4}] (11) at (-1, 0) {};
+		\node [style=none, label={above:4}] (11) at (-1, 0) {};
 		\node [style=none] (12) at (-5.5, 1) {};
 		\node [style=none] (13) at (-4.5, 1) {};
 		\node [style=none] (14) at (-1.5, 0) {};
 		\node [style=none] (15) at (-0.5, 0) {};
 		\node [style=none, label={above:2}] (16) at (0, -2) {};
-		\node [style=none, label={below:0}] (17) at (3, -4) {};
+		\node [style=none, label={above:0}] (17) at (4.25, -4) {};
 		\node [style=none] (18) at (-0.5, -2) {};
 		\node [style=none] (19) at (0.5, -2) {};
-		\node [style=none] (20) at (2.5, -4) {};
-		\node [style=none] (21) at (3.5, -4) {};
+		\node [style=none] (20) at (3.75, -4) {};
+		\node [style=none] (21) at (4.75, -4) {};
+		\node [style=none] (22) at (-5, -4) {};
+		\node [style=none] (23) at (-1, -4) {};
+		\node [style=none] (24) at (0, -4) {};
 	\end{pgfonlayer}
 	\begin{pgfonlayer}{edgelayer}
 		\draw (12.center) to (13.center);
 		\draw (14.center) to (15.center);
 		\draw [style=new edge style 0] (1.center) to (2.center);
 		\draw [style=new edge style 0] (1.center) to (0.center);
-		\draw (5.center) to (11.center);
+		\draw [style=new edge style 6] (11.center)
+			 to (23.center)
+			 to (22.center)
+			 to (5.center)
+			 to cycle
+			 to (5.center);
 		\draw (18.center) to (19.center);
 		\draw (20.center) to (21.center);
-		\draw (16.center) to (17.center);
+		\draw [style=new edge style 6] (24.center)
+			 to (17.center)
+			 to (16.center)
+			 to cycle;
 	\end{pgfonlayer}
 \end{tikzpicture}

@@ -1,6 +1,6 @@
-\chapter{Introduction} \label{chap:preliminaries}
+\chapter{Preliminaries} \label{chap:preliminaries}
 
-There are various concepts underpinning AARA, which we introduce briefly in this section. Amortized analysis (\cref{sec:amortized-analysis}) provides a foundational notion of cost. Type theoretic notions (\cref{sec:type-theory}) allow reasoning about resource demands of programs without executing them. Furthermore, we need to solve a system of linear constraints, to retrieve appropriate resource bounds for programs. This requires linear programming, which we introduce in \cref{sec:linear-programming}. 
+There are various concepts underpinning AARA, which we introduce briefly in this section. Amortized analysis (\cref{sec:amortized-analysis}) provides a foundational notion of cost. Type theoretic notions (\cref{sec:type-theory}) allow reasoning about resource demands of programs without executing them. We need to solve a system of linear constraints, to retrieve appropriate resource bounds for programs - this requires linear programming (\cref{sec:linear-programming}). 
 
 \section{Amortized Analysis}\label{sec:amortized-analysis}
 
@@ -51,13 +51,7 @@ For readers interested in type theory and programming language theory, we recomm
 
 For readers interested in type theory with a focus on formal proofs, we recommend \cite{nederpeltTypeTheoryFormal2014}.
 
-\section{Linear Programming}\label{sec:linear-programming}
-
-Linear programming \cite{LinearProgramming2023} is a special kind of optimization problem \cite{OptimizationProblem2022}. Given a set of \emph{linear} inequalities, we need to find the best solution. Linear programming is a difficult problem - it is in \textbf{NP} \cite[page~56]{aroraComputationalComplexityModern2009}. 
-
-While performing AARA, some type rules introduce numeric constraints. Those are emitted, during type derivation, by specific inference rules. Upon completion of type derivation, all constraints are collected and solved using linear programming. The illustrative examples we choose throughout the thesis emit only a small amount of constraints, which permits solving by hand. When automatizing this procedure, applications utilize an \emph{LP-solver} backend.
-
-\section{Purely Functional Programming}\label{sec:functional-programming}
+\section{Purely Functional Programming}
 
 In this thesis, we constrain ourselves to introducing purely functional programming languages, for a couple of reasons. Reasoning about such programs avoids obstacles common in imperative programming languages, such as mutation. Furthermore, we can write concise code, which allows us to focus on introducing and motivating concepts more thoroughly. For the reader who has only a vague idea of what constitutes purely functional programming, we introduce the key characteristics, at times comparing them to imperative programming for illustration.
 
