@@ -113,6 +113,17 @@ To properly evaluate recursive functions we introduce an evaluation rule for fun
    {\evals{E}{f~x}{v}{q_0}{q_1}}
 \]
 
+In order to apply a function, it needs to be defined. The rule (E:LetFun) reads the function name, argument name and the body of the function. It then augments the environment, \emph{without executing the function body}. In later expressions the function identifier is available and may be used, incurring the cost for executing the function body then.
+
+\[
+   \inference[(E:LetFun)]
+   {\evals{\envaugment{E}{f}{e_f}}{e_{\text{next}}}{v}{p_0}{p_1}}
+   {\evals{E}{\letFun{f}{x}{e_f}{e_{\text{next}}}}{v}{p_0}{p_1}}
+\]
+
+Note that (1) Function declaration itself has no cost assigned to it (2) We use the keyword \(\textbf{fin}\) to denote the end of the function body. This serves a similar purpose to the keyword \(\textbf{in}\) from let-expressions, as subsequent expression can be written afterward. A key reason for introducing \(\textbf{fin}\) like this stems form the need to distinguish sequential expressions inside the function body \(e_f\) and the end of function declaration. If both used the keyword \(\textbf{in}\) this distinction becomes ambiguous. 
+
+
 \section{Type System}
 
 Our goal is to introduce type rules that allow us to assign resource costs to lists. Previously, we assigned a resource-pair (\cref{def:resource-pair}) to the resulting type; This is not feasible for lists, as the cost of evaluating an expression depends on the length of the list. \emph{Potentials} are the analogue to recurrence relations, allowing us to assign costs to every list element. 
