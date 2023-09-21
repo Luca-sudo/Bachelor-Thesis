@@ -11,11 +11,12 @@ In this chapter, we introduce the concept of lists as a fundamental data type. T
 	    & x					& \text{(var)}\\
 	    & \true ~~| ~~\false		& \text{(bool)}\\
 	    & k					& \text{(integer)}\\
-            & \cons{head}{tail} ~~| ~~ \listnil      & \text{(list constructor)}\\
+            & \cons{head}{tail} ~~| ~~ \listnil & \text{(list constructor)}\\
             & \listmatch{l}{e_1}{e_2}           & \text{(match list)}\\
-            & \func~f~x_1~\dots~x_n = e_f       & \text{(function abstraction)}\\
+            & \arrow{x}{e_f}                    & \text{(lambda)} \\
+            & \letFun{f}{x}{e_f}{e_2}           & \text{(function declaration)} \\
             & f~x                               & \text{(function application)}\\
-            & \text{where } x \in \Var, k \in \mathbb{Z}
+            & \text{where } x \in \Var,~k \in \mathbb{Z},~ head \in A,~ tail \in \ralist{}{A}
 \end{align*}
 \end{definition}
 
@@ -79,7 +80,7 @@ We start by introducing two rules for the construction of lists, corresponding t
 \[
    \inference[(E:Nil)]
    {}
-   {\evals{E}{\listnil}{null}{0}{0}}
+   {\evals{E}{\listnil}{\bullet}{0}{0}}
    \qquad
    \inference[(E:Cons)]
    {\contains{E}{x, xs}}
@@ -90,7 +91,7 @@ In order to implement functions that work recursively on a list, we need pattern
 
 \[
    \inference[(E:MatchNil)]
-   {E(l) = Null \qquad \evals{E}{e_1}{v}{q_0}{q_1}}
+   {E(l) = \bullet \qquad \evals{E}{e_1}{v}{q_0}{q_1}}
    {\evals{E}{\listmatch{l}{e_1}{e_2}}{v}{q_0}{q_1}}
 \]
 
