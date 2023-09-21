@@ -208,7 +208,28 @@ Before we can show that resource demands form a partial order under relaxation, 
 \end{lemma}
 
 \begin{proof}
-   \todo{Add proof}
+   In the following, let \(p, q, r \in \demand\).
+
+   \emph{Reflexivity}: It trivially holds that \(p_0 \geq p_0\) and \(p_0 - p_1 \geq p_0 - p_1\), which shows that \(p \relaxation p\).
+
+   \emph{Transitivity}: Let \(p \relaxation q\), \(q \relaxation r\). We want to show that \(p \relaxation r\). Below we list all assumptions that follow, where the left-hand side follows from \(p \relaxation q\) and the right-hand side follows from \(q \relaxation r\).
+
+   \begin{align}
+      p_0         &\geq q_0               &  q_0      & \geq r_0 \label{eqn:relaxation-po-1}\\
+      p_0 - p_1   &\geq q_0 - q_1         & q_0 - q_1 & \geq r_0 - r_1 \label{eqn:relaxation-po-2}
+   \end{align*}      
+
+   Using both inequalities in \cref{eqn:relaxation-po-1} and transitivity of \(\geq\) for natural numbers, it follows that \(p_0 \geq r_0\). Similarly, we combine \cref{eqn:relaxation-po-2} and the transitivity of \(\geq\) for the natural numbers to get \(p_0 - p_1 \geq r_0 - r_1\). Both inequalities show that \(p \relaxation r\).
+
+   \emph{Anti-symmetry}: Let \(p \relaxation q\) and \(q \relaxation p\). Again, we list all inequalities that follow from \(p \relaxation q \) and \(q \relaxation p\), respectively.
+
+   \begin{align}
+      p_0         &\geq q_0        & q_0        &\geq p_0 \label{eqn:relaxation-po-3}\\
+      p_0 - p_1   &\geq q_0 - q_1  & q_0 - q_1  &\geq p_0 - p_1 \label{eqn:relaxation-po-4}
+   \end{align*}
+
+   Using \cref{eqn:relaxation-po-3} we get \(p_0 = q_0\) and using \cref{eqn:relaxation-po-4} we get \(p_0 - p_1 = q_0 - q_1\). Thus, it follows that \(p = q\).
+
 \end{proof}
 
 It is important to note that, for any two resource pairs, one \emph{need not} be a relaxation of the other. Therefore, relaxation does not define a total order - as the following example shows.
@@ -242,6 +263,6 @@ For an arbitrary resource demand \((p_0, p_1) \in \demand\) and \(n, m \in \reso
    Where we use the assumption \(n - m \geq 0\) from line one to two. 
 
 
-   We continue with \((p_0 + n, p_1 + m) \relaxation (p_0, p_1) \implies n - m \geq 0\). By assumption, we get that \(p_0 + n - (p_1 + m) \geq p_0 - p_1\). Thus, \(p_0 - p_1 + (n - m) \geq p_0 - p_1\), which shows that \(n - m \geq 0\). 
+   We continue with \((p_0 + n, p_1 + m) \relaxation (p_0, p_1) \implies n - m \geq 0\). By assumption,  we get that \(p_0 + n - (p_1 + m) \geq p_0 - p_1\). Thus, \(p_0 - p_1 + (n - m) \geq p_0 - p_1\), which shows that \(n - m \geq 0\). 
 \end{proof}
 
