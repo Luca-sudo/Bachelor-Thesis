@@ -4,4 +4,31 @@ Analyzing the performance of algorithms features multiple approaches: worst-case
 
 Performing amortized analysis by hand, however, is time-consuming and error-prone. We first need to define a suitable potential function; this will allow the state of the data structure to amortize more expensive operations. Afterward we need to calculate the amortized cost of multiple instructions and average their results. AARA aims to automate this process, programmers write code and \emph{additionally} provide minor annotations. The resulting program can be analyzed for performance automatically by a type inference algorithm, allowing programmers to allocate more time to working on software instead of analyzing it. 
 
-There are three key components to automatizing this procedure. First, we introduce a new expression \tick{k}. This expression can be used by programmers to embed a virtual cost into their programs. The \tick{} expression can be used to consume or free virtual resources. Next, we define type rules for our programming language. These type rules are \emph{resource-aware} - they have a cost assigned to them, and combine the cost of subsequent expressions properly. Finally, the program is analyzed using type inference. This step collects all information about resource consumption in the form of \emph{linear constraints}. Solving these constraints then provides an upper-bound on the resource consumption.
+There are three key components to automatizing this procedure. First, we introduce a new expression \tick{k}. This expression can be used by programmers to embed a virtual cost into their programs. The \tick{} expression can be used to consume or free virtual resources. Next, we define type rules for our programming language. These type rules are \emph{resource-aware} - they have a cost assigned to them, and propagate the cost of previous expressions properly. Finally, the program is analyzed using type inference. This step collects all information about resource consumption in the form of \emph{linear constraints}, which are collectively solved to provide an upper-bound on the resource consumption.
+
+Let us informally work through the AARA procedure, in order to foster a high-level understanding that is useful for following chapters. First, let us look at example code to see how annotating a program with \textbf{tick} instructions looks like. 
+
+\begin{figure}[H] 
+   \begin{minted}{ocaml}
+      def add1 l = match l with 
+	 | nil -> nil
+	 | cons(x, xs) -> let _ = tick 1 in			  
+			  let x' = x + 1 in
+			  let xs' = add1 xs in
+			  cons(x', xs')
+   \end{minted}
+\end{figure}
+
+In the code above, we define a function \emph{add1}, which given a list of integers returns the list of integers with every element incremented. For example, the function maps \((1, 2, 3, 4)\) to \((2, 3, 4, 5)\). Furthermore, there is a \textbf{tick} instruction in line three. This tick instruction resembles a cost of one resource. Thus, incrementing a list costs one resource \emph{per element} in the list.
+
+With this fundamental understanding of the function and its associated cost, let us understand how this cost is embedded into type rules in the form of constraints, and, how to arrive at a resource bound from a set of constraints. 
+
+Types are to programs what sets are to mathematics. In a mathematical setting, an element may be a member of a set. Analogously, a program and its values can have a \emph{type}. Strings and floats are examples of types that most programmers know. In the same way that mathematical functions map between sets, functions, like \(add1\) above, map between types. In this case, the function \(add1\) maps from \(\ralist{}{\typeint}\) to \(\ralist{}{\typeint}\). We denote this by writing \(add1 :: \ralist{}{\typeint} \to \ralist{}{\typeint}\).
+
+Type rules allow us to reason about the type of transformed values. For example, if we know that \(1\) and \(2\) are integers then \(1 + 2\) is also an integer. This kind of reasoning is encoded into type rules in the form of premises and conclusions. The premises have to be fulfilled, in order for the conclusion to hold. For the addition of integers we have "if \(x\) and \(y\) are integers \emph{then} \(x + y\) is also an integer". We use the notation below for type rules, where the upper part comprises the premises and the bottom part comprises the conclusion.
+
+\[
+   \inference[(Addition)]
+   {x \in \mathbb{Z} \quad y \in \mathbb{Z}}
+   {x + y \in \mathbb{Z}}
+\]
