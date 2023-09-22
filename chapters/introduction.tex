@@ -52,3 +52,40 @@ Thus, \tick{1} from our example above can be described using \((1, 0)\), because
 \]
 
 There are two limitations, however. First, using this approach we would need to provide a type rule for every \(k \in \mathbb{Z}\). Secondly, we can see that there are many more tuples \((p_0, p_1)\) that allow \tick{1} to be executed. For example, \((2, 1)\) is also valid, because the program can have two resources allocated to it instead of one. 
+
+We address the first limitation by parametrizing the type rule. This forces us to consider two cases for \tick{k}, where \(k \in \mathbb{Z}\). If \(k \geq 0\), \textbf{tick} consumes \(k\) resources, we can simply parametrize our type rule above to conclude \(\tick{k} : \ratype{\unit}{k}{0}\). If \(k < 0 \), now \textbf{tick} \emph{frees} \(k\) resources, we want \(\tick{k} : \ratype{\unit}{0}{k}\). Thus, we could create a type rule for each case respectively.
+
+\begin{align*}
+	& \inference[(Tick +)]
+	  {k : \typeint \quad k \geq 0}
+	  {\tick{k} : \ratype{\unit}{k}{0}}
+	&
+	\inference[(Tick -)]
+	{k : \typeint \quad k < 0}
+	{\tick{k} : \ratype{\unit}{0}{k}}
+	&
+\end{align*}
+
+In chapter 2, we introduce resource demands more thoroughly. One salient concept introduced there is that of a \emph{relaxation} (\cref{def:relaxation}). Informally, if \(a\) is a relaxation of \(b\) then any program that can be executed with resource demand \(b\) can also be executed with resource demand \(a\). Using the idea of relaxations, we can provide more general premise for a type rule for \textbf{tick} - we allow any resource demand that consumes (or frees) \emph{at least} \(k\) resources. This also facilitates merging the two cases above into one.
+
+\[
+   \inference[(Tick)]
+   {k : \typeint \quad p_0 \geq k + p_1}
+   {\tick{k} : \ratype{\unit}{p_0}{p_1}}
+\]
+
+Now we can see a linear constraint in the premise, \(p_0 \geq k + p_1\). For an elaborate program, many such constraints will be collected. Solving a set of such constraints, which means finding an optimal solution, is a problem called \emph{linear programming} \cite{LinearProgramming2023}. In practice, the constraints collected by the type inference and passed to an LP-solver, which then returns a solution. 
+
+Returning to our example function we are now able to partially type the third line. It is not clear how we type the remaining parts of the function, and how we can express a cost that respects the length of the input list. A detailed type derivation is provided in \cref{ex:derivation-add1} using the type rules introduced in \cref{subsec:type-rules-ListTick}. There are two key concepts required to derive a resource demand in this setting. First, we need to understand how to \emph{sequence} resource demands. As let expressions allow us to sequentially evaluate expressions, we need to account for prior costs, and combine the prior cost with any newly accrued cost. Secondly, we need to understand how the cost for empty and non-empty lists combine.
+
+When two expressions are sequenced using a let expression, we want their sequential evaluation to have the combined cost of both expressions respectively. Consider an example where we have sequence two expressions with resource demands \((2, 1)\) and \((4, 2)\). We cannot compose them \emph{as is}, because after evaluating the first expression only one resource is left, but the second expression requires four resources. Instead, we have to \emph{relax} (\cref{def:relaxation}) the first resource demand such that we can easily chain both expressions. If we relax \((2, 1)\) into \((5, 4)\) we can compose them, as the four resources left after evaluating the first expression \emph{exactly} match the four resources required by the second expression. Thus, we start with 5 resources, then have 4 resources after which the second expression starts evaluating and returns only one resource. The resulting resource demand for executing both expressions is \((5, 1)\). 
+
+We can visualize this using a simplified form of resource diagrams, which are introduced in \cref{chap:resources}. For a resource demand we draw a line from the resources required to start evaluating, to the resource left after evaluating. This yields the diagram on the left-hand side below. In order to compose these resource demands, we lift the first resource demand which gives us the diagram on the right-hand side.
+
+\[
+    \tikzfig{introduction_sequencing_1} \qquad \tikzfig{introduction_sequencing_2}
+\]
+
+With an understanding of how resource demands are composed, we can assign a cost to the code from line 3 to 6. Assuming that none of the remaining instructions have a cost associated, we can claim that the branch for non-empty lists (lines 3 to 6) costs 1 resource. We now want to translate the cost of 1 resource in lines 3 - 6 to translate to a cost of 1 resource \emph{for every list element}.
+
+

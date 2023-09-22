@@ -196,7 +196,7 @@ With potentials defined for \(A \in \type\), we naturally extend potentials to c
    \]
 \end{definition}
 
-\subsection{Inference Rules}
+\subsection{Inference Rules}\label{subsec:type-rules-ListTick}
 
 We start by introducing two rules associated to the two list constructors. An empty list can be constructed freely, with no constraints on its potential. On the other hand, constructing a list from an element and another, compatible, list requires us to propagate the potential. The tail \(xs\) of the list is assumed to have potential \(p\), as result, the list \(\cons{x}{xs}\) also has potential \(p\). 
 
@@ -242,7 +242,7 @@ The final type rule that we introduce is (T:LetFun). Informally, this rule adds 
 
 We introduce examples of varying complexity, to illustrate the nuances of type derivation for functions and lists and acquaint the reader to the newly introduced inference rules.
 
-\begin{example}
+\begin{example}\label{ex:derivation-add1}
    For our first example, consider the function \(add1\) that increments every integer in a list. The code can be found in \cref{fig:code-add1}. We derive a resource-annotated type stepwise, for sake of illustration. 
 
    \begin{enumerate}[label=Step \Roman*:]
