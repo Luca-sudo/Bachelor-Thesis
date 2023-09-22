@@ -86,6 +86,14 @@ We can visualize this using a simplified form of resource diagrams, which are in
     \tikzfig{introduction_sequencing_1} \qquad \tikzfig{introduction_sequencing_2}
 \]
 
-With an understanding of how resource demands are composed, we can assign a cost to the code from line 3 to 6. Assuming that none of the remaining instructions have a cost associated, we can claim that the branch for non-empty lists (lines 3 to 6) costs 1 resource. We now want to translate the cost of 1 resource in lines 3 - 6 to translate to a cost of 1 resource \emph{for every list element}.
+With an understanding of how resource demands are composed, we can assign a cost to the code from line 3 to 6. Assuming that none of the remaining instructions have a cost associated, we can claim that the branch for non-empty lists (lines 3 to 6) costs 1 resource. This claim is justified as composing \((1, 0)\) with \((0, 0)\) is again \((1, 0)\). 
+
+We want to express that \emph{every element} of the list requires 1 resource. In order to translate our current understanding of resource demands to variable length lists, we need \emph{potentials}. We assign a potential \(p\) to a list of integers by writing \ralist{p}{\typeint}. Thus, we assigned a cost of \(p\) to every list element. To conclude our example function \(add1\), we add potential 1 to the input list.
+
+\[
+   add1 :: \ralist{1}{\typeint} \to \ralist{}{\typeint}
+\]
+
+
 
 
