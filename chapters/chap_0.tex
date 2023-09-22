@@ -1,11 +1,17 @@
 \begin{abstract}
-   The performance of computer programs is of paramount interest to software engineers. There are multiple lenses through which performance may be evaluated: Worst-case analysis, average-case analysis and amortized analysis. In the case of amortized analysis, however, analysis was previously done manually - making it tedious and error-prone. This thesis presents Automatic Amortized Resource Analysis (AARA), a method that permits \emph{automatic} elicitation of a program's resource consumption through augmented type inference.
+   The performance of programs is of paramount interest to programmers. Automatic amortized resource analysis (AARA) allows the automatic elucidation of resource bounds for involved programs.  
 
-   AARA embellishes type rules with linear constraints. As part of type inference, those constraints are collected and solved using an LP-solver.
+   This thesis presents the work of Hoffmann \cite{hoffmannTypesPotentialPolynomial2011}, with a focus on linear bounds. To achieve a deep understanding, we explore the structure of resource demands which represent the resource consumption of programs. Afterward, we incrementally build up a programming language that features recursion on lists. Each chapter introduces new constructs to our programming language and highlights challenges that arise.  
 
-   This thesis presents concepts of AARA by incrementally building up a programming language. In chapter 2 we start off by introducing resource demands, which capture the resource consumption of a program. We then introduce a sequencing operation that allows composing resource demands, to build up larger programs, and a relation that facilitates comparing resource demands.
+   Chapter 1 provides a high-level introduction to AARA, introducing fundamental notions from type theory and amortized analysis with a concrete example. 
 
-   In chapter 3 we introduce the \emph{tick} instruction, which is an explicit handle for consuming/freeing resources. In chapter 4, we extend this language by introducing variables. In chapter 5, we introduce lists as a data type. This requires introducing potentials in order to elicit lower bounds on the resource consumption that is variable under the length of the list.
+   Chapter 2 introduces resources together with a sequencing operation and a relaxation relation that facilitates comparing resource demands. 
+
+   Chapter 3 introduces the core fragment of our programming language. With this language we can construct programs that sequentially consume or free resources. 
+
+   Chapter 4 augments the previous programming language with variables. This forces us to introduce environments and contexts in order to associate variables with values (or types). 
+
+   Chapter 5 introduces lists into our programming language. With the introduction of lists we also define potentials which capture cost with respect to lists.
 \end{abstract}
 
 \cleardoublepage
