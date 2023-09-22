@@ -19,16 +19,36 @@ Let us informally work through the AARA procedure, in order to foster a high-lev
    \end{minted}
 \end{figure}
 
-In the code above, we define a function \emph{add1}, which given a list of integers returns the list of integers with every element incremented. For example, the function maps \((1, 2, 3, 4)\) to \((2, 3, 4, 5)\). Furthermore, there is a \textbf{tick} instruction in line three. This tick instruction resembles a cost of one resource. Thus, incrementing a list costs one resource \emph{per element} in the list.
+In the code above, we define a function \emph{add1}, which given a list of integers returns the list of integers with every element incremented. For example, the function maps \((1, 2, 3, 4)\) to \((2, 3, 4, 5)\). Furthermore, there is a \textbf{tick} expression in line three. This tick instruction resembles a cost of one resource. Thus, incrementing a list costs one resource \emph{per element} in the list.
 
 With this fundamental understanding of the function and its associated cost, let us understand how this cost is embedded into type rules in the form of constraints, and, how to arrive at a resource bound from a set of constraints. 
 
 Types are to programs what sets are to mathematics. In a mathematical setting, an element may be a member of a set. Analogously, a program and its values can have a \emph{type}. Strings and floats are examples of types that most programmers know. In the same way that mathematical functions map between sets, functions, like \(add1\) above, map between types. In this case, the function \(add1\) maps from \(\ralist{}{\typeint}\) to \(\ralist{}{\typeint}\). We denote this by writing \(add1 :: \ralist{}{\typeint} \to \ralist{}{\typeint}\).
 
-Type rules allow us to reason about the type of transformed values. For example, if we know that \(1\) and \(2\) are integers then \(1 + 2\) is also an integer. This kind of reasoning is encoded into type rules in the form of premises and conclusions. The premises have to be fulfilled, in order for the conclusion to hold. For the addition of integers we have "if \(x\) and \(y\) are integers \emph{then} \(x + y\) is also an integer". We use the notation below for type rules, where the upper part comprises the premises and the bottom part comprises the conclusion.
+Type rules allow us to reason about the type of transformed values. For example, if we know that \(1\) and \(2\) are integers then \(1 + 2\) is also an integer. This kind of reasoning is encoded into type rules in the form of premises and conclusions. The premises have to be fulfilled in order for the conclusion to hold. For the addition of integers, we have "if \(x\) and \(y\) are integers \emph{then} \(x + y\) is also an integer". For values and types we do not use the symbol \(\in\) from set theory. Instead, we write \(x : \typeint\) to denote that \(x\) has type integer. Type rules are written in the following form:
 
 \[
    \inference[(Addition)]
-   {x \in \mathbb{Z} \quad y \in \mathbb{Z}}
-   {x + y \in \mathbb{Z}}
+   {x : \typeint \quad y : \typeint}
+   {x + y : \typeint}
 \]
+
+Back to our example function \(add1\). What could a type rule for the tick expression from the third line look like? Let us first understand what value the tick expression returns, as this will help us understand what type we should assign to \(\tick{1}\). While addition of integers returns an integer, invoking \(\tick{1}\) returns nothing. Readers with experience programming in java might recognize the type \(void\) to typically be used in such settings. We give the type void a different name, we call it \emph{unit}. It is therefore justified to claim that \(\tick{1} : \unit\). 
+
+In order to embed the resource consumption of \tick{1}, we need to first formulate precisely what resources are and how we choose to model them. The most common resources, with respect to which programs are analyzed, are time and space. While we classify both as resources, they differ vastly in their characteristics. While memory can be allocated and subsequently freed, time can only be consumed - it is not possible to generate or free time. If we visualize the evolution of time and space, this may look like the two diagrams below; the left-hand side displays time and the right-hand side displays space.
+
+\begin{align*}
+   & \tikzfig{introduction_time} & \quad & \tikzfig{introduction_space} &
+\end{align*}
+
+Embedding the entire evolution of an expression into the type rule is to elaborate - we need to reduce our representation. This leads us to model \emph{resource demands} as the resources needed to start evaluating the program \emph{and} the resources remaining afterward. We use tuples as a compact way to denote this. The tuple \((4, 2)\) then expresses that a program requires 4 resources to start evaluating and, once finished, leaves 2 resources remaining.
+
+Thus, \tick{1} from our example above can be described using \((1, 0)\), because \tick{1} consumes 1 resource and leaves non resource free afterward. We can now justify claiming \(\tick{1} : \unit\) with cost \((1, 0)\). The cost can be embedded into the type, to provide a more compact and readable notation, like so: \(\tick{1} : \ratype{\unit}{1}{0}\). We get the following type rule for \tick{1}:
+
+\[
+   \inference[(Tick 1)]
+   {}
+   {\tick{1} : \ratype{\unit}{1}{0}}
+\]
+
+There are two limitations, however. First, using this approach we would need to provide a type rule for every \(k \in \mathbb{Z}\). Secondly, we can see that there are many more tuples \((p_0, p_1)\) that allow \tick{1} to be executed. For example, \((2, 1)\) is also valid, because the program can have two resources allocated to it instead of one. 

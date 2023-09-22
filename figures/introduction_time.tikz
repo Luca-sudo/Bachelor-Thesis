@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+	\begin{pgfonlayer}{nodelayer}
+		\node [style=none] (0) at (-6, 4) {};
+		\node [style=none] (1) at (-6, -4) {};
+		\node [style=none] (2) at (6, -4) {};
+		\node [style=none] (3) at (-6.5, 0) {\rotatebox{90}{Time}};
+		\node [style=none] (4) at (-5, 3) {};
+		\node [style=none] (9) at (5, -2) {};
+	\end{pgfonlayer}
+	\begin{pgfonlayer}{edgelayer}
+		\draw [style=new edge style 0] (1.center) to (2.center);
+		\draw [style=new edge style 0] (1.center) to (0.center);
+		\draw (4.center) to (9.center);
+	\end{pgfonlayer}
+\end{tikzpicture}
